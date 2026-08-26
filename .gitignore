@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+.venv/
+models/*.task
+models/*.part
+templates/*.npz
+*.db
+*.log
+recordings/
+.pytest_cache/
+_to_delete/
+_legacy/
+python_version.txt

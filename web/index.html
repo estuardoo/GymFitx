@@ -1,0 +1,958 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GYMFITX · Panel</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Ctext y=%2726%27 font-size=%2728%27%3E%F0%9F%92%AA%3C/text%3E%3C/svg%3E">
+<style>
+:root{
+  color-scheme: light;
+  --plane:#f9f9f7; --surface:#fcfcfb; --surface-2:#f2f2ee;
+  --ink:#0b0b0b; --ink-2:#52514e; --muted:#898781;
+  --grid:#e1e0d9; --axis:#c3c2b7; --border:#e1e0d9;
+  --series-1:#2a78d6;
+  --good:#0ca30c; --warning:#fab219; --serious:#ec835a; --critical:#d03b3b;
+  --shadow:0 1px 2px rgba(0,0,0,.06), 0 6px 20px rgba(0,0,0,.05);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme: dark;
+    --plane:#0d0d0d; --surface:#1a1a19; --surface-2:#232322;
+    --ink:#ffffff; --ink-2:#c3c2b7; --muted:#898781;
+    --grid:#2c2c2a; --axis:#383835; --border:#2c2c2a;
+    --series-1:#3987e5;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 6px 20px rgba(0,0,0,.3);
+  }
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--plane);color:var(--ink);
+  font:15px/1.5 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  -webkit-font-smoothing:antialiased}
+.wrap{padding:16px 12px 32px}
+h1{font-size:20px;letter-spacing:-.01em;margin:0}
+h2{font-size:13px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);
+  margin:0 0 12px;font-weight:600}
+a{color:var(--series-1)}
+
+header{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:12px;position:sticky;top:0;z-index:20;background:var(--plane);padding:5px 0}
+.brand{display:flex;align-items:baseline;gap:10px}
+.brand small{color:var(--muted);font-size:13px}
+.spacer{flex:1}
+.pill{display:inline-flex;align-items:center;gap:7px;padding:5px 11px;border-radius:999px;
+  background:var(--surface);border:1px solid var(--border);font-size:13px;color:var(--ink-2)}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--muted)}
+.dot.on{background:var(--good)}
+.dot.off{background:var(--critical)}
+.tab-btn{background:var(--surface);border:1px solid var(--border);color:var(--ink-2)}
+.tab-btn.on{background:var(--series-1);border-color:var(--series-1);color:#fff}
+
+.grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;align-items:start}
+@media (max-width:900px){.grid{grid-template-columns:1fr}}
+.grid-principal{display:grid;grid-template-columns:15fr 40fr 25fr 20fr;gap:10px;align-items:start}
+@media (max-width:1300px){.grid-principal{grid-template-columns:1fr 1fr}}
+@media (max-width:700px){.grid-principal{grid-template-columns:1fr}}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;
+  padding:14px;box-shadow:var(--shadow);margin-bottom:12px}
+
+/* --- rutina --- */
+.fila-ex{cursor:pointer}
+.fila-ex td{vertical-align:top;padding:9px 6px}
+.fila-ex.sel{background:rgba(12,163,12,.09)}
+.fila-ex.sel .ex-name::before{content:"✓ ";color:var(--good)}
+.ex-name{font-weight:600}
+.ex-sub{font-size:12px;color:var(--muted);margin-top:2px}
+.bar{height:6px;border-radius:3px;background:var(--grid);overflow:hidden;margin-top:8px}
+.bar > i{display:block;height:100%;border-radius:3px;background:var(--series-1);
+  transition:width .35s ease}
+.badge{font-size:11px;padding:2px 7px;border-radius:6px;border:1px solid var(--border);
+  color:var(--ink-2);white-space:nowrap}
+.badge.warn{color:var(--serious);border-color:var(--serious)}
+
+button{font:inherit;font-size:13px;padding:6px 12px;border-radius:8px;cursor:pointer;
+  border:1px solid var(--border);background:var(--surface);color:var(--ink);transition:.15s}
+button:hover:not(:disabled){border-color:var(--series-1);color:var(--series-1)}
+button:disabled{opacity:.4;cursor:not-allowed}
+button.primary{background:var(--series-1);border-color:var(--series-1);color:#fff}
+button.primary:hover:not(:disabled){filter:brightness(1.08);color:#fff}
+button.danger{border-color:var(--critical);color:var(--critical)}
+button.warn{border-color:var(--warning);color:var(--warning)}
+button.b-blue{background:var(--series-1);border-color:var(--series-1);color:#fff}
+button.b-blue:hover:not(:disabled){filter:brightness(1.08);color:#fff}
+button.b-red{background:var(--critical);border-color:var(--critical);color:#fff}
+button.b-red:hover:not(:disabled){filter:brightness(1.08);color:#fff}
+button.b-green{background:var(--good);border-color:var(--good);color:#fff}
+button.b-green:hover:not(:disabled){filter:brightness(1.08);color:#fff}
+button.b-amber{background:var(--warning);border-color:var(--warning);color:#111}
+button.b-amber:hover:not(:disabled){filter:brightness(1.08);color:#111}
+button.b-black{background:#141414;border-color:#3a3a38;color:#fff}
+button.b-black:hover:not(:disabled){filter:brightness(1.3);color:#fff}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+input[type=number]{font:inherit;width:56px;padding:5px 6px;border-radius:7px;
+  background:var(--plane);color:var(--ink);border:1px solid var(--border)}
+select{font:inherit;font-size:13px;padding:5px 8px;border-radius:7px;
+  background:var(--plane);color:var(--ink);border:1px solid var(--border)}
+.iconbtn{padding:5px 9px;line-height:1}
+.filtro{font-size:12.5px;color:var(--muted);margin-bottom:8px}
+.filtro a{color:var(--series-1);cursor:pointer;text-decoration:none}
+.filtro a:hover{text-decoration:underline}
+
+/* --- vivo --- */
+.vivo-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.vivo-head h2{margin:0}
+.subhead{font-size:12px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);
+  margin:14px 0 10px;font-weight:600}
+.region-shape{cursor:pointer;transition:opacity .15s;stroke:rgba(0,0,0,.18);stroke-width:1}
+.region-shape.off{opacity:.15}
+.selector-cuerpo{display:flex;align-items:center;gap:6px;cursor:default}
+.selector-cuerpo svg{width:120px;display:block}
+@media (max-width:640px){.selector-cuerpo{display:none}}   /* en el header no entra bien en pantallas chicas */
+.video{position:relative;border-radius:11px;overflow:hidden;background:#000;aspect-ratio:16/9;
+  border:3px solid transparent}
+@keyframes arcoiris-grabando{
+  0%{border-color:#7c4dff} 20%{border-color:#d500f9} 40%{border-color:#ff1744}
+  50%{border-color:#ff6d00} 60%{border-color:#ff1744} 80%{border-color:#d500f9} 100%{border-color:#7c4dff}
+}
+.video.grabando{animation:arcoiris-grabando 2.4s linear infinite}
+.video img{width:100%;height:100%;object-fit:contain;display:block}
+.video-off{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  background:rgba(0,0,0,.55);color:#e8e8e4;font-size:14px;letter-spacing:.02em;text-align:center;padding:20px}
+.video-top-hint{position:absolute;top:10px;left:50%;transform:translateX(-50%);
+  background:rgba(0,0,0,.55);color:#f2f2f2;font-size:12.5px;letter-spacing:.02em;
+  padding:5px 14px;border-radius:999px;white-space:nowrap;text-shadow:0 1px 4px rgba(0,0,0,.6)}
+.hud{position:absolute;right:12px;top:12px;text-align:right}
+.hero{font-size:52px;font-weight:700;line-height:1;letter-spacing:-.03em;
+  font-variant-numeric:tabular-nums;text-shadow:0 2px 12px rgba(0,0,0,.65)}
+.hero.parpadeando{font-size:26px;animation:parpadeo-rec 1s step-start infinite}
+@keyframes parpadeo-rec{50%{opacity:.15}}
+.feat{display:grid;grid-template-columns:1fr auto;gap:2px 12px;font-size:13px}
+.feat b{font-weight:500;color:var(--ink-2)}
+.feat span{font-variant-numeric:tabular-nums;color:var(--ink)}
+.consejo{margin-top:12px;padding:10px 12px;border-radius:9px;background:var(--surface-2);
+  border-left:3px solid var(--warning);font-size:13.5px;color:var(--ink-2);display:none}
+.consejo.on{display:block}
+
+/* --- grafico --- */
+.chart{position:relative}
+svg{display:block;width:100%;height:auto;overflow:visible}
+.tip{position:absolute;pointer-events:none;opacity:0;transition:opacity .12s;
+  background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:8px 10px;
+  font-size:12.5px;box-shadow:var(--shadow);white-space:nowrap;z-index:5}
+.tip.on{opacity:1}
+.tip b{display:block;font-size:13px;margin-bottom:2px}
+
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th{text-align:left;font-weight:600;color:var(--muted);font-size:12px;text-transform:uppercase;
+  letter-spacing:.05em;padding:0 8px 8px;border-bottom:1px solid var(--border)}
+td{padding:8px;border-bottom:1px solid var(--grid);font-variant-numeric:tabular-nums}
+tr:last-child td{border-bottom:0}
+.num{text-align:right}
+.st{display:inline-flex;align-items:center;gap:6px;font-weight:600}
+.st::before{content:"";width:8px;height:8px;border-radius:2px;background:currentColor}
+.st.good{color:var(--good)} .st.warn{color:var(--serious)} .st.bad{color:var(--critical)}
+.vacio{color:var(--muted);font-size:13.5px;padding:16px 0;text-align:center}
+.rec-item{padding:7px 8px;border-bottom:1px solid var(--grid);cursor:pointer;font-size:13px;
+  font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rec-item:last-child{border-bottom:0}
+.rec-item:hover{background:var(--surface-2)}
+.rec-item.sin-video{opacity:.4;cursor:default}
+#player{display:none;margin-bottom:12px}
+#player.on{display:block}
+#player video{width:100%;border-radius:10px;background:#000;display:block}
+.disco{font-size:12px;color:var(--muted);margin-top:10px;display:flex;gap:6px;align-items:center}
+.log{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;color:var(--ink-2);
+  max-height:132px;overflow:auto;margin-top:12px;border-top:1px solid var(--grid);padding-top:10px}
+#log-sistema{max-height:400px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="brand"><h1>GYMFITX</h1><small id="fecha"></small></div>
+  <div class="selector-cuerpo" id="selector-cuerpo"
+       title="Partes visibles en el video: clic en cada una para mostrarla/ocultarla. Por defecto se marcan las que usa el ejercicio elegido. Solo aplica a ejercicios de cuerpo completo (pose).">
+    <span style="font-size:15px">💪</span>
+    <svg id="svg-cuerpo" viewBox="0 0 450 210">
+      <circle class="region-shape" data-region="cabeza" cx="42" cy="130" r="30" fill="#b39ddb"><title>Cabeza+cuello</title></circle>
+      <rect class="region-shape" data-region="brazos" x="66" y="48" width="118" height="24" rx="11" fill="#ffa726"><title>Brazos+antebrazo</title></rect>
+      <circle class="region-shape" data-region="manos" cx="54" cy="60" r="18" fill="#ffd54f"><title>Manos</title></circle>
+      <rect class="region-shape" data-region="torso" x="74" y="104" width="110" height="52" rx="24" fill="#8bc34a"><title>Pecho+torso</title></rect>
+      <rect class="region-shape" data-region="cadera" x="182" y="108" width="64" height="44" rx="18" fill="#ff9e80"><title>Cadera</title></rect>
+      <rect class="region-shape" data-region="piernas" x="244" y="114" width="150" height="32" rx="14" fill="#64b5f6"><title>Pierna+entrepierna</title></rect>
+      <ellipse class="region-shape" data-region="pies" cx="404" cy="130" rx="24" ry="13" fill="#f06292"><title>Pies</title></ellipse>
+    </svg>
+  </div>
+  <div class="spacer"></div>
+  <button class="tab-btn on" id="tab-btn-panel">Panel</button>
+  <button class="tab-btn" id="tab-btn-sistema">Sistema</button>
+  <span class="pill"><span class="dot" id="wsdot"></span><span id="wstxt">conectando</span></span>
+  <span class="pill">🔥 racha <b id="racha">0</b> d</span>
+</header>
+
+<div id="tab-panel">
+
+  <div class="grid-principal">
+    <div class="card" id="card-detecciones">
+      <div class="subhead" style="margin-top:0">Detecciones</div>
+      <div class="feat" id="feats"></div>
+    </div>
+
+    <div class="card" id="vivo">
+      <div class="vivo-head" style="flex-direction:column;align-items:stretch;gap:8px">
+        <div class="row" style="justify-content:space-between;gap:8px">
+          <h2 id="vivo-titulo" style="margin:0">Cámara</h2>
+          <div class="row" style="gap:8px">
+            <label class="row" style="gap:6px;font-size:12.5px;color:var(--ink-2)" title="Cuadros por segundo que le pide a la cámara. Más = más fluido para movimientos rápidos (ej. box), menos = menos carga. No todas las cámaras respetan el valor pedido; el FPS real se ve en el video.">
+              FPS <input type="range" id="fps-slider" min="10" max="60" step="5" value="30" style="width:70px">
+              <span id="fps-val">30</span>
+            </label>
+            <button id="btn-cam-power" class="b-blue" disabled>Prender cámara</button>
+          </div>
+        </div>
+        <div class="row" style="justify-content:space-between;gap:8px">
+          <label class="row" style="gap:6px;font-size:12.5px;color:var(--ink-2)">
+            Cámara <select id="sel-camera"><option value="0">detectando…</option></select>
+          </label>
+          <button class="iconbtn" id="btn-cam-refresh" title="Detectar cámaras">🔄</button>
+          <span class="row" style="gap:8px;margin-left:auto">
+            <span id="grab-controls" class="row" style="display:none">
+              <button id="btn-grabar" class="b-green"
+                title="✊ También podés abrir y cerrar la mano en la esquina superior izquierda para iniciar/detener">Grabar</button>
+              <button id="btn-detener-grab" class="b-black"
+                title="Guarda automáticamente la toma. ✊ También se puede abriendo y cerrando la mano ahí arriba a la izquierda">Detener</button>
+            </span>
+            <label class="row" style="gap:6px;font-size:12.5px;color:var(--ink-2)">
+              <input type="checkbox" id="chk-video" checked> guardar video
+            </label>
+            <label class="row" style="gap:6px;font-size:12.5px;color:var(--ink-2)"
+                   title="Ve los dedos con movimiento real en ejercicios de cuerpo completo (consume mas, por eso arranca apagado)">
+              <input type="checkbox" id="chk-dedos"> dedos detallados
+            </label>
+          </span>
+        </div>
+      </div>
+      <div id="cam-hint" class="filtro" style="display:none;margin-bottom:10px"></div>
+
+      <div class="video">
+        <img id="stream" alt="cámara">
+        <div class="video-off" id="video-off">Cámara apagada.</div>
+        <div class="video-top-hint" id="top-hint">esperando</div>
+        <div class="hud"><div class="hero" id="hero">—</div></div>
+      </div>
+
+      <div class="consejo" id="consejo"></div>
+      <div class="log" id="log"></div>
+    </div>
+
+    <div class="card" id="card-rutina">
+      <h2>Rutina</h2>
+      <div id="rutina"></div>
+      <div id="player"><video id="vplayer" controls playsinline></video></div>
+    </div>
+
+    <div class="card" id="card-grabaciones">
+      <h2>Grabaciones</h2>
+      <div class="filtro" id="rec-filtro"></div>
+      <div id="recs"></div>
+      <div class="disco" id="disco"></div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h2>Puntaje promedio por día · últimos 14</h2>
+      <div class="chart">
+        <svg id="chart" viewBox="0 0 720 220" role="img"
+             aria-label="Puntaje promedio diario de los últimos 14 días"></svg>
+        <div class="tip" id="tip"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Repeticiones recientes</h2>
+      <div id="tabla"></div>
+    </div>
+  </div>
+
+</div>
+
+<div id="tab-sistema" style="display:none">
+  <div class="card">
+    <h2>Panel</h2>
+    <div class="row">
+      <button id="btn-reiniciar" class="b-amber">Reiniciar panel</button>
+      <button id="btn-apagar" class="b-red">Apagar panel</button>
+    </div>
+    <div class="filtro" style="margin-top:10px">
+      Apagar cierra el proceso del programa (y la ventana de comandos se cierra sola);
+      reiniciar lo relanza automáticamente.
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Log de sesión</h2>
+    <div class="log" id="log-sistema"></div>
+  </div>
+
+  <div class="card">
+    <h2>Entorno Python</h2>
+    <div class="row">
+      <label class="row" style="gap:6px;font-size:13px;color:var(--ink-2)">
+        Versión <select id="sel-pyver"></select>
+      </label>
+      <button id="btn-pyver-cambiar" class="b-amber">Cambiar versión</button>
+    </div>
+    <div class="filtro" id="pyver-hint" style="margin-top:10px"></div>
+  </div>
+
+  <div class="card">
+    <div class="row" style="justify-content:space-between;margin-bottom:4px">
+      <h2 style="margin:0">Librerías usadas</h2>
+      <button id="btn-libs-actualizar-todo" class="b-blue">Actualizar todo</button>
+    </div>
+    <div id="librerias"></div>
+    <div class="filtro" id="libs-hint" style="margin-top:10px"></div>
+  </div>
+</div>
+
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+const fmt = n => n === null || n === undefined ? "—" : (+n).toFixed(1);
+let STATE = null, SEL = null, ACTIVA = false, GRABANDO = false, PAUSADO = false, TAB = "panel";
+let RECS_ALL = [];
+
+const banda = s => s >= 85 ? "good" : s >= 65 ? "warn" : "bad";
+const bandaTxt = s => s >= 85 ? "muy parecido" : s >= 65 ? "aceptable" : "revisar";
+
+/* ---------------------------- estado ---------------------------- */
+let PRIMERA_CARGA = true;
+
+async function cargarEstado(){
+  STATE = await (await fetch("/api/state")).json();
+  $("#fecha").textContent = STATE.fecha;
+  $("#racha").textContent = STATE.racha;
+  // El default sale del catalogo completo, no de la rutina armada: asi la
+  // camara se prende sola aunque todavia no hayas elegido ningun ejercicio
+  // para tu rutina de hoy -- no depende de ese paso.
+  if (!SEL && STATE.ejercicios.length) SEL = STATE.ejercicios[0].slug;
+  pintarRutina();
+  aplicarRegionesPorDefecto();
+  const s = STATE.sesion;
+  ACTIVA = !!s.activa; GRABANDO = !!s.grabando; PAUSADO = !!s.pausado;
+  actualizarControlesCamara();
+  if (s.activa) abrirVivo(s.name || s.exercise, s.modo);
+
+  // Al abrir el panel la camara se prende sola con el ejercicio por defecto
+  // -- no hace falta tocar nada para empezar a verte. Solo pasa una vez.
+  if (PRIMERA_CARGA){
+    PRIMERA_CARGA = false;
+    if (!ACTIVA && SEL){ await prenderCamara(); actualizarControlesCamara(); }
+  }
+}
+
+function actualizarControlesCamara(){
+  const cam = $("#btn-cam-power"), grupo = $("#grab-controls"),
+        grab = $("#btn-grabar"), stop = $("#btn-detener-grab");
+  cam.textContent = ACTIVA ? "Apagar cámara" : "Prender cámara";
+  cam.className = ACTIVA ? "b-red" : "b-blue";
+  cam.disabled = !ACTIVA && !SEL;
+  $("#video-off").style.display = ACTIVA ? "none" : "flex";
+  document.querySelector(".video").classList.toggle("grabando", GRABANDO && !PAUSADO);
+
+  // Los botones de grabar/detener siempre se VEN si la camara esta prendida;
+  // solo quedan usables (no disabled) si ademas hay un ejercicio elegido.
+  grupo.style.display = ACTIVA ? "flex" : "none";
+  grab.disabled = !SEL;
+  if (!GRABANDO){ grab.textContent = "Grabar"; grab.className = "b-green"; }
+  else if (PAUSADO){ grab.textContent = "Reanudar"; grab.className = "b-amber"; }
+  else { grab.textContent = "Pausar"; grab.className = "b-red"; }
+  stop.disabled = !GRABANDO;
+}
+
+async function cargarGrabaciones(){
+  const r = await (await fetch("/api/recordings?limit=60")).json();
+  RECS_ALL = r.grabaciones;
+  $("#disco").textContent =
+    `${r.disco.sesiones} sesiones · ${r.disco.videos} videos · ${r.disco.mb} MB en recordings/`;
+  renderGrabaciones();
+}
+
+function renderGrabaciones(){
+  const filtradas = SEL ? RECS_ALL.filter(g => g.exercise === SEL) : RECS_ALL;
+
+  const fEx = $("#rec-filtro");
+  if (SEL){
+    const nombre = (STATE?.ejercicios.find(e => e.slug === SEL) || {}).name || SEL;
+    fEx.innerHTML = `Mostrando: <b>${nombre}</b>`;
+  } else {
+    fEx.innerHTML = `Elegí un ejercicio de la rutina para ver sus grabaciones`;
+  }
+
+  const c = $("#recs");
+  if (!filtradas.length){
+    c.innerHTML = `<div class="vacio">Aún no hay sesiones archivadas${SEL ? " de este ejercicio" : ""}</div>`;
+    return;
+  }
+  // Listbox simple: un nombre de archivo por línea, clic lo reproduce
+  // (debajo de Rutina). Sin botones ni vínculos de descarga aparte.
+  c.innerHTML = filtradas.map(g => {
+    const nombre = g.ruta_relativa.split("/").pop();
+    return g.existe_video
+      ? `<div class="rec-item" onclick="ver('${g.ruta_relativa}')" title="Clic para reproducir">${nombre}</div>`
+      : `<div class="rec-item sin-video" title="Sin video guardado">${nombre} (sin video)</div>`;
+  }).join("");
+}
+
+function ver(ruta){
+  $("#player").classList.add("on");
+  const v = $("#vplayer");
+  v.src = "/recordings/" + ruta;
+  v.play().catch(() => {});
+  v.scrollIntoView({behavior:"smooth", block:"nearest"});
+}
+
+async function usarComoBase(ruta, nombre){
+  if (!confirm(`¿Usar esta grabación como nuevo movimiento base de "${nombre}"?\n\n`+
+               `Esto reemplaza la calibración actual (umbrales y puntaje de referencia).`)) return;
+  const r = await fetch("/api/recordings/use_as_base", {
+    method:"POST", headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({ruta_relativa: ruta})
+  });
+  const d = await r.json();
+  if (!r.ok){ alert(d.detail || "No se pudo recalibrar la base."); return; }
+  alert(`Base recalibrada: ${d.n_reps} repeticiones, tau ${d.tau}.`);
+  await cargarEstado();
+}
+
+async function cargarHistorial(){
+  const h = await (await fetch("/api/history?days=14")).json();
+  pintarGrafico(h.diario); pintarTabla(h.recientes);
+}
+
+/* ---------------------------- rutina ---------------------------- */
+async function seleccionar(slug, ev){
+  if (ev && ev.target.closest("button, input, select, label")) return;
+  if (SEL === slug) return;
+  if (ACTIVA && GRABANDO){ alert("Detén la grabación antes de cambiar de ejercicio."); return; }
+
+  SEL = slug;
+  pintarRutina(); renderGrabaciones(); actualizarControlesCamara();
+  aplicarRegionesPorDefecto();
+
+  if (!ACTIVA) return;   // se aplicara recien cuando prendas la camara
+  const r = await fetch("/api/session/exercise", {method:"POST", headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({exercise: slug})});
+  if (!r.ok){ alert((await r.json()).detail); return; }
+  const info = await r.json();
+  actualizarTituloVivo(info.name, "preview");
+  await empujarRegiones();
+}
+
+async function cambioRutina(){
+  const items = [...document.querySelectorAll("#rutina input[type=checkbox]")]
+    .filter(c => c.checked)
+    .map(c => ({exercise: c.dataset.slug,
+                target_reps: +document.querySelector(`[data-reps="${c.dataset.slug}"]`).value || 10}));
+  const r = await (await fetch("/api/routine", {method:"POST", headers:{"Content-Type":"application/json"},
+                                                body: JSON.stringify(items)})).json();
+  STATE.rutina = r.rutina;
+  pintarRutina();
+}
+
+function pintarRutina(){
+  const cont = $("#rutina");
+  if (!STATE.ejercicios.length){
+    cont.innerHTML = `<div class="vacio">No hay ejercicios definidos todavía.</div>`;
+    return;
+  }
+  cont.innerHTML = `<table><tbody>` + STATE.ejercicios.map(ex => {
+    const enRutina = STATE.rutina.find(r => r.exercise === ex.slug);
+    const hoy = STATE.hoy[ex.slug];
+    const reps = enRutina ? enRutina.target_reps : 10;
+    const hechas = hoy ? hoy.reps : 0;
+    const pct = enRutina ? Math.min(100, reps ? hechas / reps * 100 : 0) : 0;
+    const prom = hoy ? fmt(hoy.avg_score) : "—";
+    const sub = enRutina ? `${hechas} / ${reps} reps hoy · promedio ${prom}` : "";
+    return `<tr class="fila-ex ${ex.slug===SEL?"sel":""}" onclick="seleccionar('${ex.slug}',event)">
+      <td>
+        <input type="checkbox" data-slug="${ex.slug}" ${enRutina ? "checked" : ""} onchange="cambioRutina()">
+      </td>
+      <td>
+        <div class="ex-name">${ex.name}</div>
+        ${sub ? `<div class="ex-sub">${sub}</div>` : ""}
+        ${enRutina ? `<div class="bar"><i style="width:${pct}%"></i></div>` : ""}
+        ${ex.tiene_base ? "" : '<span class="badge warn" style="margin-top:4px;display:inline-block">sin base</span>'}
+      </td>
+      <td class="num">
+        <input type="number" min="1" max="99" data-reps="${ex.slug}" value="${reps}" onchange="cambioRutina()">
+      </td>
+    </tr>`;
+  }).join("") + `</tbody></table>`;
+}
+
+/* ---------------------------- cámara ---------------------------- */
+async function cargarCamaras(){
+  const btn = $("#btn-cam-refresh"), sel = $("#sel-camera"), hint = $("#cam-hint");
+  const prev = sel.value;
+  btn.disabled = true;
+  sel.innerHTML = `<option>Buscando…</option>`;
+  hint.style.display = "none";
+  try {
+    const r = await (await fetch("/api/cameras")).json();
+    sel.innerHTML = r.camaras.length
+      ? r.camaras.map(c => `<option value="${c.index}">${c.name || ("Cámara " + c.index)} · ${c.width}×${c.height}</option>`).join("")
+      : `<option value="0">Cámara 0 (predeterminada)</option>`;
+    if (prev && [...sel.options].some(o => o.value === prev)) sel.value = prev;
+    if (!r.camaras.length){
+      hint.style.display = "block";
+      hint.textContent = (r.nombres_windows && r.nombres_windows.length)
+        ? `Windows ve conectada(s): ${r.nombres_windows.join(", ")}, pero no se pudo abrir ninguna. ` +
+          `Revisa Configuración → Privacidad y seguridad → Cámara, o que no la tenga abierta otra app (Teams/Zoom/Meet).`
+        : `No se detectó ninguna cámara. Verifica que esté conectada y vuelve a pulsar 🔄.`;
+    }
+  } finally {
+    btn.disabled = false;
+  }
+}
+$("#btn-cam-refresh").onclick = cargarCamaras;
+
+/* ---------------------------- selector de cuerpo ---------------------------- */
+const REGIONES_TODAS = ["cabeza", "manos", "brazos", "torso", "cadera", "piernas", "pies"];
+let REGIONES_ACTIVAS = new Set(REGIONES_TODAS);
+
+function regionesSeleccionadas(){
+  return [...REGIONES_ACTIVAS];
+}
+
+function pintarSelectorCuerpo(){
+  document.querySelectorAll(".region-shape").forEach(el => {
+    el.classList.toggle("off", !REGIONES_ACTIVAS.has(el.dataset.region));
+  });
+}
+
+async function empujarRegiones(){
+  if (!ACTIVA) return;
+  await fetch("/api/session/overlay", {method:"POST", headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({regiones: regionesSeleccionadas()})});
+}
+
+async function alternarRegion(clave){
+  if (REGIONES_ACTIVAS.has(clave)) REGIONES_ACTIVAS.delete(clave); else REGIONES_ACTIVAS.add(clave);
+  pintarSelectorCuerpo();
+  await empujarRegiones();
+}
+
+document.querySelectorAll(".region-shape").forEach(el => {
+  el.onclick = () => alternarRegion(el.dataset.region);
+});
+
+function aplicarRegionesPorDefecto(){
+  const ex = STATE && STATE.ejercicios.find(e => e.slug === SEL);
+  $("#chk-dedos").checked = !!(ex && ex.manos_detalle);
+  if (!ex || ex.source !== "pose") return;   // en "hands" el selector no aplica
+  REGIONES_ACTIVAS = new Set(ex.regiones_default && ex.regiones_default.length
+    ? ex.regiones_default : REGIONES_TODAS);
+  pintarSelectorCuerpo();
+}
+
+/* ---------------------------- sesión ---------------------------- */
+function actualizarTituloVivo(nombre, modo){
+  const titulos = {preview:"Cámara · ", grabar:"Grabando base · ", evaluar:"Entrenando · "};
+  $("#vivo-titulo").textContent = (titulos[modo] || "Cámara · ") + nombre;
+  $("#top-hint").textContent = modo === "grabar" ? "haz 5 reps lentas"
+    : modo === "preview" ? "colócate en posición" : "esperando rep";
+  $("#hero").textContent = modo === "grabar" ? "REC" : "—";
+  $("#hero").style.color = modo === "grabar" ? "var(--serious)" : "var(--ink)";
+  $("#hero").classList.toggle("parpadeando", modo === "grabar");
+}
+
+function abrirVivo(nombre, modo){
+  actualizarTituloVivo(nombre, modo);
+  $("#stream").src = "/video?t=" + Date.now();
+  $("#log").innerHTML = "";
+}
+
+async function prenderCamara(silencioso){
+  if (!SEL){ alert("Selecciona un ejercicio primero."); return false; }
+  const item = STATE.rutina.find(r => r.exercise === SEL);
+  const r = await fetch("/api/session/camera_on", {
+    method:"POST", headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({exercise:SEL, reps: item ? item.target_reps : 10,
+                          video: $("#chk-video").checked,
+                          camera: +$("#sel-camera").value || 0,
+                          fps: +$("#fps-slider").value || 30,
+                          regiones: regionesSeleccionadas(),
+                          manos_detalle: $("#chk-dedos").checked})
+  });
+  if (!r.ok){ if (!silencioso) alert((await r.json()).detail); return false; }
+  const info = await r.json();
+  ACTIVA = true; GRABANDO = false; PAUSADO = false;
+  abrirVivo(info.name, "preview");
+  return true;
+}
+
+async function apagarCamara(){
+  const r = await (await fetch("/api/session/stop", {method:"POST"})).json();
+  ACTIVA = false; GRABANDO = false; PAUSADO = false;
+  $("#stream").src = ""; $("#feats").innerHTML = "";
+  if (r.error) alert("No se pudo construir la plantilla:\n\n" + r.error);
+  await cargarHistorial(); await cargarGrabaciones();
+  return r;
+}
+
+$("#btn-cam-power").onclick = async () => {
+  $("#btn-cam-power").disabled = true;
+  try {
+    if (!ACTIVA) await prenderCamara();
+    else await apagarCamara();
+  } finally {
+    actualizarControlesCamara();
+  }
+};
+
+async function reabrirSiActiva(el){
+  // Cambiar de cámara en el listbox la prende de una, esté activa o no:
+  // si ya había una sesión, la reabre con la cámara nueva; si no, la prende.
+  // La cámara recién cerrada a veces tarda un instante en liberarse
+  // (Windows/DirectShow) y el primer intento de abrir la nueva falla: se
+  // reintenta una vez en silencio antes de rendirse y mostrar el error.
+  el.disabled = true;
+  try {
+    if (ACTIVA) await apagarCamara();
+    if (!(await prenderCamara(true))){
+      await new Promise(res => setTimeout(res, 600));
+      await prenderCamara();
+    }
+  } finally {
+    el.disabled = false;
+    actualizarControlesCamara();
+  }
+}
+$("#sel-camera").onchange = () => reabrirSiActiva($("#sel-camera"));
+$("#fps-slider").oninput = () => { $("#fps-val").textContent = $("#fps-slider").value; };
+$("#fps-slider").onchange = async () => {
+  if (!ACTIVA) return;   // nada que reabrir todavia, solo cambia la opcion elegida
+  const fps = +$("#fps-slider").value || 30;
+  const r = await (await fetch("/api/session/fps", {method:"POST", headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({fps})})).json();
+  if (!r.aplicado) await reabrirSiActiva($("#fps-slider"));   // el driver lo ignoro: reabre para forzarlo
+};
+
+$("#chk-dedos").onchange = async () => {
+  if (!ACTIVA) return;   // se aplica recien al prender camara, igual que otras opciones
+  await fetch("/api/session/manos_detalle", {method:"POST", headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({activo: $("#chk-dedos").checked})});
+};
+
+$("#btn-grabar").onclick = async () => {
+  $("#btn-grabar").disabled = true;
+  try {
+    if (!GRABANDO){
+      const r = await fetch("/api/session/grabar", {method:"POST"});
+      if (!r.ok){ alert((await r.json()).detail); return; }
+      const info = await r.json();
+      GRABANDO = true; PAUSADO = false;
+      actualizarTituloVivo((STATE.ejercicios.find(e => e.slug === SEL) || {}).name || SEL, info.modo);
+    } else {
+      await fetch(`/api/session/${PAUSADO ? "resume" : "pause"}`, {method:"POST"});
+      PAUSADO = !PAUSADO;
+    }
+  } finally {
+    actualizarControlesCamara();
+  }
+};
+
+$("#btn-detener-grab").onclick = async () => {
+  $("#btn-detener-grab").disabled = true;
+  try {
+    const r = await (await fetch("/api/session/grabar_detener", {method:"POST"})).json();
+    GRABANDO = false; PAUSADO = false;
+    actualizarTituloVivo((STATE.ejercicios.find(e => e.slug === SEL) || {}).name || SEL, "preview");
+    if (r.error) alert("No se pudo construir la plantilla:\n\n" + r.error);
+    await cargarHistorial(); await cargarGrabaciones();
+  } finally {
+    actualizarControlesCamara();
+  }
+};
+
+/* ---------------------------- sistema ---------------------------- */
+function irATab(nombre){
+  TAB = nombre;
+  $("#tab-panel").style.display = nombre === "panel" ? "block" : "none";
+  $("#tab-sistema").style.display = nombre === "sistema" ? "block" : "none";
+  $("#tab-btn-panel").classList.toggle("on", nombre === "panel");
+  $("#tab-btn-sistema").classList.toggle("on", nombre === "sistema");
+  if (nombre === "sistema"){ cargarLog(); cargarLibrerias(); cargarVersionPython(); }
+}
+$("#tab-btn-panel").onclick = () => irATab("panel");
+$("#tab-btn-sistema").onclick = () => irATab("sistema");
+
+async function cargarLog(){
+  const r = await (await fetch("/api/log?lines=300")).json();
+  const esc = s => s.replace(/&/g,"&amp;").replace(/</g,"&lt;");
+  $("#log-sistema").innerHTML = r.lineas.length
+    ? r.lineas.map(esc).join("<br>")
+    : `<span style="color:var(--muted)">Sin eventos todavía.</span>`;
+  $("#log-sistema").scrollTop = $("#log-sistema").scrollHeight;
+}
+
+async function cargarLibrerias(){
+  const r = await (await fetch("/api/libraries")).json();
+  $("#librerias").innerHTML = `<table><thead><tr>
+      <th>Librería</th><th>Actual</th><th>Solicitada</th><th></th>
+    </tr></thead><tbody>` +
+    r.librerias.map(l => `<tr>
+      <td>${l.nombre}</td>
+      <td>${l.version || "no instalada"}</td>
+      <td>${l.requerida || "—"}</td>
+      <td>${l.nombre === "python" ? ""
+        : `<button onclick="actualizarLibreria('${l.nombre}')">Actualizar</button>`}</td>
+    </tr>`).join("") +
+    `</tbody></table>`;
+}
+
+async function actualizarLibreria(nombre){
+  const hint = $("#libs-hint");
+  hint.textContent = `Actualizando ${nombre}…`;
+  try {
+    const r = await fetch("/api/system/libraries/update", {method:"POST",
+      headers:{"Content-Type":"application/json"}, body: JSON.stringify({nombre})});
+    const d = await r.json();
+    hint.textContent = r.ok ? `${nombre} actualizado.` : `Error: ${d.detail || "no se pudo actualizar."}`;
+  } catch (e) { hint.textContent = `Error de red actualizando ${nombre}.`; }
+  await cargarLibrerias();
+}
+
+$("#btn-libs-actualizar-todo").onclick = async () => {
+  const hint = $("#libs-hint");
+  hint.textContent = "Actualizando todas las librerías (puede tardar)…";
+  try {
+    const r = await fetch("/api/system/libraries/update", {method:"POST",
+      headers:{"Content-Type":"application/json"}, body: JSON.stringify({})});
+    const d = await r.json();
+    hint.textContent = r.ok ? "Listo, todas actualizadas." : `Error: ${d.detail || "no se pudo actualizar."}`;
+  } catch (e) { hint.textContent = "Error de red actualizando."; }
+  await cargarLibrerias();
+};
+
+async function cargarVersionPython(){
+  const r = await (await fetch("/api/system/python")).json();
+  const detectadas = r.detectadas.length ? r.detectadas : [r.actual];
+  $("#sel-pyver").innerHTML = detectadas.map(v =>
+    `<option value="${v}" ${v === r.actual ? "selected" : ""}>${v}${v === r.actual ? " (actual)" : ""}</option>`
+  ).join("");
+  $("#pyver-hint").textContent = r.detectadas.length
+    ? `En uso: Python ${r.actual_completa || r.actual}.`
+    : `En uso: Python ${r.actual_completa || r.actual}. No se detectaron otras versiones instaladas (lanzador "py" no disponible).`;
+  $("#btn-pyver-cambiar").disabled = !r.detectadas.length;
+}
+
+$("#btn-pyver-cambiar").onclick = async () => {
+  const version = $("#sel-pyver").value;
+  if (!confirm(`¿Cambiar a Python ${version}? El panel se reinicia y reinstala todo, tarda varios minutos.`)) return;
+  if (ACTIVA) await apagarCamara();
+  const r = await fetch("/api/system/python_version", {method:"POST",
+    headers:{"Content-Type":"application/json"}, body: JSON.stringify({version})});
+  const d = await r.json();
+  if (!r.ok){ alert(d.detail || "No se pudo cambiar de versión."); return; }
+  $("#wstxt").textContent = "reiniciando con Python " + version + "…";
+};
+
+$("#btn-apagar").onclick = async () => {
+  if (!confirm("¿Apagar el panel? Se cerrará el programa (y la ventana de comandos).")) return;
+  if (ACTIVA) await apagarCamara();
+  await fetch("/api/system/shutdown", {method:"POST"});
+  $("#wstxt").textContent = "apagando…";
+};
+
+$("#btn-reiniciar").onclick = async () => {
+  if (!confirm("¿Reiniciar el panel? Se relanzará automáticamente.")) return;
+  if (ACTIVA) await apagarCamara();
+  await fetch("/api/system/restart", {method:"POST"});
+  $("#wstxt").textContent = "reiniciando…";
+};
+
+/* ---------------------------- websocket ---------------------------- */
+function conectar(){
+  const ws = new WebSocket(`ws://${location.host}/ws`);
+  ws.onopen = () => { $("#wsdot").className = "dot on"; $("#wstxt").textContent = "en línea"; };
+  ws.onclose = () => {
+    $("#wsdot").className = "dot off"; $("#wstxt").textContent = "sin conexión";
+    setTimeout(conectar, 2000);
+  };
+  ws.onmessage = ev => manejar(JSON.parse(ev.data));
+  setInterval(() => { if (ws.readyState === 1) ws.send("ping"); }, 20000);
+}
+
+function manejar(e){
+  if (e.type === "status"){
+    const f = $("#feats");
+    f.innerHTML = Object.entries(e.features).map(([k,v],i) =>
+      `<b>${k}</b><span>${v === null ? "—" : v.toFixed(1) + (e.unidades[i] === "deg" ? "°" : "")}</span>`
+    ).join("") + `<b>fps</b><span>${e.fps}</span>` +
+      (e.señal !== null && e.señal !== undefined ? `<b>señal</b><span>${e.señal}</span>` : "");
+  }
+  else if (e.type === "rep"){
+    const s = e.score.total;
+    $("#hero").textContent = s.toFixed(0);
+    $("#top-hint").textContent = `rep ${e.n}${e.target ? " / " + e.target : ""} · prom ${e.promedio}`;
+    $("#hero").style.color = `var(--${banda(s) === "good" ? "good" : banda(s) === "warn" ? "warning" : "critical"})`;
+    const peor = e.peor[0];
+    $("#consejo").className = "consejo on";
+    $("#consejo").innerHTML = s >= 85
+      ? `Rep ${e.n}: <b>${bandaTxt(s)}</b> (${s.toFixed(0)}). Sigue así.`
+      : `Rep ${e.n}: ${bandaTxt(s)} (${s.toFixed(0)}). Lo que más se desvía de tu base:
+         <b>${peor.feature}</b>.`;
+    const l = $("#log");
+    l.innerHTML = `rep ${String(e.n).padStart(2)}  ${s.toFixed(1).padStart(5)}  ${peor.feature}<br>` + l.innerHTML;
+    cargarHistorial();
+  }
+  else if (e.type === "template_saved"){
+    $("#hero").textContent = "OK";
+    $("#top-hint").textContent = `base con ${e.template.n_reps} reps`;
+    $("#hero").style.color = "var(--good)";
+  }
+  else if (e.type === "error"){
+    $("#consejo").className = "consejo on";
+    $("#consejo").textContent = e.message;
+  }
+  else if (e.type === "paused"){
+    PAUSADO = true; actualizarControlesCamara();
+  }
+  else if (e.type === "resumed"){
+    PAUSADO = false; actualizarControlesCamara();
+  }
+  else if (e.type === "grabando"){
+    GRABANDO = true; PAUSADO = false; actualizarControlesCamara();
+    const nombre = (STATE.ejercicios.find(x => x.slug === e.exercise) || {}).name || e.exercise;
+    actualizarTituloVivo(nombre, e.modo);
+  }
+  else if (e.type === "grabacion_detenida"){
+    GRABANDO = false; PAUSADO = false; actualizarControlesCamara();
+  }
+  else if (e.type === "grabacion"){
+    cargarGrabaciones();
+  }
+  else if (e.type === "gesto"){
+    $("#consejo").className = "consejo on";
+    $("#consejo").textContent = "✊ Gesto detectado (abrir/cerrar mano).";
+  }
+  else if (e.type === "aviso"){
+    $("#consejo").className = "consejo on";
+    $("#consejo").textContent = e.message;
+  }
+  else if (e.type === "stopped"){
+    ACTIVA = false; GRABANDO = false; PAUSADO = false;
+    actualizarControlesCamara();
+    cargarEstado(); cargarHistorial(); cargarGrabaciones();
+  }
+}
+
+/* ---------------------------- gráfico ---------------------------- */
+function pintarGrafico(dias){
+  const svg = $("#chart"), W = 720, H = 220, L = 38, R = 12, T = 14, B = 30;
+  const iw = W - L - R, ih = H - T - B;
+  if (!dias.length){
+    svg.innerHTML = `<text x="${W/2}" y="${H/2}" text-anchor="middle" fill="var(--muted)"
+      font-size="13">Todavía no hay repeticiones registradas</text>`;
+    return;
+  }
+  // Rellena los dias sin repeticiones: omitirlos falsearia la constancia.
+  const porDia = Object.fromEntries(dias.map(d => [d.day, d]));
+  const ult = [];
+  for (let i = 13; i >= 0; i--){
+    const f = new Date(); f.setDate(f.getDate() - i);
+    const k = f.toISOString().slice(0,10);
+    ult.push(porDia[k] || {day:k, avg_score:null, reps:0});
+  }
+  const n = ult.length, paso = iw / n, bw = Math.min(paso - 6, 42);
+  const y = v => T + ih - (v / 100) * ih;
+  const p = [];
+
+  for (const g of [0, 25, 50, 75, 100]){
+    p.push(`<line x1="${L}" x2="${W-R}" y1="${y(g)}" y2="${y(g)}"
+      stroke="${g === 0 ? "var(--axis)" : "var(--grid)"}" stroke-width="1"/>`);
+    p.push(`<text x="${L-8}" y="${y(g)+4}" text-anchor="end" fill="var(--muted)"
+      font-size="11">${g}</text>`);
+  }
+  // Referencia: 90 = una repetición tan buena como tu promedio al calibrar.
+  p.push(`<line x1="${L}" x2="${W-R}" y1="${y(90)}" y2="${y(90)}" stroke="var(--good)"
+    stroke-width="1.5" stroke-dasharray="4 4" opacity=".8"/>`);
+  p.push(`<text x="${W-R}" y="${y(90)-6}" text-anchor="end" fill="var(--good)"
+    font-size="10.5">meta 90</text>`);
+
+  ult.forEach((d, i) => {
+    const x = L + i * paso + (paso - bw) / 2;
+    if (d.avg_score === null){
+      p.push(`<line x1="${x}" x2="${x+bw}" y1="${y(0)}" y2="${y(0)}"
+        stroke="var(--muted)" stroke-width="2.5" opacity=".45"/>`);
+    } else {
+      const v = d.avg_score;
+      const alto = Math.max(ih - (y(v) - T), 2), yy = y(v), r = Math.min(4, bw / 2, alto);
+      p.push(`<path d="M${x} ${yy+alto} L${x} ${yy+r} Q${x} ${yy} ${x+r} ${yy}
+        L${x+bw-r} ${yy} Q${x+bw} ${yy} ${x+bw} ${yy+r} L${x+bw} ${yy+alto} Z"
+        fill="var(--series-1)"/>`);
+    }
+    p.push(`<rect x="${L + i*paso}" y="${T}" width="${paso}" height="${ih}" fill="transparent"
+      data-d="${d.day}" data-v="${d.avg_score === null ? "" : d.avg_score}"
+      data-r="${d.reps}" class="hit"/>`);
+    if (n <= 8 || i % 2 === 0)
+      p.push(`<text x="${x + bw/2}" y="${H - B + 16}" text-anchor="middle" fill="var(--muted)"
+        font-size="10.5">${d.day.slice(5)}</text>`);
+  });
+  svg.innerHTML = p.join("");
+
+  const tip = $("#tip");
+  svg.querySelectorAll(".hit").forEach(el => {
+    el.onmouseenter = ev => {
+      tip.className = "tip on";
+      tip.innerHTML = el.dataset.v === ""
+        ? `<b>${el.dataset.d}</b>sin entrenamiento`
+        : `<b>${el.dataset.d}</b>${(+el.dataset.v).toFixed(1)} puntos · ${el.dataset.r} reps`;
+      const r = svg.getBoundingClientRect(), c = tip.parentElement.getBoundingClientRect();
+      tip.style.left = (ev.clientX - c.left + 12) + "px";
+      tip.style.top  = (ev.clientY - c.top  - 10) + "px";
+    };
+    el.onmouseleave = () => { tip.className = "tip"; };
+  });
+}
+
+function pintarTabla(todas){
+  const reps = todas.slice(0, 12);
+  if (!reps.length){ $("#tabla").innerHTML = `<div class="vacio">Sin repeticiones todavía</div>`; return; }
+  $("#tabla").innerHTML = `<table><thead><tr>
+      <th>Hora</th><th>Ejercicio</th><th class="num">Puntaje</th>
+      <th class="num">Duración</th><th>Lectura</th></tr></thead><tbody>` +
+    reps.map(r => `<tr>
+      <td>${r.ts.slice(11,16)}</td><td>${r.exercise}</td>
+      <td class="num">${fmt(r.score)}</td>
+      <td class="num">${(r.duration_ms/1000).toFixed(1)} s</td>
+      <td><span class="st ${banda(r.score)}">${bandaTxt(r.score)}</span></td>
+    </tr>`).join("") + `</tbody></table>`;
+}
+
+/* ---------------------------- arranque ---------------------------- */
+// El .bat abre el navegador con un tiempo de espera fijo antes de que el
+// servicio termine de levantar; si esta pagina carga antes que el backend
+// este escuchando, el primer fetch falla. En vez de rendirse, reintenta
+// sin limite hasta que el servicio responda -- no hay nada que "timeoutear",
+// solo hay que esperar a que arranque.
+async function arrancar(){
+  for (;;){
+    try { await cargarEstado(); break; }
+    catch (e) { await new Promise(r => setTimeout(r, 1000)); }
+  }
+  cargarHistorial(); cargarGrabaciones(); cargarCamaras(); conectar();
+}
+arrancar();
+
+setInterval(() => {
+  if (!ACTIVA) cargarEstado();
+  if (TAB === "sistema") cargarLog();
+}, 15000);
+</script>
+</body>
+</html>

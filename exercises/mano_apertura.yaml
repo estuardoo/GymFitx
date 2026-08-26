@@ -1,0 +1,49 @@
+name: Apertura y cierre de mano
+description: >
+  Con el antebrazo apoyado y la palma hacia la camara, abre la mano por
+  completo y cierrala en puno de forma lenta y controlada.
+source: hands
+hand: any
+
+# Cada feature es un numero que el motor mide en cada frame.
+# Los angulos son el corazon del sistema: no cambian si te acercas o
+# alejas de la camara. Las razones de distancia se dividen entre un
+# segmento del propio cuerpo, asi que tambien son invariantes a escala.
+features:
+  - name: curl_pulgar
+    type: angle
+    points: [THUMB_CMC, THUMB_MCP, THUMB_IP]
+
+  - name: curl_indice
+    type: angle
+    points: [INDEX_FINGER_MCP, INDEX_FINGER_PIP, INDEX_FINGER_DIP]
+
+  - name: curl_medio
+    type: angle
+    points: [MIDDLE_FINGER_MCP, MIDDLE_FINGER_PIP, MIDDLE_FINGER_DIP]
+
+  - name: curl_anular
+    type: angle
+    points: [RING_FINGER_MCP, RING_FINGER_PIP, RING_FINGER_DIP]
+
+  - name: curl_menique
+    type: angle
+    points: [PINKY_MCP, PINKY_PIP, PINKY_DIP]
+
+  # Apertura lateral: distancia pulgar-menique dividida entre el largo de
+  # la palma. Cerca de 0 = puno cerrado, mayor = mano abierta.
+  - name: apertura_lateral
+    type: distance_ratio
+    points: [THUMB_TIP, PINKY_TIP]
+    reference: [WRIST, MIDDLE_FINGER_MCP]
+
+
+# Proyeccion 1-D que usa el segmentador para contar repeticiones.
+signal:
+  reduce: mean
+  features: [curl_indice, curl_medio, curl_anular, curl_menique]
+
+segmentation:
+  direction: down_up        # abierta (alto) -> puño (bajo) -> abierta = 1 rep
+  min_duration_ms: 600      # descarta temblores y falsos positivos
+  max_duration_ms: 8000
