@@ -1,0 +1,51 @@
+{
+ "ejercicio": "puente",
+ "fecha": "2026-10-17T22:01:47",
+ "parametros": {
+  "min_frames": 10,
+  "max_nan_pct": 20
+ },
+ "corrida": null,
+ "clips_total": 4,
+ "por_clase": {
+  "base": 1,
+  "bien": 3
+ },
+ "no_entran_al_entrenamiento": 1,
+ "entrenados_ultima_corrida": null,
+ "motivos": {
+  "clase base": 1
+ },
+ "clips": [
+  {
+   "clip": "puente/base/160618_puente_s02_base.mp4",
+   "clase": "base",
+   "cuadros": 152,
+   "nan_pct": 0.0,
+   "motivos": [
+    "clase base (referencia, no se entrena)"
+   ]
+  },
+  {
+   "clip": "puente/bien/160618_puente_s04_bien.mp4",
+   "clase": "bien",
+   "cuadros": 122,
+   "nan_pct": 0.0,
+   "motivos": []
+  },
+  {
+   "clip": "puente/bien/160618_puente_s06_bien.mp4",
+   "clase": "bien",
+   "cuadros": 126,
+   "nan_pct": 0.0,
+   "motivos": []
+  },
+  {
+   "clip": "puente/bien/160618_puente_s08_bien.mp4",
+   "clase": "bien",
+   "cuadros": 125,
+   "nan_pct": 0.0,
+   "motivos": []
+  }
+ ]
+}

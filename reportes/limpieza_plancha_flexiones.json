@@ -1,0 +1,51 @@
+{
+ "ejercicio": "plancha_flexiones",
+ "fecha": "2026-10-17T22:01:47",
+ "parametros": {
+  "min_frames": 10,
+  "max_nan_pct": 20
+ },
+ "corrida": null,
+ "clips_total": 4,
+ "por_clase": {
+  "base": 1,
+  "bien": 3
+ },
+ "no_entran_al_entrenamiento": 1,
+ "entrenados_ultima_corrida": null,
+ "motivos": {
+  "clase base": 1
+ },
+ "clips": [
+  {
+   "clip": "plancha_flexiones/base/160646_plancha_flexiones_s02_base.mp4",
+   "clase": "base",
+   "cuadros": 119,
+   "nan_pct": 0.0,
+   "motivos": [
+    "clase base (referencia, no se entrena)"
+   ]
+  },
+  {
+   "clip": "plancha_flexiones/bien/160646_plancha_flexiones_s04_bien.mp4",
+   "clase": "bien",
+   "cuadros": 108,
+   "nan_pct": 0.0,
+   "motivos": []
+  },
+  {
+   "clip": "plancha_flexiones/bien/160646_plancha_flexiones_s06_bien.mp4",
+   "clase": "bien",
+   "cuadros": 114,
+   "nan_pct": 0.0,
+   "motivos": []
+  },
+  {
+   "clip": "plancha_flexiones/bien/160646_plancha_flexiones_s08_bien.mp4",
+   "clase": "bien",
+   "cuadros": 107,
+   "nan_pct": 0.0,
+   "motivos": []
+  }
+ ]
+}

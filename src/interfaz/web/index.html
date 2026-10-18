@@ -1,0 +1,846 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GYMFITX · Panel</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Ctext y=%2726%27 font-size=%2728%27%3E%F0%9F%92%AA%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="/static/estilos.css">
+</head>
+<body>
+<header>
+  <div class="brand"><h1>GYMFITX</h1><small id="fecha"></small></div>
+  <div class="selector-cuerpo" id="selector-cuerpo"
+       title="Partes visibles en el video: clic en cada una para mostrarla/ocultarla. Por defecto se marcan las que usa el ejercicio elegido. Solo aplica a ejercicios de cuerpo completo (pose).">
+    <span style="font-size:15px">💪</span>
+    <svg id="svg-cuerpo" viewBox="0 0 450 210">
+      <circle class="region-shape" data-region="cabeza" cx="42" cy="130" r="30" fill="#b39ddb"><title>Cabeza+cuello</title></circle>
+      <rect class="region-shape" data-region="brazos" x="66" y="48" width="118" height="24" rx="11" fill="#ffa726"><title>Brazos+antebrazo</title></rect>
+      <circle class="region-shape" data-region="manos" cx="54" cy="60" r="18" fill="#ffd54f"><title>Manos</title></circle>
+      <rect class="region-shape" data-region="torso" x="74" y="104" width="110" height="52" rx="24" fill="#8bc34a"><title>Pecho+torso</title></rect>
+      <rect class="region-shape" data-region="cadera" x="182" y="108" width="64" height="44" rx="18" fill="#ff9e80"><title>Cadera</title></rect>
+      <rect class="region-shape" data-region="piernas" x="244" y="114" width="150" height="32" rx="14" fill="#64b5f6"><title>Pierna+entrepierna</title></rect>
+      <ellipse class="region-shape" data-region="pies" cx="404" cy="130" rx="24" ry="13" fill="#f06292"><title>Pies</title></ellipse>
+    </svg>
+  </div>
+  <div class="spacer"></div>
+  <button class="tab act" id="tab-btn-panel">🎥 Panel</button>
+  <button class="tab" id="tab-btn-sistema">⚙️ Sistema</button>
+  <span style="width:1px;background:var(--border);align-self:stretch;margin:0 2px"></span>
+  <button id="tabPuntos" class="tab" onclick="verPuntos()">📍 Kpoints</button>
+ <button id="tabVideos" class="tab" onclick="verVideos()">✂️ Cut/Edit</button>
+ <button id="tabSim" class="tab" onclick="verSim()">🪞 SIM</button>
+ <button id="tabTrain" class="tab" onclick="verTrain()">🧠 Entrenamiento</button>
+ <button id="tabRank" class="tab" onclick="verRank()">🏆 Ranking</button>
+ <button id="tabDescomp" class="tab" onclick="verDescomp()">🔬 Descomposicion</button>
+ <button id="tabPipe" class="tab" onclick="verPipe()">🧭 Pipeline</button>
+ <button id="tabPitch" class="tab" onclick="verPitch()">📊 Pitch</button>
+ <button id="tabAhpc" class="tab" onclick="verAhpc()">🖥️ AHPC</button>
+  <span class="pill"><span class="dot" id="wsdot"></span><span id="wstxt">conectando</span></span>
+  <span class="pill" id="pub-pill" style="display:none" title="El panel esta publicado en internet (Sistema → Publicar)">🌐 <a id="pub-pill-url" target="_blank" style="color:inherit"></a></span>
+  <span class="pill">🔥 racha <b id="racha">0</b> d</span>
+</header>
+<div class="wrap">
+
+<div id="tab-panel">
+
+  <div class="grid-principal">
+    <div class="card" id="card-detecciones">
+      <div class="subhead" style="margin-top:0">Detecciones</div>
+      <label class="row" style="gap:6px;font-size:12.5px;color:var(--ink-2);margin-bottom:8px"
+             title="Que arquitectura de comparacion puntua la repeticion. Todas corren igual sobre la misma toma -- este selector solo elige cual manda el puntaje oficial.">
+        Modelo
+        <select id="sel-modelo" style="flex:1"></select>
+      </label>
+      <div class="feat" id="feats"></div>
+    </div>
+
+    <div class="card" id="vivo">
+      <div class="vivo-head" style="flex-direction:column;align-items:stretch;gap:8px">
+        <div class="row" style="justify-content:space-between;gap:8px">
+          <h2 id="vivo-titulo" style="margin:0">Cámara</h2>
+          <div class="row" style="gap:8px">
+            <label class="row" style="gap:6px;font-size:12.5px;color:var(--ink-2)" title="Cuadros por segundo que le pide a la cámara. Más = más fluido para movimientos rápidos (ej. box), menos = menos carga. No todas las cámaras respetan el valor pedido; el FPS real se ve en el video.">
+              FPS <input type="range" id="fps-slider" min="10" max="60" step="5" value="30" style="width:70px">
+              <span id="fps-val">30</span>
+            </label>
+            <button id="btn-cam-power" class="b-blue" disabled>Prender cámara</button>
+          </div>
+        </div>
+        <div class="row" style="justify-content:space-between;gap:8px">
+          <label class="row" style="gap:6px;font-size:12.5px;color:var(--ink-2)">
+            Cámara <select id="sel-camera"><option value="0">detectando…</option></select>
+          </label>
+          <button class="iconbtn" id="btn-cam-refresh" title="Detectar cámaras">🔄</button>
+          <span class="row" style="gap:8px;margin-left:auto">
+            <span id="grab-controls" class="row" style="display:none">
+              <button id="btn-grabar" class="b-green"
+                title="✋ También se puede sosteniendo una muñeca 1 s arriba a la izquierda para iniciar/detener">Grabar</button>
+              <button id="btn-detener-grab" class="b-black"
+                title="Guarda automáticamente la toma. ✋ También se puede sosteniendo una muñeca 1 s ahí arriba a la izquierda">Detener</button>
+            </span>
+            <label class="row" style="gap:6px;font-size:12.5px;color:var(--ink-2)">
+              <input type="checkbox" id="chk-video" checked> guardar video
+            </label>
+          </span>
+        </div>
+      </div>
+      <div id="cam-hint" class="filtro" style="display:none;margin-bottom:10px"></div>
+
+      <div class="video">
+        <img id="stream" alt="cámara">
+        <div class="video-off" id="video-off">Cámara apagada.</div>
+        <div class="video-top-hint" id="top-hint">esperando</div>
+        <div class="hud"><div class="hero" id="hero">—</div></div>
+        <div class="cont" id="cont" title="Repeticiones contadas en esta sesión"><b id="cont-n">0</b><span>reps</span><small id="cont-det"></small></div>
+      </div>
+
+      <div class="consejo" id="consejo"></div>
+      <div class="log" id="log"></div>
+    </div>
+
+    <dialog id="dlg-ej">
+      <form method="dialog" onsubmit="return false">
+        <h2 id="dlg-ej-titulo">Ejercicio</h2>
+        <label>Identificador <input id="ej-slug" placeholder="sentadilla_sumo" pattern="[a-z0-9_]+"></label>
+        <label>Nombre <input id="ej-name"></label>
+        <label>Descripción <textarea id="ej-desc" rows="2"></textarea></label>
+        <label>Dirección <select id="ej-dir"><option value="down_up">down_up (baja y sube)</option><option value="up_down">up_down (sube y baja)</option></select></label>
+        <div class="row"><label>Mín. ms <input type="number" id="ej-min" min="100" step="100"></label>
+          <label>Máx. ms <input type="number" id="ej-max" min="200" step="100"></label></div>
+        <div id="ej-aviso" class="ex-sub"></div>
+        <div class="row" style="justify-content:flex-end">
+          <button onclick="$('#dlg-ej').close()">Cancelar</button>
+          <button class="primary" onclick="guardarEjercicio()">Guardar</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="dlg-vid">
+      <form method="dialog" onsubmit="return false">
+        <h2>Videos de <span id="vid-slug"></span></h2>
+        <div class="ex-sub">Clips ya cortados (uno por repetición o serie). Se guardan en el dataset del ejercicio, se les detectan los puntos y se registran en SQL para el modelo.</div>
+        <label>Bien <span class="ex-sub" id="vid-n-bien"></span><input type="file" id="vid-bien" accept="video/*" multiple></label>
+        <label>Mal <span class="ex-sub" id="vid-n-mal"></span><input type="file" id="vid-mal" accept="video/*" multiple></label>
+        <label>Base (uno solo) <span class="ex-sub" id="vid-n-base"></span><input type="file" id="vid-base" accept="video/*"></label>
+        <label>…o una carpeta entera <span class="ex-sub">(Base/Bien/Mal con subcarpetas P1, P2…; se salta lo ya importado)</span>
+          <span class="row" style="gap:6px"><input type="text" id="vid-carpeta" placeholder="D:\Users\estua\Downloads\01Zancada" style="flex:1">
+          <button type="button" id="vid-carpeta-ir" onclick="importarCarpeta()">Importar carpeta</button></span></label>
+        <div id="vid-aviso" class="ex-sub" style="white-space:pre-wrap"></div>
+        <div class="row" style="justify-content:flex-end">
+          <button onclick="$('#dlg-vid').close()">Cerrar</button>
+          <button class="primary" id="vid-subir" onclick="subirVideos()">Subir</button>
+        </div>
+      </form>
+    </dialog>
+
+    <div class="card" id="card-rutina">
+      <h2 class="row" style="justify-content:space-between">Rutina
+        <button class="iconbtn b-blue" onclick="abrirEjercicio()" title="Crear un ejercicio nuevo">➕ Nuevo</button></h2>
+      <div id="rutina"></div>
+      <div id="player"><video id="vplayer" controls playsinline></video><button id="btn-usar-base" class="b-amber" onclick="usarComoBaseActual()">Usar como base</button></div>
+      <div id="entrenos" class="entrenos"></div>
+    </div>
+
+    <div class="card" id="card-grabaciones">
+      <h2>Grabaciones</h2>
+      <div class="filtro" id="rec-filtro"></div>
+      <div id="recs"></div>
+      <div class="disco" id="disco"></div>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h2>Puntaje promedio por día · últimos 14</h2>
+      <div class="chart">
+        <svg id="chart" viewBox="0 0 720 220" role="img"
+             aria-label="Puntaje promedio diario de los últimos 14 días"></svg>
+        <div class="tip" id="tip"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Repeticiones recientes</h2>
+      <div id="tabla"></div>
+    </div>
+  </div>
+
+</div>
+
+<div id="tab-sistema" style="display:none">
+  <div class="card">
+    <div class="row" style="justify-content:space-between;margin-bottom:4px">
+      <h2 style="margin:0">🌐 Publicar en internet (Cloudflare)</h2>
+      <span class="pill"><span class="dot" id="pub-dot"></span><span id="pub-txt">apagado</span></span>
+    </div>
+    <div class="row">
+      <label class="row" style="gap:6px;font-size:13px;color:var(--ink-2)">
+        <input type="checkbox" id="pub-clave" checked> Pedir usuario y clave
+      </label>
+      <button id="btn-pub-iniciar" class="b-green">🌐 Publicar</button>
+      <button id="btn-pub-detener" class="b-red">Detener</button>
+      <button id="btn-pub-clave" class="b-amber">Nueva clave</button>
+    </div>
+    <div class="filtro" id="pub-hint" style="margin-top:10px">
+      Apagado por defecto. Al publicar se abre un enlace https://…trycloudflare.com (cambia cada vez)
+      para entrar al panel desde otro equipo o celular. Desde internet nunca se puede apagar el panel,
+      cambiar librerías ni apagar el enlace: eso solo desde esta PC.
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="row" style="justify-content:space-between;margin-bottom:4px">
+      <h2 style="margin:0">🛢️ Base de datos (SQL Server)</h2>
+      <span class="pill"><span class="dot" id="db-dot"></span><span id="db-txt">verificando…</span></span>
+    </div>
+    <div class="row" style="margin-top:6px">
+      <label class="row" style="gap:6px;font-size:13px;color:var(--ink-2)">Servidor
+        <input id="db-host" type="text" placeholder="PC\INSTANCIA" style="width:220px"></label>
+      <label class="row" style="gap:6px;font-size:13px;color:var(--ink-2)">Base
+        <input id="db-base" type="text" placeholder="GymFitX" style="width:140px"></label>
+      <button id="btn-db-guardar" class="b-blue">💾 Guardar y conectar</button>
+    </div>
+    <div class="filtro" id="db-hint" style="margin-top:8px"></div>
+    <div class="filtro" id="db-archivo"></div>
+  </div>
+
+  <div class="card">
+    <div class="row" style="justify-content:space-between;margin-bottom:4px">
+      <h2 style="margin:0">📱 DroidCam (cámara del celular)</h2>
+    </div>
+    <div class="row" style="align-items:flex-start;gap:14px;margin-top:6px">
+      <select id="dc-lista" size="5" class="droid-lista" style="min-width:260px"></select>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <input id="dc-nueva" type="text" placeholder="192.168.1.20:4747" style="width:220px">
+        <div class="row" style="gap:6px">
+          <button id="btn-dc-agregar" class="b-blue">＋ Agregar</button>
+          <button id="btn-dc-quitar" class="b-red">Quitar</button>
+        </div>
+      </div>
+    </div>
+    <div class="filtro" id="dc-hint" style="margin-top:8px">
+      Una línea por celular, con IP y puerto juntos (IP:puerto). Abre la app DroidCam en el celular: ahí ves la «WiFi IP» y el «DroidCam Port»
+      (4747 si no lo cambiaste; si escribes solo la IP se usa 4747). Celular y PC en la misma red WiFi. Después, en Panel → selector de cámara
+      (🔄) aparece en amarillo.
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="row" style="justify-content:space-between;margin-bottom:4px">
+      <h2 style="margin:0">💾 Datos en disco · respaldo en SQL Server</h2>
+      <span id="rs-msg" class="hint"></span>
+    </div>
+    <div class="row" style="margin-top:6px;flex-wrap:wrap">
+      <label class="row" style="gap:4px;font-size:13px;color:var(--ink-2)"><input id="rs-cortar" type="checkbox"> Copiar a SQL al cortar clips</label>
+      <label class="row" style="gap:4px;font-size:13px;color:var(--ink-2)"><input id="rs-entrenar" type="checkbox"> Copiar a SQL tras cada entrenamiento</label>
+      <button id="btn-rs-guardar" class="b-blue">💾 Guardar</button>
+      <button id="btn-rs-ahora">⬆ Respaldar en SQL ahora</button>
+    </div>
+    <div class="filtro" style="margin-top:8px">
+      Los clips, las tablas y el entrenamiento viven en el disco (<code>datos/</code>) y funcionan aunque SQL Server esté apagado. SQL es una copia:
+      lo usan Descomposición y Ranking, así que si las apagas, usa «Respaldar ahora» antes de abrirlas. Si SQL no responde, solo se avisa.
+    </div>
+  </div>
+
+  <div class="card">
+    <h2 style="margin:0 0 6px">📚 Documentación de datos</h2>
+    <div class="row">
+      <button id="btn-docs-generar">Generar documentación de datos (5 etapas → diccionario, limpieza, tabla final)</button>
+      <span id="docs-msg" class="hint"></span>
+    </div>
+    <div class="filtro" style="margin-top:6px">Enviar los avances a GitHub se hace con <code>subir_github/SUBIR_GITHUB.bat</code> (herramienta aparte; no forma parte de la app).</div>
+  </div>
+
+  <div class="card">
+    <div class="row" style="justify-content:space-between;margin-bottom:4px">
+      <h2 style="margin:0">🗄️ Tablas del dataset (keypoints por frame)</h2>
+      <span id="sqlstatus" class="hint"></span>
+    </div>
+  <div class="frow" style="margin-top:8px"><label class="hint">Ejercicio (type) a configurar:</label> <select id="sqlTipo" onchange="cargarSql()"></select></div>
+  <span class="hint">table_file / table_kpoints / table_frames guardan los puntos tal cual los detecta GYMFITX (ya acotados a la parte del cuerpo del ejercicio: 21 de mano o 33 de cuerpo). table_frames_fix los normaliza para que sean comparables entre clips y se remuestrea a una cantidad fija de frames. Se genera solo/a automatico cada vez que cortas videos; este boton sirve para forzarlo (por ejemplo, tras cambiar estos parametros).</span>
+  <div class="frow" style="margin-top:10px;gap:14px">
+   <label class="hint">Modo:<br><select id="sqlModo" onchange="cambiarModoSql()">
+     <option value="rectangulo">Rectangulo (recomendado)</option>
+     <option value="punto">Punto de referencia</option>
+   </select></label>
+   <label class="hint">Frames fijos:<br><input id="sqlNFrames" type="number" min="5" max="300" style="width:70px"></label>
+  </div>
+  <div class="frow" id="sqlModoRect" style="margin-top:6px;gap:14px;flex-wrap:wrap">
+   <span class="hint" style="max-width:420px">Toma el rectangulo (min,max) de todo el clip y lo encaja dentro de un lienzo fijo de 100x100 con un solo factor de escala (no deforma la figura) -- los valores quedan siempre en el mismo rango 0-100 sin importar el tamano real del movimiento. Usa todos los puntos del catalogo de la pestaña Puntos.</span>
+  </div>
+  <div class="frow" id="sqlModoPunto" style="margin-top:6px;gap:14px;display:none">
+   <label class="hint">Centrar en:<br><select id="sqlCentro"></select></label>
+   <label class="hint">Escala — punto A:<br><select id="sqlEscA"></select></label>
+   <label class="hint">Escala — punto B:<br><select id="sqlEscB"></select></label>
+  </div>
+  <div class="frow" style="margin-top:10px">
+   <button onclick="guardarConfigSql()">💾 Guardar configuracion</button>
+   <button class="pri" onclick="generarSql()" id="bsqlgen">🗄️ Generar / actualizar tablas</button>
+   <button onclick="rehacerTodo()" style="background:#5a2a2a" title="Vacia las tablas SQL de los clips y vuelve a cortar y cargar todo">🧨 Blanquear tablas y rehacer todo</button>
+   <button onclick="depurarArchivados()" id="bdepurar" title="Ejercicios que ya no estan en la rutina: quita sus clips del manifest y todos sus datos de SQL (los archivos pasan a datos/archivados/)">🧹 Quitar de SQL lo archivado</button>
+  </div>
+  <div id="sqlresumen" class="hint" style="margin-top:8px"></div>
+  </div>
+
+  <div class="card" id="card-modelos">
+    <div class="row" style="justify-content:space-between;margin-bottom:4px">
+      <h2 style="margin:0">🧠 Modelos de entrenamiento (épocas y parada)</h2>
+      <span class="hint" id="modelosMsg"></span>
+    </div>
+    <div class="filtro">Una fila por modelo. <b>Épocas</b> = árboles o rondas · <b>max_iter</b> = tope de iteraciones del optimizador ·
+      <b>Parar antes</b> = frenar si deja de mejorar con datos de validación · <b>Paciencia</b> = iteraciones seguidas sin mejorar antes de frenar ·
+      <b>Tolerancia</b> = cuánto debe mejorar para contar. «—» = no aplica. Se usa en el siguiente entrenamiento; las épocas que usó de verdad
+      salen en el resumen de cada corrida.</div>
+    <div style="overflow-x:auto"><table style="margin-top:8px"><thead><tr><th>Modelo</th><th>Qué itera</th><th>Épocas</th><th>max_iter</th><th>Parar antes</th><th>Paciencia</th><th>Tolerancia</th></tr></thead><tbody id="matrizModelos"></tbody></table></div>
+    <div class="row" style="margin-top:8px"><button id="btn-matriz-guardar" class="b-blue" onclick="guardarMatriz()">💾 Guardar</button>
+      <button onclick="cargarMatriz()">↺ Descartar cambios</button></div>
+  </div>
+
+  <div class="card">
+    <h2>⏻ Panel</h2>
+    <div class="row">
+      <button id="btn-reiniciar" class="b-amber">Reiniciar panel</button>
+      <button id="btn-apagar" class="b-red">Apagar panel</button>
+    </div>
+    <div class="filtro" style="margin-top:10px">
+      Apagar cierra el proceso del programa (y la ventana de comandos se cierra sola);
+      reiniciar lo relanza automáticamente.
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>📜 Log de sesión</h2>
+    <div class="log" id="log-sistema"></div>
+  </div>
+
+  <div class="card">
+    <h2>🐍 Entorno Python</h2>
+    <div class="row">
+      <label class="row" style="gap:6px;font-size:13px;color:var(--ink-2)">
+        Versión <select id="sel-pyver"></select>
+      </label>
+      <button id="btn-pyver-cambiar" class="b-amber">Cambiar versión</button>
+    </div>
+    <div class="filtro" id="pyver-hint" style="margin-top:10px"></div>
+  </div>
+
+  <div class="card">
+    <div class="row" style="justify-content:space-between;margin-bottom:4px">
+      <h2 style="margin:0">📦 Librerías de Python</h2>
+      <button id="btn-libs-actualizar-todo" class="b-blue">Actualizar todo</button>
+    </div>
+    <div id="librerias"></div>
+    <div class="filtro" id="libs-hint" style="margin-top:10px"></div>
+  </div>
+</div>
+
+</div>
+
+<!-- ==================== dataset (cortador / entrenamiento) ==================== -->
+<div id="app" style="display:none">
+<div id="lista"><div id="listahead">
+  <h3>Videos <span id="prog"></span></h3>
+  <select id="tipoVid" onchange="cambiarTipoVid()" style="width:100%;margin-bottom:6px"></select>
+  <input id="filtro" placeholder="Filtrar por numero...">
+  <button id="bexp" class="pri" onclick="exportar()" style="width:100%;margin-top:8px">⬇ Generar Cortes</button>
+  <button id="bexpTodo" onclick="exportar(true)" style="width:100%;margin-top:4px" title="Vuelve a cortar TODOS los videos, aunque no hayan cambiado">🔁 Regenerar todos los cortes</button>
+  <button id="brehacer" onclick="rehacerTodo()" style="width:100%;margin-top:4px;background:#5a2a2a" title="Vacia las tablas SQL de los clips y vuelve a cortar y cargar todo">🧨 Blanquear tablas y rehacer todo</button>
+  <div id="expProg" style="display:none;margin-top:6px"><div style="background:#2a2f3a;border-radius:6px;height:8px;overflow:hidden"><div id="expBar" style="height:8px;width:0;background:#8fd0a8;transition:width .3s"></div></div><b id="expTxt" style="font-size:13px"></b><br><small id="expVid" class="hint"></small></div>
+ </div></div>
+<main>
+ <div id="left">
+  <div id="vwrap">
+   <video id="v" preload="metadata"></video>
+   <canvas id="vover"></canvas>
+   <div id="vtime">00:00:00</div>
+   <div id="vmano" style="display:none"></div>
+   <div id="vprog"><div id="vprogfill"></div></div>
+  </div>
+  <div class="frow">
+   <button onclick="sk(-1)">⏮ -1s</button><button onclick="sk(-.1)">◀ -.1</button>
+   <button id="bpp" onclick="pp()">▶ Play</button>
+   <button onclick="sk(.1)">▶ +.1</button><button onclick="sk(1)">⏭ +1s</button>
+   <select id="vel" onchange="v.playbackRate=+this.value">
+    <option>0.25</option><option>0.5</option><option selected>1</option><option>1.5</option><option>2</option></select>
+   <button id="bl" onclick="loopSeg=!loopSeg;render()">🔁 Loop segmento</button>
+   <button id="bv" onclick="v.loop=!v.loop;render()">🔁 Repetir video</button>
+   <span id="t" class="hint">00:00:00 / 00:00:00</span>
+   <button class="pri" onclick="punto()">＋ Punto de corte (P)</button>
+   <button onclick="borrarUlt()">✖ Quitar punto</button>
+  </div>
+  <div class="frow">
+   <button id="zoomOut" title="Alejar">🔍－</button>
+   <span id="zoomLbl" class="hint">1.0x</span>
+   <button id="zoomIn" title="Acercar (o rueda del mouse sobre la barra)">🔍＋</button>
+  </div>
+  <div id="tlscroll"><div id="tlinner">
+   <div id="cutabove" title="Quitar el corte mas cercano"><div id="capglyph">−</div></div>
+   <div id="tlwrap">
+    <div id="tl"><div id="play"></div></div>
+   </div>
+   <div id="cutbelow" title="Agregar un corte aqui"><div id="cbglyph">+</div></div>
+   <div id="tlticks"></div>
+  </div></div>
+ </div>
+ <div id="right">
+  <div id="resumen" class="frow" style="gap:10px"></div>
+  <table><thead><tr><th></th><th>#</th><th>Inicio</th><th>Fin</th><th>Dur</th><th>Clase</th><th>Reps</th><th></th></tr></thead><tbody id="tb"></tbody></table>
+  <div class="frow" style="margin-top:6px">
+   <button class="pri" onclick="exportar()">⬇ Cortar y guardar entrenamiento</button>
+  </div>
+  <span class="hint">Espacio play/pausa · ←→ ±0.1s (Shift ±1s) · P punto · L loop · M esqueleto · 1-9 clase · Supr quitar punto</span>
+  <span class="hint">Los puntos del catalogo del ejercicio se dibujan sobre el video. Tecla M: ocultar o mostrar el dibujo.</span>
+ </div>
+</main>
+</div>
+<div id="trainview" style="display:none">
+ <div class="tcard">
+  <h3 style="margin:0 0 8px">Entrenar clasificador (keypoints)</h3>
+  <div class="frow">
+   <label class="hint">Ejercicio:</label>
+   <select id="trainTipo"></select>
+   <label class="hint">% para test/validacion:</label>
+   <input id="testpct" type="number" min="5" max="50" step="5" value="20" style="width:70px">
+   <label class="hint">Features:</label>
+   <span id="featchecks" class="frow" style="gap:6px">
+    <span class="hint">Kpoints:</span>
+    <label class="mchk"><input type="checkbox" value="x" checked> X</label>
+    <label class="mchk"><input type="checkbox" value="y" checked> Y</label>
+    <label class="mchk"><input type="checkbox" value="z" checked> Z</label>
+    <span class="hint">Metricas:</span>
+    <label class="mchk" title="Los angulos activados en Kpoints"><input type="checkbox" value="a" checked> ∠ Angulos</label>
+    <label class="mchk" title="Las proporciones y razones activadas en Kpoints"><input type="checkbox" value="p" checked> % Proporciones</label>
+   </span>
+   <span id="kinfo" class="hint"></span>
+   <button id="btrain" class="pri" onclick="entrenar()">▶ Entrenar</button>
+  </div>
+  <div class="frow" style="margin-top:6px;gap:10px" id="modelchecks"></div>
+  <span class="hint">Épocas, max_iter y parada de cada modelo: <a href="#" onclick="irATab('sistema');document.getElementById('card-modelos').scrollIntoView();return false">Sistema → Modelos de entrenamiento</a>.</span>
+  <span class="hint">Usa los clips ya exportados en dataset/ (manifest.json) que esten marcados abajo en "Clips para entrenar". Compara hasta 17 modelos (Random Forest, Extra Trees, Gradient Boosting, Hist Gradient Boosting, AdaBoost, Logistic, SGD, Ridge, LDA, SVM, KNN, Decision Tree, MLP, Naive Bayes + LightGBM/XGBoost/CatBoost si estan instalados; los sensibles a la escala llevan su StandardScaler). Verde = se entrena; toca uno para apagarlo con el mismo k-fold cross-validation (k ≈ 100/%test) y se queda con el mejor.</span>
+ </div>
+ <div class="tcard">
+  <div class="frow" style="justify-content:space-between">
+   <h3 style="margin:0">Clips para entrenar</h3>
+   <span class="hint" id="tclipsInfo"></span>
+  </div>
+  <span class="hint">Clic en una fila = ver el clip. Casilla = usarlo o no para entrenar (se guarda solo, en seleccion_entrenamiento.json). Desmarca los que esten mal etiquetados.</span>
+  <div class="frow" style="margin-top:8px;gap:8px">
+   <label class="hint">Clase:</label>
+   <select id="tclipsClase" onchange="renderClipsTrain()"><option value="">todas</option></select>
+   <label class="hint">Mostrar:</label>
+   <select id="tclipsVer" onchange="renderClipsTrain()"><option value="">todos</option><option value="si">solo marcados</option><option value="no">solo desmarcados</option></select>
+   <input id="tclipsFiltro" placeholder="filtrar por nombre..." oninput="renderClipsTrain()" style="width:150px">
+   <button onclick="marcarClipsVisibles(true)">☑ Marcar visibles</button>
+   <button onclick="marcarClipsVisibles(false)">☐ Desmarcar visibles</button>
+  </div>
+  <div id="tclipsCols">
+   <div class="col-videos">
+    <h3 style="margin:0 0 4px;font-size:13px">Videos origen</h3>
+    <span class="hint">El video base de cada corte, de mayor a menor cantidad de clips. Marcar o desmarcar uno afecta a todos sus fragmentos.</span>
+    <div style="max-height:300px;overflow:auto"><table><thead><tr><th>Usar</th><th>Video</th><th>Clips</th></tr></thead><tbody id="tclipsVideos"></tbody></table></div>
+   </div>
+   <div id="tclips" class="col-clips">
+    <table><thead><tr><th>Usar</th><th>Clip</th><th>Clase</th><th>Dur</th></tr></thead><tbody id="tclipsBody"></tbody></table>
+   </div>
+   <div class="col-preview">
+    <video id="tclipVideo" controls loop muted style="width:100%;max-height:260px"></video>
+    <div id="tclipNombre" class="hint" style="margin-top:4px;overflow-wrap:anywhere">Elige un clip de la lista</div>
+    <div class="frow" style="margin-top:4px">
+     <button onclick="navClipTrain(-1)">◀ Anterior</button>
+     <button id="tclipToggle" onclick="toggleClipActual()">Usar / no usar (U)</button>
+     <button onclick="navClipTrain(1)">Siguiente ▶</button>
+    </div>
+   </div>
+  </div>
+ </div>
+ <div id="trainres" class="tcard" style="display:none">
+  <div class="frow" style="justify-content:space-between">
+   <h3 style="margin:0">Entrenamiento <span id="trainnum"></span></h3>
+   <span class="hint" id="trainmeta"></span>
+  </div>
+  <div class="frow" style="gap:18px;margin:8px 0">
+   <span class="legchip"><b>Mejor modelo:&nbsp;</b><span id="trainbest"></span></span>
+   <span class="legchip"><b>F1 macro:&nbsp;</b><span id="trainf1"></span></span>
+   <span class="legchip"><b>Accuracy:&nbsp;</b><span id="trainacc"></span></span>
+   <span class="legchip" title="Predecir siempre la clase mas comun. Un modelo que no la supera no aprendio nada."><b>Línea base:&nbsp;</b><span id="trainbase"></span></span>
+   <span class="legchip" title="Iteraciones que uso el mejor modelo al reentrenar con todos los datos, contra su tope. Menos que el tope = frenó antes por convergencia o early stopping."><b>Épocas usadas:&nbsp;</b><span id="trainiters">—</span></span>
+   <span class="legchip" title="Estimacion honesta: la eleccion del mejor modelo se repite dentro de cada fold (CV anidada). Es el numero a reportar."><b>CV anidada:&nbsp;</b><span id="trainanid"></span></span>
+  </div>
+  <table><thead><tr><th>Modelo</th><th>Accuracy</th><th>F1 macro</th><th title="min / media / max de iteraciones usadas en los folds, contra el tope configurado">Épocas usadas (tope)</th><th>Tiempo</th></tr></thead><tbody id="trainmodels"></tbody></table>
+  <img id="imgComp" alt="Comparacion de modelos" style="max-width:100%;background:#fff;border-radius:6px;margin-top:10px">
+  <h3 style="margin:16px 0 4px">Detalle del mejor modelo</h3>
+  <table><thead><tr><th>Clase</th><th>Precision</th><th>Recall</th><th>F1</th><th>N</th></tr></thead><tbody id="trainrep"></tbody></table>
+  <div id="trainimgs" style="margin-top:10px">
+   <img id="imgConf" alt="Matriz de confusion"><img id="imgRoc" alt="Curva ROC">
+  </div>
+ </div>
+ <div class="tcard">
+  <h3 style="margin:0 0 8px">Historial de entrenamientos</h3>
+  <span class="hint">Una fila por entrenamiento. La tercera columna lo compara con el entrenamiento anterior del mismo ejercicio y dice qué parámetros cambiaron. Las diferencias menores al ruido entre folds cuentan como «igual». F1 anidada es la estimación sin sesgo; «ganancia» es cuánto supera el F1 a la línea base (predecir siempre la clase más común); recall de «mal» es qué fracción de los movimientos malos detecta. Kpoints y ángulos van numerados por su posición (ángulo a-b-c: vértice al medio).</span>
+  <div style="overflow-x:auto"><table style="margin-top:8px"><thead><tr><th>#</th><th>Fecha</th><th>vs anterior</th><th>Ganador</th><th>Accuracy</th><th>F1 macro ± folds</th><th>F1 anidada</th><th>Línea base (ganancia)</th><th>Recall «mal»</th><th>Precisión «bien»</th><th>Frames</th><th>Kpoints</th><th>Ángulos</th><th>Clips por clase</th></tr></thead><tbody id="trainhist"></tbody></table></div>
+ </div>
+</div>
+<div id="rankview" style="display:none">
+ <div class="tcard">
+  <h3 style="margin:0 0 8px">Ranking de entrenamientos</h3>
+  <span class="hint">El mejor modelo de cada entrenamiento, ordenados de mayor a menor F1 macro (medido out-of-fold). Con clases desbalanceadas la accuracy engaña: comparala con la línea base de cada corrida.</span>
+  <table style="margin-top:8px"><thead><tr><th>#Entrenamiento</th><th>Tipo</th><th>Config (rectangulo/frames)</th><th>#Modelo</th><th>Accuracy</th><th>F1 macro</th><th>Errores</th><th>Fecha</th></tr></thead><tbody id="rankhist"></tbody></table>
+ </div>
+ <div id="rankres" class="tcard" style="display:none">
+  <div class="frow" style="justify-content:space-between">
+   <h3 style="margin:0">Evaluacion real de los recortes — Entrenamiento <span id="ranknum"></span> (<span id="rankmodelo"></span>)</h3>
+   <span class="hint" id="rankerrores"></span>
+  </div>
+  <img id="rimgConf" alt="Matriz de confusion" style="max-width:100%;width:380px;background:#fff;border-radius:6px;margin:8px 0">
+  <table><thead><tr><th>Clip</th><th>Real</th><th>Prediccion</th><th></th></tr></thead><tbody id="rankclips"></tbody></table>
+ </div>
+</div>
+<div id="descompview" style="display:none">
+ <div class="tcard">
+  <h3 style="margin:0 0 8px">Descomposicion de movimiento</h3>
+  <span class="hint">Compara clips contra el clip "base" de este ejercicio, punto por punto, sobre los frames ya normalizados (table_frames_fix). Linea gruesa y solida = base (referencia); punteada = el clip elegido. El eje Y de cada punto se ve mas tenue que su eje X.</span>
+  <div class="frow" style="margin-top:8px">
+   <label class="hint">Ejercicio:</label>
+   <select id="dcTipo" onchange="cargarDescompOpciones()"></select>
+   <span class="hint" id="dcBaseInfo"></span>
+  </div>
+ </div>
+ <div class="tcard" style="display:flex;gap:16px;flex-wrap:wrap">
+  <div style="min-width:150px">
+   <h3 style="margin:0 0 6px;font-size:13px">Puntos (del yaml)</h3>
+   <span class="hint">Clic para activar/desactivar en las graficas.</span>
+   <table style="margin-top:6px"><thead><tr><th>N</th><th>Nombre</th></tr></thead><tbody id="dcKpoints"></tbody></table>
+  </div>
+  <div style="width:200px;flex-shrink:0">
+   <h3 style="margin:0 0 6px;font-size:13px">Clips</h3>
+   <span class="hint">Clic para elegir el "bien" y/o "mal" a comparar (el "base" ya esta fijo arriba). Ambos se pueden ver a la vez en la grafica.</span>
+   <table style="margin-top:6px"><thead><tr><th>Nombre</th><th>Clase</th></tr></thead><tbody id="dcClips"></tbody></table>
+  </div>
+  <div style="flex:1;min-width:340px">
+   <h3 style="margin:0 0 4px;font-size:13px">Movimientos</h3>
+   <span class="hint">Una linea solida = cuanto se mueve ese kpoint en la base (distancia a su propio promedio, por frame). Punteado = el error de ese clip contra la base en cada frame (lo que hace bajar el indicador). Sin clip elegido: solo la linea solida.</span>
+   <svg id="dcSvgMov" viewBox="0 0 600 200" style="width:100%;background:#181b21;border-radius:6px;margin-top:6px"></svg>
+   <div id="dcLegMov" class="frow" style="margin-top:4px;gap:10px"></div>
+  </div>
+ </div>
+ <div class="tcard">
+  <h3 style="margin:0 0 8px;font-size:13px">Resumen por kpoint</h3>
+  <span class="hint">Cada Kn es el indicador de ESE kpoint solo, contra el mismo kpoint del base (0-100, tipo R², mayor = mas parecido). KG es el promedio simple de todos los Kn. El mayor de la tabla, en amarillo.</span>
+  <div style="overflow:auto;margin-top:6px">
+   <table><thead id="dcResumenHead"></thead><tbody id="dcResumen"></tbody></table>
+  </div>
+ </div>
+ <div class="tcard">
+  <h3 style="margin:0 0 8px;font-size:13px">Ranking de clips (KG, autocalculado al generar tablas)</h3>
+  <span class="hint">Promedio de indicador de TODOS los kpoints contra el "base", un renglon por clip, de mayor a menor parecido. El mejor, en amarillo. Si aqui falta algun clip, o su columna "N" sale menor que la cantidad de kpoints, ese clip no termino de calcularse -- vuelve a generar/actualizar tablas SQL.</span>
+  <div style="overflow:auto;margin-top:6px">
+   <table><thead><tr><th>Nombre</th><th>Clase</th><th>KG</th><th>N</th></tr></thead><tbody id="dcRanking"></tbody></table>
+  </div>
+ </div>
+</div>
+<div id="pipeview" style="display:none">
+ <div class="tcard">
+  <h3 style="margin:0 0 6px">Pipeline: de la camara al modelo</h3>
+  <span class="hint">El flujo en orden. Pasa el mouse por un paso (o haz clic para fijarlo) y a la derecha se abre el detalle con su grafico.</span>
+ </div>
+ <div style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap">
+  <div id="pflujo" style="flex:1;min-width:420px">
+<div class="pfila act" data-i="0" onmouseenter="detallePaso(0)" onclick="detallePaso(0,true)">
+   <div class="pcaja" style="border-color:#2f6feb">
+    <span class="pnum" style="background:#2f6feb">1</span>
+    <span><b>Capturar</b><br><small class="hint">GYMFITX</small></span>
+   </div>
+   <div class="ptxt hint">Grabas frente a la camara; cada sesion deja en la carpeta data/ el video, sus metricas por cuadro y sus datos.</div>
+  </div>
+<div class="pfila" data-i="1" onmouseenter="detallePaso(1)" onclick="detallePaso(1,true)">
+   <div class="pcaja" style="border-color:#2f6feb">
+    <span class="pnum" style="background:#2f6feb">2</span>
+    <span><b>Elegir los puntos</b><br><small class="hint">Tablero de kpoints</small></span>
+   </div>
+   <div class="ptxt hint">El catalogo del ejercicio define cuales de los 33 puntos del cuerpo se usan.</div>
+  </div>
+<div class="pfila" data-i="2" onmouseenter="detallePaso(2)" onclick="detallePaso(2,true)">
+   <div class="pcaja" style="border-color:#4c8c5a">
+    <span class="pnum" style="background:#4c8c5a">3</span>
+    <span><b>Detectar</b><br><small class="hint">MediaPipe Pose</small></span>
+   </div>
+   <div class="ptxt hint">Al abrir un video se detectan esos puntos cuadro a cuadro y se guardan en el .npz.</div>
+  </div>
+<div class="pfila" data-i="3" onmouseenter="detallePaso(3)" onclick="detallePaso(3,true)">
+   <div class="pcaja" style="border-color:#4c8c5a">
+    <span class="pnum" style="background:#4c8c5a">4</span>
+    <span><b>Cortar y clasificar</b><br><small class="hint">tu trabajo</small></span>
+   </div>
+   <div class="ptxt hint">Marcas los cortes sobre la linea de tiempo y le pones clase a cada segmento.</div>
+  </div>
+<div class="pfila" data-i="4" onmouseenter="detallePaso(4)" onclick="detallePaso(4,true)">
+   <div class="pcaja" style="border-color:#4c8c5a">
+    <span class="pnum" style="background:#4c8c5a">5</span>
+    <span><b>Exportar</b><br><small class="hint">dataset/ + manifest.json</small></span>
+   </div>
+   <div class="ptxt hint">Cada segmento se recorta a un .mp4 y un .npz propios dentro de dataset/&lt;clase&gt;/.</div>
+  </div>
+<div class="pfila" data-i="5" onmouseenter="detallePaso(5)" onclick="detallePaso(5,true)">
+   <div class="pcaja" style="border-color:#7a5bb5">
+    <span class="pnum" style="background:#7a5bb5">6</span>
+    <span><b>Subir a SQL</b><br><small class="hint">table_file · table_frames</small></span>
+   </div>
+   <div class="ptxt hint">Los puntos crudos de cada clip van a SQL Server, una fila por cuadro.</div>
+  </div>
+<div class="pfila" data-i="6" onmouseenter="detallePaso(6)" onclick="detallePaso(6,true)">
+   <div class="pcaja" style="border-color:#7a5bb5">
+    <span class="pnum" style="background:#7a5bb5">7</span>
+    <span><b>Normalizar</b><br><small class="hint">table_frames_fix</small></span>
+   </div>
+   <div class="ptxt hint">Todos los clips al mismo tamaño y al mismo numero de cuadros, para poder compararlos.</div>
+  </div>
+<div class="pfila" data-i="7" onmouseenter="detallePaso(7)" onclick="detallePaso(7,true)">
+   <div class="pcaja" style="border-color:#7a5bb5">
+    <span class="pnum" style="background:#7a5bb5">8</span>
+    <span><b>Angulos</b><br><small class="hint">VectorAngles · table_angles</small></span>
+   </div>
+   <div class="ptxt hint">Angulos y proporciones entre puntos del cuerpo que no dependen del encuadre ni de la distancia a la camara.</div>
+  </div>
+<div class="pfila" data-i="8" onmouseenter="detallePaso(8)" onclick="detallePaso(8,true)">
+   <div class="pcaja" style="border-color:#b58b2f">
+    <span class="pnum" style="background:#b58b2f">9</span>
+    <span><b>Elegir clips</b><br><small class="hint">Clips para entrenar</small></span>
+   </div>
+   <div class="ptxt hint">Marcas o desmarcas clips y videos origen; los desmarcados no entran al modelo.</div>
+  </div>
+<div class="pfila" data-i="9" onmouseenter="detallePaso(9)" onclick="detallePaso(9,true)">
+   <div class="pcaja" style="border-color:#b58b2f">
+    <span class="pnum" style="background:#b58b2f">10</span>
+    <span><b>Entrenar</b><br><small class="hint">hasta 17 modelos, k-fold</small></span>
+   </div>
+   <div class="ptxt hint">Cada clip es un vector; se comparan todos los modelos con la misma validacion cruzada.</div>
+  </div>
+<div class="pfila" data-i="10" onmouseenter="detallePaso(10)" onclick="detallePaso(10,true)">
+   <div class="pcaja" style="border-color:#b58b2f">
+    <span class="pnum" style="background:#b58b2f">11</span>
+    <span><b>Resultados</b><br><small class="hint">entrenamientos/run_N</small></span>
+   </div>
+   <div class="ptxt hint">Accuracy por modelo, matriz de confusion, ROC y el detalle clip por clip.</div>
+  </div>
+  </div>
+  <div class="tcard" id="pdetalle" style="width:330px;flex:none;position:sticky;top:8px"></div>
+ </div>
+ <div class="tcard">
+  <h3 style="margin:0 0 6px;font-size:14px">Si cambias algo, que hay que rehacer</h3>
+  <table><thead><tr><th>Cambio</th><th>Rehacer</th></tr></thead><tbody>
+   <tr><td>Otra mano (Izq / Der / Cruzar)</td><td>Generar cortes → Generar tablas SQL → Entrenar</td></tr>
+   <tr><td>Nuevos cortes o clases</td><td>Generar cortes → Generar tablas SQL → Entrenar</td></tr>
+   <tr><td>Puntos del catalogo (pestaña Kpoints)</td><td>Generar cortes → Generar tablas SQL → Entrenar</td></tr>
+   <tr><td>Normalizacion (modo, frames fijos, caja)</td><td>Generar tablas SQL → Entrenar</td></tr>
+   <tr><td>Marcar o desmarcar clips</td><td>Solo Entrenar</td></tr>
+  </tbody></table>
+ </div>
+</div>
+<div id="pitchview" style="display:none">
+ <div class="tcard">
+  <div class="frow" style="justify-content:space-between">
+   <h3 style="margin:0">Pitch</h3>
+   <span class="hint" id="pitchInfo"></span>
+  </div>
+  <div id="pitchWrap" style="position:relative;margin-top:8px;background:#101216;border-radius:8px;text-align:center">
+   <img id="pitchImg" alt="lamina" style="max-width:100%;max-height:72vh;border-radius:8px">
+   <button class="pitchNav" onclick="pasarLamina(-1)" style="left:8px" title="Anterior (←)">‹</button>
+   <button class="pitchNav" onclick="pasarLamina(1)" style="right:8px" title="Siguiente (→)">›</button>
+  </div>
+  <div class="frow" style="margin-top:8px;justify-content:center">
+   <button onclick="pasarLamina(-1)">‹ Anterior</button>
+   <span class="hint" id="pitchNum"></span>
+   <button onclick="pasarLamina(1)">Siguiente ›</button>
+   <button onclick="pantallaCompletaPitch()">⛶ Pantalla completa</button>
+   <a id="pitchPptx" class="hint" download>⬇ Descargar .pptx</a>
+  </div>
+  <div id="pitchMinis" class="frow" style="margin-top:10px;gap:6px;overflow-x:auto;flex-wrap:nowrap"></div>
+ </div>
+</div>
+
+<div id="puntosview" style="display:none">
+ <div class="tcard">
+  <h3 style="margin:0 0 8px">Tablero de kpoints por ejercicio</h3>
+  <span class="hint">Un solo grafico para todo: marca los kpoints, arma los recorridos de angulos y proporciones, y guarda. Se guarda en el .yaml y en SQL (por type); antes de cada guardado queda una copia en ejercicios/.respaldos/.</span>
+  <div class="frow" style="margin-top:10px">
+   <label class="hint">Tipo de movimiento:<br><select id="ptEjercicio" onchange="cargarEjercicioPuntos()"></select></label>
+   <label class="hint">Ejercicio nuevo:<br><span style="display:flex;gap:4px">
+    <input id="ptNuevoNombre" placeholder="nombre_ejercicio" style="width:160px">
+    <button onclick="crearEjercicioPuntos()" title="Crea el .yaml, sus carpetas en datos/clips y datos/grabaciones, y lo sube a SQL">➕ Crear</button>
+    <button onclick="eliminarEjercicioPuntos()" title="Quita el ejercicio seleccionado de la app (su .yaml queda en ejercicios/.respaldos/; clips, grabaciones y SQL no se tocan)">🗑 Eliminar</button>
+   </span></label>
+  </div>
+
+  <div class="frow" style="margin-top:12px;gap:6px;flex-wrap:wrap">
+   <span class="hint">Capas:</span>
+   <button class="mchk on" id="capaPose" style="cursor:default">Cuerpo 33</button>
+   <span class="hint" id="kpModelos" style="margin-left:8px"></span>
+   <span style="flex:1"></span>
+   <button onclick="agregarKpointDerivado()" title="Punto medio de dos kpoints">➕ Derivado</button>
+   <button class="pri" onclick="guardarEjercicioPuntos()" title="Guarda en el .yaml y en SQL (type de este ejercicio)">💾 Guardar</button>
+   <span class="hint" id="kpSqlEstado"></span>
+  </div>
+  <div class="frow" style="margin-top:6px;gap:6px;flex-wrap:wrap">
+   <span class="hint">Grafico:</span>
+   <button class="mchk on" id="modoMarcar" onclick="cambiarModo('marcar')">📍 Marcar kpoints</button>
+   <button class="mchk" id="modoRecorrido" onclick="cambiarModo('recorrido')">〰 Armar recorrido</button>
+   <span class="hint" style="margin-left:8px">Marcar todos:</span>
+   <button onclick="kpTodosCapa('pose')">Cuerpo</button>
+  </div>
+
+  <div class="frow" style="margin-top:12px;gap:20px;align-items:flex-start;flex-wrap:wrap">
+   <div>
+    <svg id="kpSvg" viewBox="-22 -32 144 138" width="720" height="690" style="background:#101216;border-radius:8px;overflow:hidden"></svg>
+    <div class="hint" id="ptZona" style="margin-top:4px;color:#dfe4ee"></div>
+    <div class="hint" id="kpAyuda" style="margin-top:4px;max-width:560px"></div>
+   </div>
+
+   <div id="kpTablaBox" style="min-width:230px;max-width:260px;max-height:640px;overflow-y:auto">
+    <table><thead><tr><th>Cód.</th><th>ID</th><th>Lado</th><th>Origen</th><th></th></tr></thead>
+     <tbody id="kpTabla"></tbody></table>
+    <div class="hint" style="margin-top:8px">Atajos de angulos (plantillas de esta app, no vienen de MediaPipe):</div>
+    <div class="frow" id="kpAngulosConocidos" style="margin-top:4px;flex-wrap:wrap;gap:6px"></div>
+   </div>
+
+   <div style="flex:1;min-width:300px">
+    <h3 style="margin:0 0 6px;font-size:13px">Ángulos y proporciones</h3>
+    <span class="hint">Cada fila es un recorrido de 3 o más kpoints (C = cuerpo), ordenados del menor al mayor. ∠ mide el ángulo del punto del medio (solo con 3 puntos); % reparte 100 entre los tramos. ✓ verde = se usa, ✗ rojo = apagado. Clic en una fila: se pinta en plateado debajo de sus puntos. La última fila siempre está libre: toca los kpoints en el gráfico y pulsa ✔.</span>
+    <table style="margin-top:6px"><thead><tr><th>Punto</th><th>Recorrido</th><th>En uso&nbsp;&nbsp;∠&nbsp;&nbsp;%</th><th></th></tr></thead>
+     <tbody id="ptFeatTabla"></tbody></table>
+   </div>
+  </div>
+  <div style="margin-top:14px">
+   <h3 style="margin:0 0 6px;font-size:13px">Reglas de postura (verde / rojo en el video)</h3>
+   <span class="hint">Sin «C»: la recta B → A contra la horizontal (90° = recta, A justo encima de B). Con «C»: el ángulo en el vértice B entre B → A y B → C (hombro-cadera-rodilla = A,B,C). Cada extremo es un punto (C01 = nariz) o varios separados por coma que se promedian (C24,C25 = caderas). <b>D26</b> / <b>T26</b> = ese punto de la pierna delantera / trasera (se escribe con el código del lado izquierdo; delantera = rodilla más alta). Tolerancia en «%» del ángulo o en «°». Lado: ± dentro del rango, ≥ mínimo, ≤ máximo. Fase «bajando» = durante el descenso y abajo; «abajo» = solo en la parte baja (ambas necesitan base). Dentro = verde, fuera = rojo y se muestra el mensaje. Reinicia la sesión para que las tome.</span>
+   <table style="margin-top:6px"><thead><tr><th>Nombre</th><th>A</th><th>B (vértice)</th><th>C</th><th>Ángulo °</th><th>Tolerancia</th><th>Unidad</th><th>Lado</th><th>Fase</th><th>Mensaje</th><th>Activa</th><th></th></tr></thead>
+    <tbody id="ptReglasTabla"></tbody></table>
+   <div class="frow" style="margin-top:6px;gap:6px"><button onclick="agregarRegla()">＋ Regla</button><button onclick="guardarReglas()">💾 Guardar reglas</button></div>
+  </div>
+  <div id="ptResumen" class="hint" style="margin-top:10px"></div>
+ </div>
+</div>
+<div id="ahpcview" style="display:none">
+ <div class="tcard">
+  <h3 style="margin:0 0 8px">AHPC -- paquete listo para un cluster</h3>
+  <span class="hint">Arma un .zip con TODO lo necesario para correr la busqueda de features en un
+   supercomputador, sin depender de SQL/FastAPI/GYMFITX una vez subido: <code>input/</code> con el .npz de
+   cada ejercicio elegido (puntos x,y,z de cada kpoint y sus angulos/proporciones activados, ya normalizados,
+   cuadro por cuadro y bien/mal), el script standalone <code>busqueda_features_slurm.py</code> (prueba el
+   catalogo COMPLETO de modelos -- los mismos de Entrenamiento -- contra subconjuntos al azar de
+   kpoints/angulos/proporciones; solo necesita <code>numpy</code> + <code>scikit-learn</code>), un
+   <code>.sbatch</code> ya armado por ejercicio, <code>resumen_busqueda_slurm.py</code> (junta los .csv que
+   bajes del cluster en <code>detalle.csv</code>, <code>matriz_resumen.csv</code> y las graficas en
+   <code>graficos/</code>: progreso, costo y mapa de calor), <code>diagnostico_hpc.sh</code> (corre eso
+   PRIMERO en el cluster: te dice que particion conviene, si esta libre y cuanto tarda una combinacion ahi,
+   sin gastar cupo grande a ciegas), <code>estado_busqueda_slurm.py</code> (tabla de avance por tarea:
+   cuanto lleva, %, si termino o fallo -- corre en el cluster aunque el modulo de python este roto),
+   <code>lanzar_&lt;ejercicio&gt;.sh</code> (un solo comando: encadena la busqueda y, apenas termine, el
+   resumen -- sin volver a entrar al cluster a correrlo a mano) y un <code>config.json</code> con las
+   carpetas y el codigo numerico de cada modelo. Descomprime en el cluster y corre
+   <code>bash lanzar_&lt;ejercicio&gt;.sh</code> (o <code>sbatch slurm_&lt;ejercicio&gt;.sbatch</code> si
+   preferis solo la busqueda) -- ver LEEME.txt dentro del zip. Las tablas quedan todas codificadas (sin nombres ni texto: eso ya esta en tu
+   SQL) -- llave = escenario*100 + codigo_modelo, K01../A01../P01.. en 0/1 por posicion. Si vuelves a correr
+   la busqueda sobre el mismo ejercicio, las combinaciones nuevas NO repiten las ya probadas y siguen la
+   numeracion de escenario donde se quedo. No corta ni recalcula nada: si un ejercicio no tiene tablas SQL,
+   primero genera sus cortes y tablas. El sorteo es al azar por default; con <code>--heuristico</code>
+   (opcional, en el .sbatch) se sesga hacia los kpoints/angulos/proporciones que mas importan en vez de
+   tratar todo por igual. Con <code>--escalada</code> (tambien opcional) cada tarea deja de sortear suelto y
+   hace su propio hill-climbing: prueba un lote, se queda con el mejor y prueba vecinos (un elemento
+   agregado o quitado a la vez), moviendose ahi si mejora. Con <code>--arranques N</code> (requiere
+   <code>--escalada</code>) escala desde las N mejores del lote en vez de solo la mejor -- una cadena de
+   vecinos independiente por cada una -- mas robusto contra quedarse en un optimo local.</span>
+  <div id="ahpcLista" style="margin-top:10px"></div>
+  <div class="frow" style="margin-top:10px">
+   <button onclick="ahpcTodos(true)">Marcar todos</button>
+   <button onclick="ahpcTodos(false)">Desmarcar todos</button>
+   <button class="pri" id="bahpc" onclick="ahpcDescargar()">⬇ Descargar paquete SLURM</button>
+   <span id="ahpcMsg" class="hint"></span>
+  </div>
+ </div>
+</div>
+<div id="simview" style="display:none">
+ <div class="tcard">
+  <h3 style="margin:0 0 8px">SIM -- verificacion visual de deteccion + normalizacion</h3>
+  <span class="hint">Vistas 1-2: el video con 3 botones -- solo video, video + esqueleto CRUDO superpuesto
+   (puntos de pantalla del propio .npz, sin normalizar, con sus conexiones y el valor de cada angulo), o
+   solo el esqueleto sobre fondo negro -- todo sincronizado cuadro a cuadro con el video. Vista 3
+   (independiente de las otras dos): el clip elegido ya NORMALIZADO (verde pastel) contra el clip "base"
+   del ejercicio (azul), sobre fondo azul fuerte -- ambos ya alineados en tiempo (DTW, la misma alineacion
+   que puntua el sistema): si los dos esqueletos se mueven juntos, la normalizacion esta bien.</span>
+  <div class="frow" style="margin-top:8px">
+   <label class="hint">Ejercicio:</label>
+   <select id="simTipo" onchange="cargarSimOpciones()"></select>
+   <span class="hint" id="simBaseInfo"></span>
+  </div>
+ </div>
+ <div class="tcard" style="display:flex;gap:16px;flex-wrap:wrap">
+  <div style="width:170px;flex-shrink:0">
+   <h3 style="margin:0 0 6px;font-size:13px">Clips</h3>
+   <span class="hint">Clic para elegir.</span>
+   <table style="margin-top:6px"><thead><tr><th>Nombre</th><th>Clase</th></tr></thead><tbody id="simClips"></tbody></table>
+  </div>
+  <div style="flex:1;min-width:280px">
+   <h3 style="margin:0 0 4px;font-size:13px">1-2. Video + esqueleto crudo (sincronizado)</h3>
+   <div id="simWrap1">
+    <video id="simV1" controls playsinline style="width:100%;max-height:320px;background:#000;border-radius:6px"></video>
+    <canvas id="simC2"></canvas>
+   </div>
+   <div class="frow" style="margin-top:6px">
+    <button class="simmodo" data-modo="video" onclick="simSetModo2('video')">Video</button>
+    <button class="simmodo on" data-modo="video_mov" onclick="simSetModo2('video_mov')">Video + movimiento</button>
+    <button class="simmodo" data-modo="solo_mov" onclick="simSetModo2('solo_mov')">Solo movimiento</button>
+   </div>
+   <span class="hint" id="simC2Info"></span>
+  </div>
+  <div style="flex:1;min-width:280px">
+   <h3 style="margin:0 0 4px;font-size:13px">3. Normalizado: base vs clip (independiente)</h3>
+   <canvas id="simC3" style="width:100%;max-height:320px;border-radius:6px"></canvas>
+   <div class="frow" style="margin-top:6px">
+    <button id="simB3pp" onclick="simTogglePlay3()">▶ Play</button>
+    <input id="simSlider3" type="range" min="0" max="0" value="0" style="flex:1" oninput="simIrAFrame3(+this.value)">
+    <span class="hint" id="simFrame3Info"></span>
+   </div>
+   <div id="simLeyenda3" class="frow" style="margin-top:6px;gap:8px;flex-wrap:wrap"></div>
+  </div>
+ </div>
+ <div class="tcard">
+  <h3 style="margin:0 0 4px;font-size:13px">4. Avatar 3D</h3>
+  <span class="hint">Los 33 puntos 3D del clip son los huesos (blanco); encima va el volumen (rojo) como músculos.
+   Arrastra para girar, rueda para acercar. Si el video de arriba está reproduciendo, el avatar lo sigue.</span>
+  <div id="simAv" style="width:100%;height:440px;border-radius:6px;background:#0d1117;margin-top:6px;overflow:hidden"></div>
+  <div class="frow" style="margin-top:6px">
+   <button id="simAvPP" onclick="window.avatar3d &amp;&amp; avatar3d.alternar()">▶ Play</button>
+   <input id="simAvSlider" type="range" min="0" max="0" value="0" style="flex:1" oninput="avatar3d.irA(+this.value)">
+   <span class="hint" id="simAvInfo">Elige un clip</span>
+  </div>
+  <div class="frow" style="margin-top:6px;gap:12px;flex-wrap:wrap">
+   <label class="hint"><input type="checkbox" id="avHuesos" checked> Huesos</label>
+   <label class="hint"><input type="checkbox" id="avMusculos" checked> Músculos</label>
+   <label class="hint" title="Como el Panel: la figura te mira y su lado derecho queda a la izquierda"><input type="checkbox" id="avEspejo" checked> Espejo</label>
+   <label class="hint" title="Promedia unos cuadros: la profundidad 3D de una sola cámara tiembla"><input type="checkbox" id="avSuavizar" checked> Suavizar</label>
+   <label class="hint"><input type="checkbox" id="avSeguir" checked> Seguir el video</label>
+   <button onclick="avatar3d.reiniciarCamara()">Reiniciar cámara</button>
+  </div>
+ </div>
+</div>
+<div id="msg"></div>
+
+
+<script src="/static/js/panel.js"></script>
+<script src="/static/js/sistema.js"></script>
+<script src="/static/js/vivo.js"></script>
+<script src="/static/js/cortes.js"></script>
+<script src="/static/js/pitch.js"></script>
+<script src="/static/js/pipeline.js"></script>
+<script src="/static/js/sql.js"></script>
+<script src="/static/js/ranking.js"></script>
+<script src="/static/js/entrenamiento.js"></script>
+<script src="/static/js/descomposicion.js"></script>
+<script src="/static/js/puntos.js"></script>
+<script src="/static/js/ahpc.js"></script>
+<script src="/static/js/sim.js"></script>
+<script type="module" src="/static/js/avatar3d.js"></script>
+<script src="/static/js/navegacion.js"></script>
+</body>
+</html>

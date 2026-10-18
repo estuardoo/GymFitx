@@ -1,0 +1,612 @@
+{
+ "ejercicio": "sentadilla",
+ "fecha": "2026-10-17T22:01:48",
+ "parametros": {
+  "min_frames": 10,
+  "max_nan_pct": 20
+ },
+ "corrida": null,
+ "clips_total": 84,
+ "por_clase": {
+  "bien": 17,
+  "base": 1,
+  "mal": 66
+ },
+ "no_entran_al_entrenamiento": 1,
+ "entrenados_ultima_corrida": null,
+ "motivos": {
+  "clase base": 1
+ },
+ "clips": [
+  {
+   "clip": "sentadilla/bien/160513_sentadilla_s02_bien.mp4",
+   "clase": "bien",
+   "cuadros": 137,
+   "nan_pct": 0.0,
+   "motivos": []
+  },
+  {
+   "clip": "sentadilla/bien/160513_sentadilla_s04_bien.mp4",
+   "clase": "bien",
+   "cuadros": 117,
+   "nan_pct": 0.0,
+   "motivos": []
+  },
+  {
+   "clip": "sentadilla/bien/160513_sentadilla_s06_bien.mp4",
+   "clase": "bien",
+   "cuadros": 114,
+   "nan_pct": 0.0,
+   "motivos": []
+  },
+  {
+   "clip": "sentadilla/base/160513_sentadilla_s08_base.mp4",
+   "clase": "base",
+   "cuadros": 182,
+   "nan_pct": 0.0,
+   "motivos": [
+    "clase base (referencia, no se entrena)"
+   ]
+  },
+  {
+   "clip": "sentadilla/bien/100746_sentadilla_frontal_bien_s02_bien.mp4",
+   "clase": "bien",
+   "cuadros": 108,
+   "nan_pct": 0.0,
+   "motivos": []
+  },
+  {
+   "clip": "sentadilla/bien/100746_sentadilla_frontal_bien_s04_bien.mp4",
+   "clase": "bien",
+   "cuadros": 98,
+   "nan_pct": 0.0,
+   "motivos": []
+  },
+  {
+   "clip": "sentadilla/bien/100746_sentadilla_frontal_bien_s06_bien.mp4",
+   "clase": "bien",
+   "cuadros": 100,
+   "nan_pct": 0.0,
+   "motivos": []
+  },
+  {
+   "clip": "sentadilla/bien/100746_sentadilla_frontal_bien_s08_bien.mp4",
+   "clase": "bien",
+   "cuadros": 112,
+   "nan_pct": 0.0,
+   "motivos": []
+  },
+  {
+   "clip": "sentadilla/bien/100746_sentadilla_frontal_bien_s10_bien.mp4",
+   "clase": "bien",
+   "cuadros": 107,
+   "nan_pct": 0.0,
+   "motivos": []
+  },
+  {
+   "clip": "sentadilla/bien/100746_sentadilla_frontal_bien_s12_bien.mp4",
+   "clase": "bien",
+   "cuadros": 105,
+   "nan_pct": 0.0,
+   "motivos": []
+  },
+  {
+   "clip": "sentadilla/bien/100746_sentadilla_frontal_bien_s14_bien.mp4",
+   "clase": "bien",
+   "cuadros": 104,
+   "nan_pct": 0.0,
+   "motivos": []
+  },
+  {
+   "clip": "sentadilla/bien/100747_sentadilla_lateral_bien_s02_bien.mp4",
+   "clase": "bien",
+   "cuadros": 106,
+   "nan_pct": 0.0,
+   "motivos": []
+  },
+  {
+   "clip": "sentadilla/bien/100747_sentadilla_lateral_bien_s04_bien.mp4",
+   "clase": "bien",
+   "cuadros": 104,
+   "nan_pct": 0.0,
+   "motivos": []
+  },
+  {
+   "clip": "sentadilla/bien/100747_sentadilla_lateral_bien_s06_bien.mp4",
+   "clase": "bien",
+   "cuadros": 116,
+   "nan_pct": 0.0,
+   "motivos": []
+  },
+  {
+   "clip": "sentadilla/bien/100747_sentadilla_lateral_bien_s08_bien.mp4",
+   "clase": "bien",
+   "cuadros": 103,
+   "nan_pct": 0.0,
+   "motivos": []
+  },
+  {
+   "clip": "sentadilla/bien/100747_sentadilla_lateral_bien_s10_bien.mp4",
+   "clase": "bien",
+   "cuadros": 102,
+   "nan_pct": 0.0,
+   "motivos": []
+  },
+  {
+   "clip": "sentadilla/bien/100747_sentadilla_lateral_bien_s12_bien.mp4",
+   "clase": "bien",
+   "cuadros": 111,
+   "nan_pct": 0.0,
+   "motivos": []
+  },
+  {
+   "clip": "sentadilla/bien/100747_sentadilla_lateral_bien_s14_bien.mp4",
+   "clase": "bien",
+   "cuadros": 107,
+   "nan_pct": 0.0,
+   "motivos": []
+  },
+  {
+   "clip": "sentadilla/mal/100748_sentadilla_lateral_mal_s01_mal.mp4",
+   "clase": "mal",
+   "cuadros": 96,
+   "nan_pct": 0.0,
+   "motivos": []
+  },
+  {
+   "clip": "sentadilla/mal/100748_sentadilla_lateral_mal_s03_mal.mp4",
+   "clase": "mal",
+   "cuadros": 120,
+   "nan_pct": 0.0,
+   "motivos": []
+  },
+  {
+   "clip": "sentadilla/mal/100748_sentadilla_lateral_mal_s05_mal.mp4",
+   "clase": "mal",
+   "cuadros": 109,
+   "nan_pct": 0.0,
+   "motivos": []
+  },
+  {
+   "clip": "sentadilla/mal/100748_sentadilla_lateral_mal_s07_mal.mp4",
+   "clase": "mal",
+   "cuadros": 116,
+   "nan_pct": 0.0,
+   "motivos": []
+  },
+  {
+   "clip": "sentadilla/mal/100748_sentadilla_lateral_mal_s09_mal.mp4",
+   "clase": "mal",
+   "cuadros": 125,
+   "nan_pct": 0.0,
+   "motivos": []
+  },
+  {
+   "clip": "sentadilla/mal/100748_sentadilla_lateral_mal_s11_mal.mp4",
+   "clase": "mal",
+   "cuadros": 118,
+   "nan_pct": 0.0,
+   "motivos": []
+  },
+  {
+   "clip": "sentadilla/mal/100748_sentadilla_lateral_mal_s13_mal.mp4",
+   "clase": "mal",
+   "cuadros": 115,
+   "nan_pct": 0.0,
+   "motivos": []
+  },
+  {
+   "clip": "sentadilla/mal/100748_sentadilla_lateral_mal_s15_mal.mp4",
+   "clase": "mal",
+   "cuadros": 110,
+   "nan_pct": 0.0,
+   "motivos": []
+  },
+  {
+   "clip": "sentadilla/mal/100748b_sentadilla_lateral_mal_s02_mal.mp4",
+   "clase": "mal",
+   "cuadros": 121,
+   "nan_pct": 0.0,
+   "motivos": []
+  },
+  {
+   "clip": "sentadilla/mal/100748b_sentadilla_lateral_mal_s04_mal.mp4",
+   "clase": "mal",
+   "cuadros": 113,
+   "nan_pct": 0.0,
+   "motivos": []
+  },
+  {
+   "clip": "sentadilla/mal/100748b_sentadilla_lateral_mal_s06_mal.mp4",
+   "clase": "mal",
+   "cuadros": 125,
+   "nan_pct": 0.0,
+   "motivos": []
+  },
+  {
+   "clip": "sentadilla/mal/100748b_sentadilla_lateral_mal_s08_mal.mp4",
+   "clase": "mal",
+   "cuadros": 119,
+   "nan_pct": 0.0,
+   "motivos": []
+  },
+  {
+   "clip": "sentadilla/mal/100748b_sentadilla_lateral_mal_s10_mal.mp4",
+   "clase": "mal",
+   "cuadros": 115,
+   "nan_pct": 0.0,
+   "motivos": []
+  },
+  {
+   "clip": "sentadilla/mal/100748b_sentadilla_lateral_mal_s12_mal.mp4",
+   "clase": "mal",
+   "cuadros": 122,
+   "nan_pct": 0.0,
+   "motivos": []
+  },
+  {
+   "clip": "sentadilla/mal/100748b_sentadilla_lateral_mal_s14_mal.mp4",
+   "clase": "mal",
+   "cuadros": 117,
+   "nan_pct": 0.0,
+   "motivos": []
+  },
+  {
+   "clip": "sentadilla/mal/100748c_sentadilla_lateral_mal_s02_mal.mp4",
+   "clase": "mal",
+   "cuadros": 119,
+   "nan_pct": 0.0,
+   "motivos": []
+  },
+  {
+   "clip": "sentadilla/mal/100748c_sentadilla_lateral_mal_s04_mal.mp4",
+   "clase": "mal",
+   "cuadros": 108,
+   "nan_pct": 0.0,
+   "motivos": []
+  },
+  {
+   "clip": "sentadilla/mal/100748c_sentadilla_lateral_mal_s06_mal.mp4",
+   "clase": "mal",
+   "cuadros": 121,
+   "nan_pct": 0.0,
+   "motivos": []
+  },
+  {
+   "clip": "sentadilla/mal/100748c_sentadilla_lateral_mal_s08_mal.mp4",
+   "clase": "mal",
+   "cuadros": 117,
+   "nan_pct": 0.0,
+   "motivos": []
+  },
+  {
+   "clip": "sentadilla/mal/100748c_sentadilla_lateral_mal_s10_mal.mp4",
+   "clase": "mal",
+   "cuadros": 112,
+   "nan_pct": 0.0,
+   "motivos": []
+  },
+  {
+   "clip": "sentadilla/mal/100748c_sentadilla_lateral_mal_s12_mal.mp4",
+   "clase": "mal",
+   "cuadros": 110,
+   "nan_pct": 0.0,
+   "motivos": []
+  },
+  {
+   "clip": "sentadilla/mal/100748d_sentadilla_frontal_mal_s02_mal.mp4",
+   "clase": "mal",
+   "cuadros": 115,
+   "nan_pct": 0.0,
+   "motivos": []
+  },
+  {
+   "clip": "sentadilla/mal/100748d_sentadilla_frontal_mal_s04_mal.mp4",
+   "clase": "mal",
+   "cuadros": 122,
+   "nan_pct": 0.0,
+   "motivos": []
+  },
+  {
+   "clip": "sentadilla/mal/100748d_sentadilla_frontal_mal_s06_mal.mp4",
+   "clase": "mal",
+   "cuadros": 113,
+   "nan_pct": 0.0,
+   "motivos": []
+  },
+  {
+   "clip": "sentadilla/mal/100748d_sentadilla_frontal_mal_s08_mal.mp4",
+   "clase": "mal",
+   "cuadros": 117,
+   "nan_pct": 0.0,
+   "motivos": []
+  },
+  {
+   "clip": "sentadilla/mal/100748d_sentadilla_frontal_mal_s10_mal.mp4",
+   "clase": "mal",
+   "cuadros": 112,
+   "nan_pct": 0.0,
+   "motivos": []
+  },
+  {
+   "clip": "sentadilla/mal/100748d_sentadilla_frontal_mal_s12_mal.mp4",
+   "clase": "mal",
+   "cuadros": 106,
+   "nan_pct": 0.0,
+   "motivos": []
+  },
+  {
+   "clip": "sentadilla/mal/100748d_sentadilla_frontal_mal_s14_mal.mp4",
+   "clase": "mal",
+   "cuadros": 107,
+   "nan_pct": 0.0,
+   "motivos": []
+  },
+  {
+   "clip": "sentadilla/mal/100748d_sentadilla_frontal_mal_s16_mal.mp4",
+   "clase": "mal",
+   "cuadros": 79,
+   "nan_pct": 0.0,
+   "motivos": []
+  },
+  {
+   "clip": "sentadilla/mal/100749_sentadilla_lateral_mal_s02_mal.mp4",
+   "clase": "mal",
+   "cuadros": 72,
+   "nan_pct": 0.0,
+   "motivos": []
+  },
+  {
+   "clip": "sentadilla/mal/100749_sentadilla_lateral_mal_s04_mal.mp4",
+   "clase": "mal",
+   "cuadros": 85,
+   "nan_pct": 0.0,
+   "motivos": []
+  },
+  {
+   "clip": "sentadilla/mal/100749_sentadilla_lateral_mal_s06_mal.mp4",
+   "clase": "mal",
+   "cuadros": 69,
+   "nan_pct": 0.0,
+   "motivos": []
+  },
+  {
+   "clip": "sentadilla/mal/100749_sentadilla_lateral_mal_s08_mal.mp4",
+   "clase": "mal",
+   "cuadros": 64,
+   "nan_pct": 0.0,
+   "motivos": []
+  },
+  {
+   "clip": "sentadilla/mal/100749_sentadilla_lateral_mal_s10_mal.mp4",
+   "clase": "mal",
+   "cuadros": 78,
+   "nan_pct": 0.0,
+   "motivos": []
+  },
+  {
+   "clip": "sentadilla/mal/100749_sentadilla_lateral_mal_s12_mal.mp4",
+   "clase": "mal",
+   "cuadros": 75,
+   "nan_pct": 0.0,
+   "motivos": []
+  },
+  {
+   "clip": "sentadilla/mal/100749_sentadilla_lateral_mal_s14_mal.mp4",
+   "clase": "mal",
+   "cuadros": 85,
+   "nan_pct": 0.0,
+   "motivos": []
+  },
+  {
+   "clip": "sentadilla/mal/100749_sentadilla_lateral_mal_s16_mal.mp4",
+   "clase": "mal",
+   "cuadros": 81,
+   "nan_pct": 0.0,
+   "motivos": []
+  },
+  {
+   "clip": "sentadilla/mal/100749_sentadilla_lateral_mal_s18_mal.mp4",
+   "clase": "mal",
+   "cuadros": 79,
+   "nan_pct": 0.0,
+   "motivos": []
+  },
+  {
+   "clip": "sentadilla/mal/100749_sentadilla_lateral_mal_s20_mal.mp4",
+   "clase": "mal",
+   "cuadros": 88,
+   "nan_pct": 0.0,
+   "motivos": []
+  },
+  {
+   "clip": "sentadilla/mal/100749b_sentadilla_lateral_mal_s02_mal.mp4",
+   "clase": "mal",
+   "cuadros": 130,
+   "nan_pct": 0.0,
+   "motivos": []
+  },
+  {
+   "clip": "sentadilla/mal/100749b_sentadilla_lateral_mal_s04_mal.mp4",
+   "clase": "mal",
+   "cuadros": 129,
+   "nan_pct": 0.0,
+   "motivos": []
+  },
+  {
+   "clip": "sentadilla/mal/100749b_sentadilla_lateral_mal_s06_mal.mp4",
+   "clase": "mal",
+   "cuadros": 127,
+   "nan_pct": 0.0,
+   "motivos": []
+  },
+  {
+   "clip": "sentadilla/mal/100749b_sentadilla_lateral_mal_s08_mal.mp4",
+   "clase": "mal",
+   "cuadros": 125,
+   "nan_pct": 0.0,
+   "motivos": []
+  },
+  {
+   "clip": "sentadilla/mal/100749b_sentadilla_lateral_mal_s10_mal.mp4",
+   "clase": "mal",
+   "cuadros": 127,
+   "nan_pct": 0.0,
+   "motivos": []
+  },
+  {
+   "clip": "sentadilla/mal/100749b_sentadilla_lateral_mal_s12_mal.mp4",
+   "clase": "mal",
+   "cuadros": 121,
+   "nan_pct": 0.0,
+   "motivos": []
+  },
+  {
+   "clip": "sentadilla/mal/100749b_sentadilla_lateral_mal_s14_mal.mp4",
+   "clase": "mal",
+   "cuadros": 98,
+   "nan_pct": 0.0,
+   "motivos": []
+  },
+  {
+   "clip": "sentadilla/mal/100749c_sentadilla_frontal_mal_s02_mal.mp4",
+   "clase": "mal",
+   "cuadros": 125,
+   "nan_pct": 0.0,
+   "motivos": []
+  },
+  {
+   "clip": "sentadilla/mal/100749c_sentadilla_frontal_mal_s04_mal.mp4",
+   "clase": "mal",
+   "cuadros": 109,
+   "nan_pct": 0.0,
+   "motivos": []
+  },
+  {
+   "clip": "sentadilla/mal/100749c_sentadilla_frontal_mal_s06_mal.mp4",
+   "clase": "mal",
+   "cuadros": 115,
+   "nan_pct": 0.0,
+   "motivos": []
+  },
+  {
+   "clip": "sentadilla/mal/100749c_sentadilla_frontal_mal_s08_mal.mp4",
+   "clase": "mal",
+   "cuadros": 122,
+   "nan_pct": 0.0,
+   "motivos": []
+  },
+  {
+   "clip": "sentadilla/mal/100749c_sentadilla_frontal_mal_s10_mal.mp4",
+   "clase": "mal",
+   "cuadros": 125,
+   "nan_pct": 0.0,
+   "motivos": []
+  },
+  {
+   "clip": "sentadilla/mal/100749c_sentadilla_frontal_mal_s12_mal.mp4",
+   "clase": "mal",
+   "cuadros": 124,
+   "nan_pct": 0.0,
+   "motivos": []
+  },
+  {
+   "clip": "sentadilla/mal/100749c_sentadilla_frontal_mal_s14_mal.mp4",
+   "clase": "mal",
+   "cuadros": 124,
+   "nan_pct": 0.0,
+   "motivos": []
+  },
+  {
+   "clip": "sentadilla/mal/100750_sentadilla_frontal_mal_s02_mal.mp4",
+   "clase": "mal",
+   "cuadros": 112,
+   "nan_pct": 0.0,
+   "motivos": []
+  },
+  {
+   "clip": "sentadilla/mal/100750_sentadilla_frontal_mal_s04_mal.mp4",
+   "clase": "mal",
+   "cuadros": 104,
+   "nan_pct": 0.0,
+   "motivos": []
+  },
+  {
+   "clip": "sentadilla/mal/100750_sentadilla_frontal_mal_s06_mal.mp4",
+   "clase": "mal",
+   "cuadros": 114,
+   "nan_pct": 0.0,
+   "motivos": []
+  },
+  {
+   "clip": "sentadilla/mal/100750_sentadilla_frontal_mal_s08_mal.mp4",
+   "clase": "mal",
+   "cuadros": 108,
+   "nan_pct": 0.0,
+   "motivos": []
+  },
+  {
+   "clip": "sentadilla/mal/100750_sentadilla_frontal_mal_s10_mal.mp4",
+   "clase": "mal",
+   "cuadros": 114,
+   "nan_pct": 0.0,
+   "motivos": []
+  },
+  {
+   "clip": "sentadilla/mal/100750_sentadilla_frontal_mal_s12_mal.mp4",
+   "clase": "mal",
+   "cuadros": 109,
+   "nan_pct": 0.0,
+   "motivos": []
+  },
+  {
+   "clip": "sentadilla/mal/100750_sentadilla_frontal_mal_s14_mal.mp4",
+   "clase": "mal",
+   "cuadros": 108,
+   "nan_pct": 0.0,
+   "motivos": []
+  },
+  {
+   "clip": "sentadilla/mal/100750b_sentadilla_lateral_mal_s01_mal.mp4",
+   "clase": "mal",
+   "cuadros": 147,
+   "nan_pct": 0.0,
+   "motivos": []
+  },
+  {
+   "clip": "sentadilla/mal/100750b_sentadilla_lateral_mal_s03_mal.mp4",
+   "clase": "mal",
+   "cuadros": 148,
+   "nan_pct": 0.0,
+   "motivos": []
+  },
+  {
+   "clip": "sentadilla/mal/100750b_sentadilla_lateral_mal_s05_mal.mp4",
+   "clase": "mal",
+   "cuadros": 136,
+   "nan_pct": 0.0,
+   "motivos": []
+  },
+  {
+   "clip": "sentadilla/mal/100750b_sentadilla_lateral_mal_s07_mal.mp4",
+   "clase": "mal",
+   "cuadros": 136,
+   "nan_pct": 0.0,
+   "motivos": []
+  },
+  {
+   "clip": "sentadilla/mal/100750b_sentadilla_lateral_mal_s09_mal.mp4",
+   "clase": "mal",
+   "cuadros": 143,
+   "nan_pct": 0.0,
+   "motivos": []
+  },
+  {
+   "clip": "sentadilla/mal/100750b_sentadilla_lateral_mal_s11_mal.mp4",
+   "clase": "mal",
+   "cuadros": 152,
+   "nan_pct": 0.0,
+   "motivos": []
+  }
+ ]
+}
