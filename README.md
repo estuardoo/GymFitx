@@ -4,6 +4,13 @@
 
 > Proyecto académico de visión por computadora y ciencia de datos. Todo corre en tu PC: el video no sale de ella.
 
+**Contexto:** Proyecto Integrador I · UTEC Posgrado · metodología CRISP-DM.
+**Equipo:** Diego Sánchez Salazar · Estuardo Oliver Campos · Yessenia Chirinos.
+
+## Contenido
+
+[Qué hace](#qué-hace) · [Cómo funciona](#cómo-funciona) · [Recorrido por el panel](#recorrido-por-el-panel) · [Empezar](#empezar) · [Estructura](#estructura) · [Documentación](#documentación) · [Preparación de datos (CRISP-DM etapa 3)](#preparación-de-datos-crisp-dm-etapa-3) · [Desarrollo](#desarrollo) · [Estado del proyecto](#estado-del-proyecto) · [Privacidad](#privacidad)
+
 ## Qué hace
 
 - **En vivo:** detección de pose, conteo de repeticiones y puntaje por repetición, con el overlay de puntos sobre la cámara.
@@ -28,7 +35,7 @@ Cada etapa del pipeline vive en su propia rama de `src/` y solo usa las anterior
 
 **1. Panel — grabar y puntuar en vivo.** Eliges el ejercicio en la *Rutina*, prendes la cámara y ves el overlay de puntos, el contador de repeticiones y el puntaje de cada una. Abajo queda el puntaje por día y las repeticiones recientes.
 
-![Panel principal](docs/img/panel.png)
+![Panel principal](docs/img/panel_demo.png)
 
 **2. Kpoints — definir qué se mide.** Marcas sobre el cuerpo los puntos que usa el ejercicio y armas los recorridos de ángulos y proporciones (por ejemplo hombro > codo > muñeca). Todo se guarda en el `.yaml` del ejercicio.
 
@@ -36,7 +43,7 @@ Cada etapa del pipeline vive en su propia rama de `src/` y solo usa las anterior
 
 **3. Pipeline — de la cámara al modelo.** Resume los 11 pasos con su entrada y salida: capturar, elegir puntos, detectar, cortar y clasificar, exportar, normalizar, ángulos, elegir clips, entrenar y ver resultados.
 
-![Pipeline](docs/img/pipeline.png)
+![Pipeline](docs/img/pipeline.svg)
 
 **4. Entrenamiento — clasificador bien / mal.** Eliges qué clips usar y qué variables (kpoints, ángulos, proporciones); se comparan hasta 17 modelos con validación cruzada por grabación y cada corrida queda en el historial.
 
@@ -82,14 +89,28 @@ datos/          lo que genera el uso (grabaciones, clips, modelos): no se versio
 | [docs/codigo/](docs/codigo/) | Referencia del código, generada de los docstrings |
 | [CHANGELOG.md](CHANGELOG.md) | Cambios por versión |
 
-## Reproducir la preparación de datos
+## Preparación de datos (CRISP-DM etapa 3)
+
+La preparación está versionada con **DVC**: cada etapa es reproducible y cada umbral vive en `params.yaml`, no en el código.
+
+| Etapa CRISP-DM | Qué hace | Parámetros (`params.yaml`) | Decisión |
+|---|---|---|---|
+| 3.1 Seleccionar | elige clips y excluye la clase `base` | `seleccion` | [0001](docs/decisiones/0001-datos-en-disco-crudo-y-respaldo-sql.md) |
+| 3.2 Limpiar | saca clips con pocos cuadros o demasiados puntos sin detección | `limpieza` | [0005](docs/decisiones/0005-umbrales-de-limpieza.md) |
+| 3.3 Construir | genera ventanas «fuera» para contar en vivo | `construccion` | [0006](docs/decisiones/0006-clase-fuera-registros-generados.md) |
+| 3.4 Integrar | une las tablas de los ejercicios | `ejercicios` | — |
+| 3.5 Formatear | normaliza y arma el vector de entrada; partición por grabación | `formato`, `entrenamiento` | [0007](docs/decisiones/0007-formato-del-vector.md), [0002](docs/decisiones/0002-particion-por-grabacion.md) |
+
+La cadena de trazabilidad es **decisión → justificación → código → parámetro → salida → métrica** (índice en [docs/decisiones/](docs/decisiones/README.md)).
+
+![Trazabilidad](docs/img/trazabilidad.svg)
 
 ```
 pip install -r requirements-dev.txt
 dvc repro            # rehace solo las etapas cuyo código o parámetros cambiaron
 ```
 
-Los datos pesados (videos y clips) no están en Git: van a un remoto de DVC. La guía paso a paso está en [docs/GUIA_ETAPA3.md](docs/GUIA_ETAPA3.md).
+Salidas: `docs/diccionario/<ejercicio>.md` (qué es cada columna) y `reportes/limpieza_<ejercicio>.md` (qué se sacó y por qué). Los datos pesados (videos y clips) no están en Git: van a un remoto de DVC. Cómo verificar cada criterio y los pasos pendientes: [docs/GUIA_ETAPA3.md](docs/GUIA_ETAPA3.md).
 
 ## Desarrollo
 
@@ -101,10 +122,22 @@ pytest
 
 Para subir cambios a GitHub hay una herramienta aparte, `subir_github/SUBIR_GITHUB.bat` (usuarios, repositorio, rama y log; ver su `LEEME.md`).
 
+## Estado del proyecto
+
+| Parte | Estado |
+|---|---|
+| Panel en vivo, conteo y puntaje | funcionando |
+| Corte y etiquetado de clips | funcionando |
+| Preparación reproducible con DVC (etapa 3) | implementada |
+| Remoto de datos de DVC | **pendiente de elegir** ([decisión 0010](docs/decisiones/0010-remoto-de-datos-dvc.md)) |
+| Clasificador bien / mal | prototipo: pocos clips etiquetados, resultados todavía no concluyentes |
+
+Limitaciones conocidas: el volumen de datos es pequeño y está desbalanceado entre ejercicios y personas; por eso la validación se hace por grabación y las métricas deben leerse con cautela.
+
 ## Privacidad
 
 El video y los puntos se procesan y guardan localmente (`datos/`). Publicar en internet viene **apagado** y, activado, exige usuario y clave; desde internet no se puede apagar el panel ni cambiar la configuración.
 
 ## Licencia
 
-Por definir.
+Por definir (pendiente de acordar con el equipo).
