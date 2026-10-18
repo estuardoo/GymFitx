@@ -1,0 +1,43 @@
+name: reproducir
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  calidad:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.10"}
+      - run: pip install numpy pyyaml scikit-learn fastapi pydantic httpx pytest ruff
+      - run: ruff check .
+      - run: pytest -q tests/test_capas.py tests/test_trazabilidad.py tests/test_preparacion.py tests/test_fuga.py::test_grupo_de
+      - run: python scripts/generar_docs_codigo.py --revisar
+      - name: el PR cita un issue
+        if: github.event_name == 'pull_request'
+        env: {CUERPO: "${{ github.event.pull_request.body }}"}
+        run: echo "$CUERPO" | grep -Eiq '(closes|refs|fixes) #[0-9]+' || { echo "El PR debe citar un issue (Closes #N)"; exit 1; }
+
+  reproducibilidad:   # clonar -> dvc pull -> dvc repro --force -> dvc.lock sin cambios. Se activa con la variable del repo DVC_ACTIVO=true
+    if: vars.DVC_ACTIVO == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.10"}
+      - run: pip install "setuptools<70" wheel && pip install "dvc>=3" numpy pyyaml scikit-learn
+      - name: dvc pull
+        env: {GDRIVE_CREDENTIALS_DATA: "${{ secrets.GDRIVE_CREDENTIALS_DATA }}"}   # o las credenciales de tu remoto
+        run: dvc pull
+      - run: dvc repro --force
+      - name: dvc.lock no cambia
+        run: git diff --exit-code dvc.lock
+      - name: params.yaml cambio => dvc.lock cambio
+        if: github.event_name == 'pull_request'
+        run: |
+          git fetch origin ${{ github.base_ref }} --depth=1
+          if ! git diff --quiet origin/${{ github.base_ref }} -- params.yaml; then
+            git diff --quiet origin/${{ github.base_ref }} -- dvc.lock && { echo "params.yaml cambio pero dvc.lock no"; exit 1; } || true
+          fi

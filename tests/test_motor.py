@@ -1,28 +1,24 @@
 """Tests del motor completo, sin camara y sin mediapipe.
-
-    python tests/test_motor.py
 """
 
-import sys
 from pathlib import Path
 
 import numpy as np
 
 ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(ROOT))
-sys.path.insert(0, str(ROOT / "tests"))
 
-from core.compare import compare, cost_matrix, dtw_band          # noqa: E402
-from core.exercise import load_all, load_exercise                # noqa: E402
-from core.features import FeatureExtractor, angle_deg, compute_features  # noqa: E402
-from core.filters import OneEuroFilter                           # noqa: E402
-from core.landmarks import HAND_LANDMARKS, POSE_LANDMARKS, resolve  # noqa: E402
-from core.segmenter import RepSegmenter                          # noqa: E402
-from core.template import Template, build_template               # noqa: E402
-from core.types import Segment                                   # noqa: E402
-from synth import a_framevecs, rep_sintetica, toma               # noqa: E402
+from synth import a_framevecs, rep_sintetica, toma  # noqa: E402
 
-EJ = load_exercise(ROOT / "exercises" / "mano_apertura.yaml")
+from src.evaluacion.comparadores.dtw import compare, cost_matrix, dtw_band  # noqa: E402
+from src.evaluacion.plantilla import Template, build_template  # noqa: E402
+from src.evaluacion.segmentador import RepSegmenter  # noqa: E402
+from src.nucleo.ejercicio import load_all, load_exercise  # noqa: E402
+from src.nucleo.landmarks import POSE_LANDMARKS, resolve  # noqa: E402
+from src.nucleo.tipos import Segment  # noqa: E402
+from src.procesamiento.medidas.features import FeatureExtractor, angle_deg, compute_features  # noqa: E402
+from src.procesamiento.medidas.filtros import OneEuroFilter  # noqa: E402
+
+EJ = load_exercise(ROOT / "tests" / "data" / "sintetico.yaml")
 EXT = FeatureExtractor(EJ)
 
 
@@ -37,16 +33,15 @@ def test_angulo_invariante_a_escala_y_traslacion():
     assert abs(angle_deg(a, b, c) - angle_deg(a*7+off, b*7+off, c*7+off)) < 1e-3
 
 
-def test_landmarks_de_ambas_fuentes():
-    assert len(HAND_LANDMARKS) == 21 and len(POSE_LANDMARKS) == 33
-    assert resolve("WRIST", "hands") == 0
+def test_landmarks_de_pose():
+    assert len(POSE_LANDMARKS) == 33
     assert resolve("RIGHT_ELBOW", "pose") == 14
 
 
 def test_extractor_compilado_igual_al_escalar():
     """La version vectorizada no puede diferir de la matematica de referencia."""
     rng = np.random.default_rng(3)
-    P = rng.normal(scale=0.05, size=(21, 3)).astype(np.float32)
+    P = rng.normal(scale=0.05, size=(33, 3)).astype(np.float32)
     rapido = EXT.from_points(P)
     lento = compute_features(P, EJ.features, EJ.source)
     for i, nombre in enumerate(EXT.names):
@@ -54,18 +49,10 @@ def test_extractor_compilado_igual_al_escalar():
 
 
 def test_todos_los_ejercicios_cargan():
-    todos = load_all(ROOT / "exercises")
-    assert "mano_apertura" in todos and "manguito_rotador" in todos
+    todos = load_all(ROOT / "ejercicios")
+    assert "cuerpo_completo" in todos and "manguito_rotador" in todos
     for ex in todos.values():
         FeatureExtractor(ex)          # compila sin error = nombres validos
-
-
-def test_manos_detalle_por_defecto_apagado_salvo_que_el_yaml_lo_pida():
-    assert EJ.manos_detalle is False   # mano_apertura no lo declara -> default
-    cuerpo_completo = load_exercise(ROOT / "exercises" / "cuerpo_completo.yaml")
-    assert cuerpo_completo.source == "pose"
-    assert cuerpo_completo.manos_detalle is True   # este si lo declara
-    assert cuerpo_completo.to_dict()["manos_detalle"] is True
 
 
 # ---------------------------------------------------------------- filtro
@@ -216,16 +203,3 @@ def test_toma_sin_repeticiones_falla_con_mensaje_util():
     else:
         raise AssertionError("deberia haber fallado")
 
-
-if __name__ == "__main__":
-    fallos = 0
-    for nombre, fn in sorted(globals().items()):
-        if nombre.startswith("test_") and callable(fn):
-            try:
-                fn()
-                print(f"  OK    {nombre}")
-            except Exception as e:
-                fallos += 1
-                print(f"  FALLA {nombre}: {e}")
-    print("\nTodo bien." if not fallos else f"\n{fallos} test(s) fallaron.")
-    raise SystemExit(1 if fallos else 0)

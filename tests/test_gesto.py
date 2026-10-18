@@ -1,118 +1,127 @@
-"""Verifica el gesto de mano (control de grabar/detener sin botones):
+"""Gesto de control (grabar/detener sin botones): muneca sostenida en la esquina superior izquierda.
 
-- _clasificar_gesto_mano(): la logica pura de abierta/cerrada + zona muerta,
-  sin tracker ni camara.
-- _revisar_gesto_mano(): la integracion completa (recorte + tracker de
-  gesto + bus), con mediapipe sustituido por el mismo doble minimo que usan
-  los demas tests -- solo confirma que corre sin reventar, no un curl
-  puntual (el doble siempre devuelve los mismos puntos fijos).
-
-    python tests/test_gesto.py
+- Gesto.avanzar(): logica pura (tiempo dentro de la zona, enfriamiento, re-armado).
+- Gesto.evaluar() / Pipeline: integracion con detecciones de pose, sin camara.
 """
 
 from __future__ import annotations
 
-import sys
 from pathlib import Path
 
 import numpy as np
 
 ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(ROOT))
-sys.path.insert(0, str(ROOT / "tests"))
 
 from test_swap_sink import _instalar_stub_mediapipe  # noqa: E402
 
 _instalar_stub_mediapipe()
 
-from core.exercise import load_exercise                                    # noqa: E402
-from core.pipeline import (GESTO_UMBRAL_ABIERTA, GESTO_UMBRAL_CERRADA,      # noqa: E402
-                            Pipeline)
-from core.sinks import Recorder, Sink                                       # noqa: E402
-from core.types import Frame                                                # noqa: E402
+from src.nucleo.ejercicio import load_exercise  # noqa: E402
+from src.nucleo.landmarks import POSE_LANDMARKS  # noqa: E402
+from src.nucleo.tipos import Frame, Landmarks  # noqa: E402
+from src.sesion.gesto import (  # noqa: E402
+    GESTO_ENFRIAMIENTO_MS,
+    GESTO_MANTENER_MS,
+    GESTO_OLVIDO_MS,
+    GESTO_RECORTE,
+    Gesto,
+)
+from src.sesion.pipeline import Pipeline  # noqa: E402
+from src.sesion.sumideros import Recorder, Sink  # noqa: E402
 
-EJ = load_exercise(ROOT / "exercises" / "manguito_rotador.yaml")
-ABIERTA = GESTO_UMBRAL_ABIERTA + 10
-CERRADA = GESTO_UMBRAL_CERRADA - 10
-ZONA_MUERTA = (GESTO_UMBRAL_ABIERTA + GESTO_UMBRAL_CERRADA) / 2
+EJ = load_exercise(ROOT / "ejercicios" / "manguito_rotador.yaml")
 
 
 def _pipeline():
     return Pipeline(EJ, source=None, sink=Sink(), template=None, annotate=False)
 
 
-def test_de_abierta_a_cerrada_dispara():
-    p = _pipeline()
-    assert p._clasificar_gesto_mano(ABIERTA) is False
-    assert p._clasificar_gesto_mano(CERRADA) is True
+def _pose(muneca_xy):
+    """Pose con todos los puntos en el centro salvo la muneca derecha."""
+    screen = np.full((33, 3), 0.5, dtype=np.float32)
+    screen[POSE_LANDMARKS.index("RIGHT_WRIST"), :2] = muneca_xy
+    return [Landmarks(source="pose", world=screen.copy(), screen=screen, label="", score=0.9)]
 
 
-def test_mantenerse_cerrada_no_vuelve_a_disparar():
-    p = _pipeline()
-    p._clasificar_gesto_mano(ABIERTA)
-    assert p._clasificar_gesto_mano(CERRADA) is True
-    assert p._clasificar_gesto_mano(CERRADA) is False
-    assert p._clasificar_gesto_mano(CERRADA) is False
+ADENTRO = _pose((GESTO_RECORTE / 2, GESTO_RECORTE / 2))
+AFUERA = _pose((0.6, 0.6))
 
 
-def test_repetir_el_gesto_dispara_de_nuevo():
-    p = _pipeline()
-    p._clasificar_gesto_mano(ABIERTA)
-    assert p._clasificar_gesto_mano(CERRADA) is True
-    p._clasificar_gesto_mano(ABIERTA)
-    assert p._clasificar_gesto_mano(CERRADA) is True
+def test_sostener_la_muneca_dispara_una_vez():
+    g = Gesto(lambda: None)
+    assert g.avanzar(True, 0) is False
+    assert g.avanzar(True, GESTO_MANTENER_MS - 1) is False
+    assert g.avanzar(True, GESTO_MANTENER_MS) is True
+    assert g.avanzar(True, GESTO_MANTENER_MS + 100) is False   # sigue adentro: no repite
 
 
-def test_cerrar_sin_haber_estado_abierta_tambien_dispara():
-    # A pedido: con una sola vez que se cierre el puno alcanza, no hace
-    # falta ver la mano abierta primero (p.ej. entra a la zona ya cerrada).
-    p = _pipeline()   # estado inicial: None (no "abierta")
-    assert p._clasificar_gesto_mano(CERRADA) is True
+def test_hay_que_salir_de_la_zona_para_volver_a_disparar():
+    g = Gesto(lambda: None)
+    g.avanzar(True, 0)
+    assert g.avanzar(True, GESTO_MANTENER_MS) is True
+    t = GESTO_MANTENER_MS + GESTO_OLVIDO_MS + 10
+    g.avanzar(False, t)                                        # sale de verdad
+    assert g.estado is None
+    g.avanzar(True, t + 10)
+    assert g.avanzar(True, t + 10 + GESTO_MANTENER_MS) is True   # ya paso el enfriamiento
 
 
-def test_zona_muerta_mantiene_el_estado_anterior():
-    p = _pipeline()
-    p._clasificar_gesto_mano(ABIERTA)
-    p._clasificar_gesto_mano(ZONA_MUERTA)   # ambiguo: no cambia de estado
-    assert p._clasificar_gesto_mano(CERRADA) is True   # sigue viniendo de "abierta"
+def test_enfriamiento_evita_dos_disparos_seguidos():
+    g = Gesto(lambda: None)
+    g.avanzar(True, 0)
+    assert g.avanzar(True, GESTO_MANTENER_MS) is True
+    t = GESTO_MANTENER_MS + GESTO_OLVIDO_MS + 10
+    g.avanzar(False, t)
+    g.avanzar(True, t + 10)
+    assert GESTO_MANTENER_MS < GESTO_ENFRIAMIENTO_MS           # supuesto del test
+    assert g.avanzar(True, GESTO_MANTENER_MS + 500) is False   # sigue en enfriamiento
 
 
-def test_revisar_gesto_mano_corre_sin_reventar_con_el_tracker_de_prueba():
+def test_perder_la_muneca_un_instante_no_reinicia_la_cuenta():
+    g = Gesto(lambda: None)
+    g.avanzar(True, 0)
+    g.avanzar(False, GESTO_OLVIDO_MS // 2)                     # un cuadro sin ver
+    assert g.estado == "dentro"
+    assert g.avanzar(True, GESTO_MANTENER_MS) is True
+
+
+def test_pasar_de_largo_por_la_zona_no_dispara():
+    g = Gesto(lambda: None)
+    g.avanzar(True, 0)
+    g.avanzar(False, GESTO_OLVIDO_MS * 2)                      # salio antes de tiempo
+    assert g.estado is None
+    assert g.avanzar(True, GESTO_MANTENER_MS) is False         # la cuenta empezo de nuevo
+
+
+def test_en_zona_lee_la_pose():
+    assert Gesto.en_zona(ADENTRO) is True
+    assert Gesto.en_zona(AFUERA) is False
+    assert Gesto.en_zona([]) is False
+
+
+def test_evaluar_llama_al_callback_al_cumplirse_el_tiempo():
+    disparos = []
+    g = Gesto(lambda: disparos.append(1))
+    g.evaluar(ADENTRO, 0)
+    g.evaluar(ADENTRO, GESTO_MANTENER_MS)
+    assert disparos == [1]
+
+
+def test_pipeline_procesa_cuadros_con_gesto_sin_reventar():
     p = _pipeline()
     frame = Frame(image=np.zeros((120, 160, 3), dtype=np.uint8), t_ms=0, index=0)
-    p._revisar_gesto_mano(frame)   # no debe lanzar excepcion
-    assert p._gesto_mano_estado in (None, "abierta", "cerrada")
-
-
-def test_manos_detalle_apagado_por_defecto_y_no_arma_tracker():
-    p = _pipeline()
-    assert p._manos_detalle_activo is False
-    assert p._tracker_manos_detalle is None   # no se paga el costo si nadie lo prendio
-
-
-def test_activar_manos_detalle_arma_el_tracker_una_sola_vez():
-    p = _pipeline()
-    p.set_manos_detalle(True)
-    assert p._manos_detalle_activo is True
-    tracker = p._tracker_manos_detalle
-    assert tracker is not None
-    p.set_manos_detalle(False)
-    assert p._manos_detalle_activo is False
-    assert p._tracker_manos_detalle is tracker   # apagar no lo destruye, solo dispensa de usarlo
-    p.set_manos_detalle(True)
-    assert p._tracker_manos_detalle is tracker   # prender de nuevo no reconstruye
+    p._procesar(frame)
+    assert p.gesto.estado in (None, "dentro")
 
 
 def test_grabando_falso_mientras_el_sink_es_el_placeholder():
-    p = _pipeline()
-    assert p.grabando is False
+    assert _pipeline().grabando is False
 
 
 def test_grabando_verdadero_con_un_sink_real_de_grabacion():
     # Regresion: Recorder (como Evaluator y MultiSink) hereda de Sink, asi
-    # que "isinstance(sink, Sink)" da True para CUALQUIER sumidero y nunca
-    # distingue grabando de no grabando -- pipeline.grabando debe usar
-    # "type(sink) is Sink" para que esto funcione de verdad.
+    # que "isinstance(sink, Sink)" da True para CUALQUIER sumidero --
+    # pipeline.grabando debe usar "type(sink) is Sink".
     p = _pipeline()
     p.swap_sink(Recorder("dummy_no_se_escribe"))
     assert p.grabando is True
@@ -120,33 +129,9 @@ def test_grabando_verdadero_con_un_sink_real_de_grabacion():
     assert p.grabando is False
 
 
-def test_anotar_pinta_la_zona_de_gesto_cuando_hay_mano_sin_reventar():
+def test_anotar_pinta_la_zona_de_gesto_sin_reventar():
     p = _pipeline()
-    p._gesto_mano_estado = "abierta"   # simula mano detectada en la esquina
+    p.gesto.estado = "dentro"
     frame = Frame(image=np.zeros((120, 160, 3), dtype=np.uint8), t_ms=0, index=0)
-    p._anotar(frame, [], None)   # no debe lanzar excepcion
+    p._anotar(frame, [], None)
     assert p.latest_frame is not None
-
-
-def test_anotar_con_dedos_detallados_corre_sin_reventar():
-    # detecciones=[] a proposito: lo que se prueba es que _anotar() ademas
-    # corre el tracker de dedos detallados (HandTracker de prueba) y lo
-    # dibuja encima sin reventar -- la deteccion pose en si ya tiene su
-    # propio test (test_swap_sink, test_pausa, etc).
-    p = _pipeline()
-    p.set_manos_detalle(True)
-    frame = Frame(image=np.zeros((120, 160, 3), dtype=np.uint8), t_ms=0, index=0)
-    p._anotar(frame, [], None)   # no debe lanzar excepcion
-    assert p.latest_frame is not None
-
-
-if __name__ == "__main__":
-    fallos = 0
-    for nombre, fn in sorted(globals().items()):
-        if nombre.startswith("test_") and callable(fn):
-            try:
-                fn(); print(f"  OK    {nombre}")
-            except Exception as e:
-                fallos += 1; print(f"  FALLA {nombre}: {e}")
-    print("\nTodo bien." if not fallos else f"\n{fallos} test(s) fallaron.")
-    raise SystemExit(1 if fallos else 0)

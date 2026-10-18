@@ -1,20 +1,14 @@
 """Verifica el log de sesion y las rutas /api/log, /api/libraries,
 /api/system/shutdown, /api/system/restart. Mismo truco que test_swap_sink.py:
 mediapipe queda sustituido por un doble minimo, no hace falta camara.
-
-    python tests/test_system_api.py
 """
 
 from __future__ import annotations
 
-import sys
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(ROOT))
-sys.path.insert(0, str(ROOT / "tests"))
-sys.path.insert(0, str(ROOT / "apps"))
 
 from test_swap_sink import _instalar_stub_mediapipe  # noqa: E402
 
@@ -22,9 +16,10 @@ _instalar_stub_mediapipe()
 
 from fastapi.testclient import TestClient  # noqa: E402
 
-import serve  # noqa: E402
+from src.interfaz import control as serve  # noqa: E402
+from src.interfaz.app import app  # noqa: E402
 
-client = TestClient(serve.app)
+client = TestClient(app)
 
 
 def test_log_tail_no_revienta_sin_archivo_previo():
@@ -38,7 +33,9 @@ def test_log_registra_eventos_relevantes_y_salta_status():
     serve._al_bus_archivo({"type": "rep", "exercise": "sentadilla", "score": 90})
     serve._al_bus_archivo({"type": "status", "angulo": 45})  # no debe loguearse
     serve.log.handlers[0].flush()
-    texto = serve.LOG_PATH.read_text(encoding="utf-8")
+    from src.nucleo.log import SESSION_LOG_PATH
+
+    texto = SESSION_LOG_PATH.read_text(encoding="utf-8")
     assert "rep" in texto
     assert "'angulo': 45" not in texto
 
@@ -53,7 +50,7 @@ def test_libraries_incluye_python_y_version_o_none():
 
 
 def test_shutdown_apaga_el_proceso_sin_matar_el_test():
-    with patch("serve.os._exit") as salida, patch("threading.Timer") as temporizador:
+    with patch("src.interfaz.api.sistema.os._exit") as salida, patch("threading.Timer") as temporizador:
         r = client.post("/api/system/shutdown")
         assert r.status_code == 200
         assert temporizador.called
@@ -61,7 +58,7 @@ def test_shutdown_apaga_el_proceso_sin_matar_el_test():
 
 
 def test_restart_relanza_el_bat_antes_de_salir():
-    with patch("serve.subprocess.Popen") as popen, patch("threading.Timer") as temporizador:
+    with patch("src.interfaz.api.sistema.subprocess.Popen") as popen, patch("threading.Timer") as temporizador:
         r = client.post("/api/system/restart")
         assert r.status_code == 200
         assert popen.called
@@ -85,7 +82,7 @@ def test_actualizar_libreria_desconocida_da_404():
 def test_actualizar_libreria_llama_pip_con_la_restriccion_del_requirements():
     import subprocess as sp
     resultado = sp.CompletedProcess(args=[], returncode=0, stdout="ok", stderr="")
-    with patch("serve.subprocess.run", return_value=resultado) as correr:
+    with patch("src.interfaz.api.sistema.subprocess.run", return_value=resultado) as correr:
         r = client.post("/api/system/libraries/update", json={"nombre": "numpy"})
         assert r.status_code == 200
         args = correr.call_args[0][0]
@@ -95,7 +92,7 @@ def test_actualizar_libreria_llama_pip_con_la_restriccion_del_requirements():
 def test_actualizar_todo_usa_requirements_txt():
     import subprocess as sp
     resultado = sp.CompletedProcess(args=[], returncode=0, stdout="ok", stderr="")
-    with patch("serve.subprocess.run", return_value=resultado) as correr:
+    with patch("src.interfaz.api.sistema.subprocess.run", return_value=resultado) as correr:
         r = client.post("/api/system/libraries/update", json={})
         assert r.status_code == 200
         args = correr.call_args[0][0]
@@ -111,22 +108,23 @@ def test_python_entorno_devuelve_version_actual():
 
 
 def test_cambiar_version_python_rechaza_version_no_detectada():
-    with patch("serve._detectar_versiones_python", return_value=["3.11", "3.12"]):
+    with patch("src.interfaz.api.sistema._detectar_versiones_python", return_value=["3.11", "3.12"]):
         r = client.post("/api/system/python_version", json={"version": "2.7"})
         assert r.status_code == 400
 
 
 def test_cambiar_version_python_escribe_marcador_y_reinicia():
-    with patch("serve._detectar_versiones_python", return_value=["3.12"]), \
-         patch("serve.shutil.rmtree") as borrar, \
-         patch("serve.subprocess.Popen") as popen, \
+    with patch("src.interfaz.api.sistema._detectar_versiones_python", return_value=["3.12"]), \
+         patch("src.interfaz.api.sistema.shutil.rmtree") as borrar, \
+         patch("src.interfaz.api.sistema.subprocess.Popen") as popen, \
          patch("threading.Timer") as temporizador:
         r = client.post("/api/system/python_version", json={"version": "3.12"})
         assert r.status_code == 200
         assert borrar.called
         assert popen.called
         assert temporizador.called
-    marcador = serve.ROOT / "python_version.txt"
+    from src.interfaz.api import sistema
+    marcador = sistema.ROOT / "python_version.txt"
     assert marcador.exists() and marcador.read_text(encoding="utf-8").strip() == "3.12"
     marcador.write_text("", encoding="utf-8")   # no se puede borrar el archivo aqui; lo vaciamos
 
@@ -183,13 +181,13 @@ def test_al_bus_gestos_detiene_si_ya_esta_grabando():
 
 def test_camera_on_con_pipeline_que_falla_cierra_la_camara_y_da_502():
     """Si el modelo de deteccion no se pudo cargar (p.ej. no se descargo:
-    ver core/tracker.py ensure_model), antes esto tumbaba con un 500 crudo
+    ver src/captura/deteccion/tracker.py ensure_model), antes esto tumbaba con un 500 crudo
     y ademas dejaba la camara abierta -- el siguiente intento fallaba con
     "camara en uso" en vez del error real.
     """
     fuente_falsa = MagicMock()
-    with patch("serve.CameraSource", return_value=fuente_falsa), \
-         patch("serve.Pipeline", side_effect=RuntimeError("modelo no descargado")):
+    with patch("src.interfaz.control.CameraSource", return_value=fuente_falsa), \
+         patch("src.interfaz.control.Pipeline", side_effect=RuntimeError("modelo no descargado")):
         r = client.post("/api/session/camera_on", json={"exercise": "manguito_rotador"})
         assert r.status_code == 502
         assert "modelo no descargado" in r.json()["detail"]
@@ -207,27 +205,16 @@ def test_set_exercise_con_deteccion_que_falla_da_502_y_no_pierde_la_sesion():
 
     serve.sesion.thread = MagicMock(is_alive=lambda: True)
     serve.sesion.pipeline = FalsoPipeline()
-    serve.sesion._cfg = {"slug": "mano_apertura"}
-    serve.sesion.info = {"exercise": "mano_apertura", "name": "Apertura y cierre de mano"}
+    serve.sesion._cfg = {"slug": "cuerpo_completo"}
+    serve.sesion.info = {"exercise": "cuerpo_completo", "name": "Cuerpo completo"}
     try:
         r = client.post("/api/session/exercise", json={"exercise": "manguito_rotador"})
         assert r.status_code == 502
         assert "modelo no descargado" in r.json()["detail"]
-        assert serve.sesion.info["exercise"] == "mano_apertura"   # no cambio de ejercicio
+        assert serve.sesion.info["exercise"] == "cuerpo_completo"   # no cambio de ejercicio
     finally:
         serve.sesion.thread = None
         serve.sesion.pipeline = None
         serve.sesion._cfg = None
         serve.sesion.info = {}
 
-
-if __name__ == "__main__":
-    fallos = 0
-    for nombre, fn in sorted(globals().items()):
-        if nombre.startswith("test_") and callable(fn):
-            try:
-                fn(); print(f"  OK    {nombre}")
-            except Exception as e:
-                fallos += 1; print(f"  FALLA {nombre}: {e}")
-    print("\nTodo bien." if not fallos else f"\n{fallos} test(s) fallaron.")
-    raise SystemExit(1 if fallos else 0)

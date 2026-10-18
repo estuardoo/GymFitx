@@ -1,0 +1,17 @@
+name: Ejercicio sintetico de pruebas
+description: 6 features sobre la pose, para probar el motor con repeticiones sinteticas (tests/synth.py)
+source: pose
+features:
+- {name: curl_pulgar, type: angle, points: [LEFT_SHOULDER, LEFT_ELBOW, LEFT_WRIST]}
+- {name: curl_indice, type: angle, points: [RIGHT_SHOULDER, RIGHT_ELBOW, RIGHT_WRIST]}
+- {name: curl_medio, type: angle, points: [LEFT_HIP, LEFT_KNEE, LEFT_ANKLE]}
+- {name: curl_anular, type: angle, points: [RIGHT_HIP, RIGHT_KNEE, RIGHT_ANKLE]}
+- {name: curl_menique, type: angle, points: [LEFT_ELBOW, LEFT_SHOULDER, LEFT_HIP]}
+- {name: apertura_lateral, type: distance_ratio, points: [LEFT_WRIST, RIGHT_WRIST], reference: [LEFT_SHOULDER, RIGHT_SHOULDER]}
+signal:
+  reduce: mean
+  features: [curl_indice, curl_medio, curl_anular, curl_menique]
+segmentation:
+  direction: down_up
+  min_duration_ms: 600
+  max_duration_ms: 8000

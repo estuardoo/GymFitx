@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from core.types import FeatureVec
+from src.nucleo.tipos import FeatureVec
 
 
 def rep_sintetica(

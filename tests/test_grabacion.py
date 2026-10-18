@@ -1,30 +1,32 @@
 """Tests del archivado de sesiones: video, features y metadatos.
 
 No necesita camara ni mediapipe: se simula el pipeline con cuadros sinteticos.
-
-    python tests/test_grabacion.py
 """
 
 import json
-import sys
 import tempfile
 from pathlib import Path
 
 import numpy as np
 
 ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(ROOT))
-sys.path.insert(0, str(ROOT / "tests"))
 
-from core.exercise import load_exercise            # noqa: E402
-from core.features import FeatureExtractor         # noqa: E402
-from core.sinks import EventBus, MultiSink, Sink    # noqa: E402
-from core.types import Frame                       # noqa: E402
-from core.videolog import (FPS_SALIDA, VideoLogger, features_a_csv,  # noqa: E402
-                           listar_grabaciones, resolver_json, uso_en_disco)
-from synth import a_framevecs, rep_sintetica       # noqa: E402
+from synth import a_framevecs, rep_sintetica  # noqa: E402
 
-EJ = load_exercise(ROOT / "exercises" / "mano_apertura.yaml")
+from src.nucleo.ejercicio import load_exercise  # noqa: E402
+from src.nucleo.tipos import Frame  # noqa: E402
+from src.procesamiento.medidas.features import FeatureExtractor  # noqa: E402
+from src.sesion.grabacion import (
+    FPS_SALIDA,
+    VideoLogger,
+    features_a_csv,
+    listar_grabaciones,
+    resolver_json,
+    uso_en_disco,
+)
+from src.sesion.sumideros import EventBus, MultiSink, Sink  # noqa: E402
+
+EJ = load_exercise(ROOT / "ejercicios" / "manguito_rotador.yaml")
 EXT = FeatureExtractor(EJ)
 
 
@@ -41,18 +43,24 @@ class PipeFalso:
         self.bus.subscribe(self.eventos.append)
 
 
-def _sesion(dir_base, n=60, fps=20.0, guardar_video=True):
-    """Simula una sesion completa y devuelve (logger, pipe)."""
+def _sesion(dir_base, n=60, fps=20.0, guardar_video=True, fps_deteccion=None):
+    """Simula una sesion completa y devuelve (logger, pipe). La camara entrega
+    'fps'; la deteccion procesa 1 de cada k cuadros si se pide fps_deteccion
+    (como el pipeline en vivo, que descarta los que no alcanza)."""
     pipe = PipeFalso()
     vl = VideoLogger(dir_base, guardar_video=guardar_video)
     vl.on_start(pipe)
-    datos = rep_sintetica(n_frames=n)
+    datos = rep_sintetica(n_frames=n)[:, :EXT.size]
     fvs = a_framevecs(datos, fps=fps)
     rng = np.random.default_rng(0)
+    cada = max(1, round(fps / fps_deteccion)) if fps_deteccion else 1
     for i, fv in enumerate(fvs):
         img = rng.integers(0, 255, (120, 160, 3), dtype=np.uint8)
-        vl.on_frame(pipe, Frame(image=img, t_ms=fv.t_ms, index=i), fv)
-        pipe.frames_vistos += 1
+        frame = Frame(image=img, t_ms=fv.t_ms, index=i)
+        vl.on_raw_frame(pipe, frame)                 # hilo de captura: todos los cuadros
+        if i % cada == 0:
+            vl.on_frame(pipe, frame, fv)             # hilo de deteccion: los que alcanza
+            pipe.frames_vistos += 1
     vl.on_stop(pipe)
     return vl, pipe
 
@@ -65,16 +73,16 @@ def test_archiva_video_features_y_metadatos():
         assert vl.json_path.exists()
 
         z = np.load(vl.npz_path, allow_pickle=False)
-        assert z["values"].shape == (60, 6)
+        assert z["values"].shape == (60, EXT.size)
         assert z["t_ms"].shape == (60,)
         assert list(z["names"]) == EXT.names
 
 
 def test_se_archiva_en_una_carpeta_por_ejercicio():
-    """Cada ejercicio en su propia carpeta: recordings/<slug>/<dia>/*.{mp4,npz,json}."""
+    """Cada ejercicio en su propia carpeta: datos/grabaciones/<slug>/<dia>/*.{mp4,npz,json}."""
     with tempfile.TemporaryDirectory() as d:
         vl, _ = _sesion(d)
-        assert vl.video_path.parent.parent.name == "mano_apertura"
+        assert vl.video_path.parent.parent.name == "manguito_rotador"
         assert vl.video_path.parent.name == vl.json_path.parent.name
 
 
@@ -82,8 +90,8 @@ def test_metadatos_describen_la_sesion():
     with tempfile.TemporaryDirectory() as d:
         vl, _ = _sesion(d, n=60, fps=20.0)
         m = json.loads(vl.json_path.read_text(encoding="utf-8"))
-        assert m["exercise"] == "mano_apertura"
-        assert m["modo"] == "base"                  # sin segmentador = grabacion de base
+        assert m["exercise"] == "manguito_rotador"
+        assert m["modo"] == "referencia"            # sin segmentador = toma de referencia
         assert m["frames_con_deteccion"] == 60
         assert abs(m["fps_medio"] - 20.0) < 1.5
         assert m["resolucion"] == [160, 120]
@@ -99,6 +107,17 @@ def test_el_video_dura_lo_que_duro_la_sesion():
         cap.release()
         dur_video = cuadros / FPS_SALIDA
         assert abs(dur_video - 3.0) < 0.35, f"el video dura {dur_video:.2f} s, deberia durar 3.0"
+
+
+def test_video_fluido_aunque_la_deteccion_sea_lenta():
+    """Camara a 30 fps, deteccion a ~7 fps: el video lleva los 30 cuadros
+    reales por segundo (antes repetia cada cuadro detectado ~4 veces)."""
+    with tempfile.TemporaryDirectory() as d:
+        vl, _ = _sesion(d, n=90, fps=30.0, fps_deteccion=7.5)
+        m = json.loads(vl.json_path.read_text(encoding="utf-8"))
+        assert m["fps_video_real"] > 28, m
+        assert m["fps_medio"] < 9                     # la deteccion si fue lenta
+        assert m["frames_camara"] == 90
 
 
 def test_puede_archivar_sin_video():
@@ -120,11 +139,12 @@ def test_dos_sesiones_en_el_mismo_segundo_no_se_pisan():
 
 def test_listado_y_uso_de_disco():
     with tempfile.TemporaryDirectory() as d:
-        _sesion(d); _sesion(d)
+        _sesion(d)
+        _sesion(d)
         lista = listar_grabaciones(d)
         assert len(lista) == 2
         assert all("ruta_relativa" in g and g["existe_video"] for g in lista)
-        assert all(g["ruta_relativa"].startswith("mano_apertura/") for g in lista)
+        assert all(g["ruta_relativa"].startswith("manguito_rotador/") for g in lista)
         uso = uso_en_disco(d)
         assert uso["sesiones"] == 2 and uso["videos"] == 2 and uso["bytes"] > 0
 
@@ -132,7 +152,7 @@ def test_listado_y_uso_de_disco():
 def test_listado_filtra_por_ejercicio():
     with tempfile.TemporaryDirectory() as d:
         _sesion(d)
-        assert len(listar_grabaciones(d, exercise="mano_apertura")) == 1
+        assert len(listar_grabaciones(d, exercise="manguito_rotador")) == 1
         assert len(listar_grabaciones(d, exercise="otro_ejercicio")) == 0
 
 
@@ -150,7 +170,7 @@ def test_resolver_json_rechaza_escapes():
         except ValueError:
             pass
         else:
-            raise AssertionError("deberia rechazar rutas fuera de recordings/")
+            raise AssertionError("deberia rechazar rutas fuera de datos/grabaciones/")
 
 
 def test_features_a_csv_incluye_cabecera_y_una_fila_por_cuadro():
@@ -189,14 +209,3 @@ def test_emite_evento_de_grabacion():
         tipos = [e["type"] for e in pipe.eventos]
         assert "grabacion" in tipos
 
-
-if __name__ == "__main__":
-    fallos = 0
-    for nombre, fn in sorted(globals().items()):
-        if nombre.startswith("test_") and callable(fn):
-            try:
-                fn(); print(f"  OK    {nombre}")
-            except Exception as e:
-                fallos += 1; print(f"  FALLA {nombre}: {e}")
-    print("\nTodo bien." if not fallos else f"\n{fallos} test(s) fallaron.")
-    raise SystemExit(1 if fallos else 0)

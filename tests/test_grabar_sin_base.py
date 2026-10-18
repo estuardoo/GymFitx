@@ -5,87 +5,31 @@ MISMA sesion de camara, sin apagar y volver a prender entre medio.
 
 Mismo truco que test_pausa.py / test_swap_sink.py: mediapipe queda
 sustituido por un doble minimo, no hace falta camara ni modelo real.
-
-    python tests/test_grabar_sin_base.py
 """
 
 from __future__ import annotations
 
-import sys
-import types
 from pathlib import Path
 
 import numpy as np
 
 ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(ROOT))
 
 
-def _instalar_stub_mediapipe() -> None:
-    if "mediapipe" in sys.modules and getattr(sys.modules["mediapipe"], "_ES_STUB", False):
-        return
-
-    mp = types.ModuleType("mediapipe")
-    mp._ES_STUB = True
-    mp.ImageFormat = types.SimpleNamespace(SRGB=1)
-    mp.Image = lambda image_format=None, data=None: types.SimpleNamespace(data=data)
-
-    tasks = types.ModuleType("mediapipe.tasks")
-    tasks_python = types.ModuleType("mediapipe.tasks.python")
-    vision = types.ModuleType("mediapipe.tasks.python.vision")
-
-    class BaseOptions:
-        def __init__(self, model_asset_path=None):
-            self.model_asset_path = model_asset_path
-
-    class _Options:
-        def __init__(self, **kw):
-            self.__dict__.update(kw)
-
-    class RunningMode:
-        VIDEO = "video"
-
-    class HandLandmarker:
-        @classmethod
-        def create_from_options(cls, options):
-            return cls()
-
-        def detect_for_video(self, image, timestamp_ms):
-            return types.SimpleNamespace(hand_landmarks=[], hand_world_landmarks=[], handedness=[])
-
-        def close(self):
-            pass
-
-    tasks_python.BaseOptions = BaseOptions
-    vision.HandLandmarkerOptions = _Options
-    vision.PoseLandmarkerOptions = _Options
-    vision.RunningMode = RunningMode
-    vision.HandLandmarker = HandLandmarker
-    vision.PoseLandmarker = HandLandmarker
-
-    tasks_python.vision = vision
-    tasks.python = tasks_python
-    mp.tasks = tasks
-
-    sys.modules["mediapipe"] = mp
-    sys.modules["mediapipe.tasks"] = tasks
-    sys.modules["mediapipe.tasks.python"] = tasks_python
-    sys.modules["mediapipe.tasks.python.vision"] = vision
-
+from mp_stub import instalar as _instalar_stub_mediapipe  # noqa: E402
 
 _instalar_stub_mediapipe()
 
-from core.exercise import load_exercise      # noqa: E402
-from core.features import FeatureExtractor   # noqa: E402
-from core.pipeline import Pipeline, Sink     # noqa: E402
-from core.template import Template           # noqa: E402
-import core.tracker as tracker_mod           # noqa: E402
+from src.captura.deteccion import tracker as tracker_mod  # noqa: E402
+from src.evaluacion.plantilla import Template  # noqa: E402
+from src.nucleo.ejercicio import load_exercise  # noqa: E402
+from src.procesamiento.medidas.features import FeatureExtractor  # noqa: E402
+from src.sesion.pipeline import Pipeline, Sink  # noqa: E402
 
 tracker_mod.ensure_model = lambda source: Path("stub.task")
 
-EJ = load_exercise(ROOT / "exercises" / "mano_apertura.yaml")
+EJ = load_exercise(ROOT / "ejercicios" / "manguito_rotador.yaml")
 EXTRACTOR = FeatureExtractor(EJ)
-assert EJ.direction == "down_up"  # el test asume esto para leer low/high tal cual
 
 
 def _plantilla_falsa(low=70.0, high=170.0) -> Template:
@@ -117,8 +61,8 @@ def test_set_template_instala_la_base_sin_reabrir_la_camara():
 
     assert pipe.template is plantilla
     assert pipe.segmenter is not None
-    assert pipe.segmenter.low == plantilla.low
-    assert pipe.segmenter.high == plantilla.high
+    assert pipe.segmenter.low == -plantilla.high   # up_down invierte el signo
+    assert pipe.segmenter.high == -plantilla.low
     assert pipe.segmenter.reps == 0
 
 
@@ -134,17 +78,6 @@ def test_set_template_se_puede_reemplazar_en_la_misma_sesion():
 
     assert pipe.template is nueva
     assert pipe.segmenter is not segmentador_viejo
-    assert pipe.segmenter.low == 80.0
-    assert pipe.segmenter.high == 160.0
+    assert pipe.segmenter.low == -160.0
+    assert pipe.segmenter.high == -80.0
 
-
-if __name__ == "__main__":
-    fallos = 0
-    for nombre, fn in sorted(globals().items()):
-        if nombre.startswith("test_") and callable(fn):
-            try:
-                fn(); print(f"  OK    {nombre}")
-            except Exception as e:
-                fallos += 1; print(f"  FALLA {nombre}: {e}")
-    print("\nTodo bien." if not fallos else f"\n{fallos} test(s) fallaron.")
-    raise SystemExit(1 if fallos else 0)
