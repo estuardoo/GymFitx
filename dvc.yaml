@@ -1,0 +1,108 @@
+# La receta de la etapa 3 (preparacion de datos): las 5 tareas de CRISP-DM como etapas, una por ejercicio de params.yaml.
+#   dvc repro          rehace lo que cambio            dvc dag      dibuja el grafo
+#   dvc repro --force  rehace todo (lo usa el CI)      dvc status   que dejo de estar al dia
+# Cada etapa apunta en `desc` a su entrada de la bitacora (docs/decisiones/). El crudo es de solo lectura: datos/clips,
+# datos/grabaciones y las etiquetas entran solo como punteros (.dvc) y ninguna etapa los declara como salida.
+stages:
+  seleccionar:
+    foreach: ${ejercicios}
+    do:
+      desc: "3.1 seleccionar · docs/decisiones/0001-datos-en-disco-crudo-y-respaldo-sql.md"
+      cmd: python -m src.preparacion.etapas seleccionar ${item}
+      deps:
+        - src/preparacion
+        - src/nucleo
+        - datos/clips
+        - datos/manifest.json
+        - datos/seleccion_entrenamiento.json
+      params:
+        - seleccion
+      outs:
+        - datos/intermedio/${item}/seleccion.json
+        - reportes/seleccion_${item}.json:
+            cache: false
+
+  limpiar:
+    foreach: ${ejercicios}
+    do:
+      desc: "3.2 limpiar · docs/decisiones/0005-umbrales-de-limpieza.md"
+      cmd: python -m src.preparacion.etapas limpiar ${item}
+      deps:
+        - src/preparacion
+        - src/procesamiento
+        - src/nucleo
+        - ejercicios/${item}.yaml
+        - datos/clips
+        - datos/intermedio/${item}/seleccion.json
+      params:
+        - limpieza
+        - formato
+      outs:
+        - datos/intermedio/${item}/limpio.json
+        - reportes/limpieza_${item}.md:
+            cache: false
+      metrics:
+        - reportes/limpieza_${item}.json:
+            cache: false
+
+  construir:
+    foreach: ${ejercicios}
+    do:
+      desc: "3.3 construir · docs/decisiones/0006-clase-fuera-registros-generados.md"
+      cmd: python -m src.preparacion.etapas construir ${item}
+      deps:
+        - src/preparacion
+        - src/procesamiento
+        - src/nucleo
+        - ejercicios/${item}.yaml
+        - datos/clips
+        - datos/grabaciones
+        - datos/etiquetas.json
+        - datos/intermedio/${item}/limpio.json
+      params:
+        - construccion
+        - seleccion
+      outs:
+        - datos/intermedio/${item}/construido
+
+  integrar:
+    foreach: ${ejercicios}
+    do:
+      desc: "3.4 integrar · docs/decisiones/0002-particion-por-grabacion.md"
+      cmd: python -m src.preparacion.etapas integrar ${item}
+      deps:
+        - src/preparacion
+        - datos/intermedio/${item}/construido
+      outs:
+        - datos/intermedio/${item}/integrado.json
+
+  formatear:
+    foreach: ${ejercicios}
+    do:
+      desc: "3.5 formatear · docs/decisiones/0007-formato-del-vector.md"
+      cmd: python -m src.preparacion.etapas formatear ${item}
+      deps:
+        - src/preparacion
+        - src/procesamiento
+        - src/nucleo
+        - ejercicios/${item}.yaml
+        - datos/intermedio/${item}/construido
+        - datos/intermedio/${item}/integrado.json
+      params:
+        - formato
+      outs:
+        - datos/final/${item}
+        - docs/diccionario/${item}.csv:
+            cache: false
+        - docs/diccionario/${item}.md:
+            cache: false
+
+  documentar_codigo:
+    desc: "documentacion del codigo (docs/codigo) · docs/decisiones/0008-documentacion-del-codigo.md"
+    cmd: python scripts/generar_docs_codigo.py
+    deps:
+      - scripts/generar_docs_codigo.py
+      - src
+    outs:
+      - docs/codigo:
+          cache: false

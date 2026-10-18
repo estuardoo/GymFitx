@@ -1,13 +1,30 @@
+# entorno
 __pycache__/
 *.pyc
+*.egg-info/
 .venv/
-models/*.task
-models/*.part
-templates/*.npz
-*.db
-*.log
-recordings/
 .pytest_cache/
-_to_delete/
-_legacy/
+.ruff_cache/
 python_version.txt
+
+# todo lo que genera el uso (videos, clips, modelos entrenados, logs, credenciales). Se deja pasar solo lo que pone DVC:
+# los punteros datos/*.dvc y datos/.gitignore (el contenido va al remoto de DVC, nunca al historial)
+datos/*
+!datos/*.dvc
+!datos/.gitignore
+# modelos de MediaPipe (se descargan solos) y cloudflared
+modelos/
+herramientas/
+
+# respaldos del editor de puntos
+ejercicios/.respaldos/
+*.bak
+
+# laminas exportadas del pitch (el .pptx si se versiona)
+docs/pitch/*.png
+
+# salidas de trabajo de Claude
+Claude outputs/
+
+# archivos retirados a la espera de borrarse
+_to_delete/

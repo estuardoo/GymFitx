@@ -1,0 +1,34 @@
+# Decisiones de la preparacion de datos (etapa 3 de CRISP-DM). Se versiona: cambiar un valor aqui cambia la tabla y
+# deja el rastro en el diff (docs/decisiones/ explica cada una). Ningun umbral vive en el codigo.
+ejercicios: [zancada, cuerpo_completo]   # los que recorre dvc.yaml (foreach); agrega aqui los que quieras reproducir
+
+seleccion:                  # decisiones/0001
+  excluir_clases: [base]    # 'base' es la referencia de la Descomposicion, no una clase a predecir
+
+limpieza:                   # decisiones/0005
+  aplicar: true             # false = solo informar, no sacar clips
+  min_frames: 10            # un clip con menos cuadros se saca
+  max_nan_pct: 20           # % maximo de puntos sin deteccion (NaN) antes de sacar el clip
+
+construccion:               # decisiones/0006
+  fuera:                    # ventanas "fuera" (sin ciclo) que aprende el modelo para contar en vivo
+    incluir: true
+    paso: 0.25              # desplazamiento de la ventana, como fraccion de su largo
+    iou_max: 0.3            # solape maximo con un corte bien/mal/base para aceptar la ventana
+    min_cuadros: 4          # una ventana con menos cuadros con dato se descarta
+
+formato:                    # decisiones/0007
+  modo: rectangulo          # normalizacion espacial: caja 100x100
+  n_frames_fijo: 30         # cuadros por ciclo tras remuestrear
+  componentes: xyzap        # x,y,z de cada kpoint + a (angulos) + p (proporciones)
+
+entrenamiento:              # decisiones/0002
+  test_pct: 20              # % para probar -> k del k-fold ~ 100/test_pct
+  semilla: 42
+  min_muestras: 4           # menos que esto no se entrena
+
+base_clip:                  # decisiones/0003  (base de conteo desde el primer clip "bien")
+  frac_low: 0.3             # umbrales de la repeticion como fraccion del recorrido (P10..P90 de la senal)
+  frac_high: 0.5
+  frac_fin: 0.7             # la repeticion se cuenta al volver a este punto (posicion inicial)
+

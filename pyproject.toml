@@ -1,0 +1,27 @@
+[project]
+name = "gymfit"
+version = "2.3.0"
+description = "Coach de movimiento por camara (MediaPipe) + dataset y clasificador de ejecucion bien/mal"
+requires-python = ">=3.11"
+readme = "README.md"
+# No se instala como paquete: se corre desde esta carpeta (GYMFITX.bat). Este archivo solo guarda
+# los metadatos y la configuracion de pytest y ruff. Las dependencias viven en requirements.txt (el .bat y el panel "Librerias" las leen de ahi)
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = [".", "tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+extend-exclude = [".venv", "datos"]
+
+[tool.ruff.lint]
+# E/F: errores y nombres; I: imports ordenados; B: bugs comunes; UP: sintaxis moderna
+select = ["E", "F", "I", "B", "UP"]
+ignore = ["E501", "E731", "B008", "B905", "E741"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["E402"]            # los tests instalan el doble de mediapipe antes de importar
+"src/captura/deteccion/tracker.py" = ["E402"]

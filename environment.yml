@@ -1,0 +1,8 @@
+# Entorno reproducible (conda). Las versiones exactas instaladas: `pip freeze > requirements.lock.txt` y se versiona.
+name: gymfitx
+channels: [conda-forge]
+dependencies:
+  - python=3.10
+  - pip
+  - pip:
+      - -r requirements-dev.txt

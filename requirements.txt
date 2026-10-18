@@ -8,11 +8,26 @@ PyYAML>=6.0
 fastapi>=0.110
 uvicorn[standard]>=0.27
 pydantic>=2.5
+python-multipart>=0.0.9   # subida de clips por ejercicio (UploadFile)
 
 # Nombres reales de camara en el selector (en vez de "Camara 0/1/2");
 # solo aplica en Windows, se ignora en cualquier otro sistema.
 pygrabber>=0.1; sys_platform == "win32"
 
+# SQL Server (src/almacenamiento/sqlserver.py): historial y dataset -- opcional:
+# si falta, el panel arranca igual y avisa en Sistema. Requiere ademas el "ODBC Driver
+# 17 for SQL Server" instalado en Windows (no es un paquete de pip).
+pyodbc>=5.0
+
 # Nota: no se fija numpy<2 a proposito. mediapipe y opencv tienen requisitos
 # cruzados sobre numpy que cambian con cada version; dejar que pip resuelva
 # evita el conflicto "opencv exige numpy>=2 pero tienes 1.26".
+
+# --- dataset y entrenamiento (src/etiquetado/, src/entrenamiento/) ---
+scikit-learn>=1.4
+matplotlib>=3.8
+joblib>=1.3
+imageio-ffmpeg>=0.4
+# xgboost queda OPCIONAL a proposito (src/entrenamiento/modelos.py lo importa
+# en un try/except ImportError): instalalo aparte solo si lo queres en la
+# comparacion de modelos, no es un requisito duro.
