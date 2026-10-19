@@ -18,7 +18,8 @@ jobs:
       - name: el PR cita un issue
         if: github.event_name == 'pull_request'
         env: {CUERPO: "${{ github.event.pull_request.body }}"}
-        run: echo "$CUERPO" | grep -Eiq '(closes|refs|fixes) #[0-9]+' || { echo "El PR debe citar un issue (Closes #N)"; exit 1; }
+        run: |   # bloque: en una linea suelta el ' #' de la regex se toma como comentario de YAML
+          echo "$CUERPO" | grep -Eiq '(closes|refs|fixes) #[0-9]+' || { echo "El PR debe citar un issue (Closes #N)"; exit 1; }
 
   reproducibilidad:   # clonar -> dvc pull -> dvc repro --force -> dvc.lock sin cambios. Se activa con la variable del repo DVC_ACTIVO=true
     if: vars.DVC_ACTIVO == 'true'
