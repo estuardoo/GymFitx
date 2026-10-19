@@ -16,4 +16,4 @@ Cadena que pide CRISP-DM: **decision → justificacion → codigo → parametro 
 | [0010](0010-remoto-de-datos-dvc.md) | Remoto DVC | — | — | **pendiente** |
 
 Plantilla de una nueva: copiar la 0005 y rellenar Estado · Contexto · Decision · Parametro · Codigo · Salida/metrica · Issue.
-Los `#pendiente` se reemplazan por el numero del issue de GitHub al crearlo (commits `Refs #N`, PR `Closes #N`).
+Cada decision tiene su issue (el numero esta en la cabecera del ADR). Commits: `Refs #N` · PR: `Closes #N`.

@@ -22,21 +22,22 @@ from __future__ import annotations
 import threading
 import time
 from collections import deque
-from typing import Callable
+from collections.abc import Callable
+
 import numpy as np
 
 from . import overlay
 from .features import FeatureExtractor, angle_deg
-from .landmarks import HAND_LANDMARKS, region_indices
 from .filters import OneEuroFilter
+from .landmarks import HAND_LANDMARKS, region_indices
 from .segmenter import RepSegmenter
-from .template import Template, build_template
-from .tracker import HandTracker, build_tracker
-from .types import FeatureVec, Frame, Segment
 
 # Los sumideros y el bus viven en core/sinks.py (no importan mediapipe).
 # Se reexportan aqui para que `from core.pipeline import Evaluator` siga siendo valido.
-from .sinks import EventBus, Evaluator, Evento, MultiSink, Recorder, Sink  # noqa: E402,F401
+from .sinks import Evaluator, EventBus, Evento, MultiSink, Recorder, Sink  # noqa: E402,F401
+from .template import Template
+from .tracker import HandTracker, build_tracker
+from .types import FeatureVec, Frame
 
 # Gesto de control: abrir y cerrar la mano izquierda en la esquina superior
 # izquierda de la imagen inicia/detiene la grabacion sin tocar el mouse, para

@@ -15,8 +15,8 @@ from __future__ import annotations
 import argparse
 
 import _bootstrap  # noqa: F401
-from _common import (agregar_flags_comunes, avisar_archivo, camara,
-                     cargar_ejercicio, con_archivo, correr_con_ventana)
+from _common import agregar_flags_comunes, avisar_archivo, camara, cargar_ejercicio, con_archivo, correr_con_ventana
+
 from core.config import TEMPLATES_DIR
 from core.pipeline import Pipeline, Recorder
 from core.template import template_path

@@ -9,11 +9,18 @@ from __future__ import annotations
 
 import argparse
 
-import numpy as np
-
 import _bootstrap  # noqa: F401
-from _common import (agregar_flags_comunes, avisar_archivo, camara, cargar_ejercicio,
-                     cargar_plantilla, con_archivo, correr_con_ventana)
+import numpy as np
+from _common import (
+    agregar_flags_comunes,
+    avisar_archivo,
+    camara,
+    cargar_ejercicio,
+    cargar_plantilla,
+    con_archivo,
+    correr_con_ventana,
+)
+
 from core.config import DB_PATH
 from core.pipeline import Evaluator, Pipeline
 from core.storage import Storage

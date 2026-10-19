@@ -10,7 +10,7 @@ de landmark revienta antes de encender la camara, no a mitad de la serie.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 
 import yaml

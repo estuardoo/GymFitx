@@ -76,7 +76,7 @@ class Template:
         return path
 
     @classmethod
-    def load(cls, path: str | Path) -> "Template":
+    def load(cls, path: str | Path) -> Template:
         z = np.load(Path(path), allow_pickle=False)
         m = json.loads(str(z["meta"]))
         return cls(

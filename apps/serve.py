@@ -14,18 +14,18 @@ from __future__ import annotations
 
 import argparse
 import asyncio
-import shutil
 import importlib.metadata as metadata
 import logging
 import os
 import re
+import shutil
 import subprocess
 import sys
 import threading
 from datetime import date
-from pathlib import Path
 from typing import Any
 
+import _bootstrap  # noqa: F401
 import cv2
 import numpy as np
 import uvicorn
@@ -34,18 +34,16 @@ from fastapi.responses import FileResponse, Response, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-import _bootstrap  # noqa: F401
 from core.config import DB_PATH, EXERCISES_DIR, RECORDINGS_DIR, ROOT, TEMPLATES_DIR, WEB_DIR
-from core.exercise import load_all, load_exercise
+from core.exercise import load_all
 from core.features import FeatureExtractor
-from core.pipeline import EventBus, Evaluator, MultiSink, Pipeline, Recorder, Sink
 from core.landmarks import regiones_de_puntos
+from core.pipeline import Evaluator, EventBus, MultiSink, Pipeline, Recorder, Sink
 from core.source import CameraSource, list_cameras, nombres_camaras_windows
 from core.storage import Storage
 from core.template import Template, build_template, template_path
 from core.types import FeatureVec
-from core.videolog import (VideoLogger, features_a_csv, listar_grabaciones, resolver_json,
-                           uso_en_disco)
+from core.videolog import VideoLogger, features_a_csv, listar_grabaciones, resolver_json, uso_en_disco
 
 app = FastAPI(title="GYMFITX")
 store = Storage(DB_PATH)
@@ -642,7 +640,7 @@ def _requisitos() -> dict[str, str]:
         linea = linea.split("#", 1)[0].strip()
         if not linea:
             continue
-        nombre = re.split(r"[<>=!~; ]", linea, 1)[0].strip()
+        nombre = re.split(r"[<>=!~; ]", linea, maxsplit=1)[0].strip()
         if not nombre:
             continue
         salida[nombre] = linea[len(nombre):].split(";", 1)[0].strip()

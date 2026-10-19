@@ -8,9 +8,9 @@ from __future__ import annotations
 
 import threading
 
+import _bootstrap  # noqa: F401
 import cv2
 
-import _bootstrap  # noqa: F401
 from core.config import EXERCISES_DIR, RECORDINGS_DIR, TEMPLATES_DIR
 from core.exercise import load_exercise
 from core.pipeline import MultiSink, Pipeline, Sink
@@ -98,10 +98,10 @@ def avisar_archivo(sink) -> None:
         return
     if vl.video_path:
         mb = vl.video_path.stat().st_size / 1e6 if vl.video_path.exists() else 0
-        print(f"\nSesion archivada:")
+        print("\nSesion archivada:")
         print(f"  video    {vl.video_path}  ({mb:.1f} MB, {vl.codec}, "
               f"{vl._tam[0]}x{vl._tam[1]})")
     else:
-        print(f"\nSesion archivada (sin video):")
+        print("\nSesion archivada (sin video):")
     print(f"  features {vl.npz_path}")
     print(f"  metadatos{'':1} {vl.json_path}")
