@@ -21,6 +21,11 @@ formato:                    # decisiones/0007
   modo: rectangulo          # normalizacion espacial: caja 100x100
   n_frames_fijo: 30         # cuadros por ciclo tras remuestrear
   componentes: xyzap        # x,y,z de cada kpoint + a (angulos) + p (proporciones)
+  lienzo: 100               # lado de la caja de normalizacion (px): caja 100x100
+  escala:                   # divisor que lleva cada medida a 0..1 (grados, %, razon)
+    angle: 180
+    proporcion: 100
+    distance_ratio: 4
 
 entrenamiento:              # decisiones/0002
   test_pct: 20              # % para probar -> k del k-fold ~ 100/test_pct

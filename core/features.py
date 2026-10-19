@@ -20,7 +20,6 @@ import numpy as np
 from .landmarks import resolve
 from .types import FeatureVec, Landmarks
 
-
 # --- Formas escalares, para tests y uso puntual ---------------------------
 
 def angle_deg(a: np.ndarray, b: np.ndarray, c: np.ndarray) -> float:

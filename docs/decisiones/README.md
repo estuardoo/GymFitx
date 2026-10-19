@@ -13,7 +13,7 @@ Cadena que pide CRISP-DM: **decision → justificacion → codigo → parametro 
 | [0007](0007-formato-del-vector.md) | Formato del vector | 3.5 | `formato` | aceptada |
 | [0008](0008-documentacion-del-codigo.md) | Docs del codigo generadas | — | — | aceptada |
 | [0009](0009-flujo-github-ramas-pr-y-proteccion.md) | Flujo GitHub | crit. 7 | — | aceptada |
-| [0010](0010-remoto-de-datos-dvc.md) | Remoto DVC | — | — | **pendiente** |
+| [0010](0010-remoto-de-datos-dvc.md) | Remoto DVC (Google Drive) | — | — | aceptada |
 
 Plantilla de una nueva: copiar la 0005 y rellenar Estado · Contexto · Decision · Parametro · Codigo · Salida/metrica · Issue.
-Los `#pendiente` se reemplazan por el numero del issue de GitHub al crearlo (commits `Refs #N`, PR `Closes #N`).
+Cada decision tiene su issue (el numero esta en la cabecera del ADR). Commits: `Refs #N` · PR: `Closes #N`.

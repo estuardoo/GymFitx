@@ -65,7 +65,7 @@ class _BaseTracker:
         self.close()
 
     @staticmethod
-    def _mp_image(frame: Frame) -> "mp.Image":
+    def _mp_image(frame: Frame) -> mp.Image:
         rgb = np.ascontiguousarray(frame.image[:, :, ::-1])
         return mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb)
 

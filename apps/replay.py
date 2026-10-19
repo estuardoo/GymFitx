@@ -18,10 +18,10 @@ import argparse
 import json
 from pathlib import Path
 
-import numpy as np
-
 import _bootstrap  # noqa: F401
+import numpy as np
 from _common import cargar_ejercicio, cargar_plantilla, correr_con_ventana
+
 from core.config import TEMPLATES_DIR
 from core.pipeline import Evaluator, Pipeline, Recorder
 from core.source import VideoSource

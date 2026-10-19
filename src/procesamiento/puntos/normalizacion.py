@@ -8,6 +8,8 @@ import hashlib
 
 import numpy as np
 
+from src.nucleo.config import params
+
 DEFAULT_CFG = {
     "modo": "rectangulo",       # "rectangulo" (recomendado) o "punto"
     "n_frames_fijo": 30,
@@ -16,7 +18,7 @@ DEFAULT_CFG = {
 }
 
 
-LADO_LIENZO = 100
+LADO_LIENZO = params("formato")["lienzo"]   # params.yaml: formato.lienzo
 
 
 def cfg_para(point_names, cfg_guardada: dict | None = None) -> dict:

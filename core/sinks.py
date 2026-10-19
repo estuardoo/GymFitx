@@ -7,13 +7,17 @@ vision instalada, igual que types.py.
 
 from __future__ import annotations
 
-from typing import Callable
+from collections.abc import Callable
+from typing import TYPE_CHECKING
 
 import numpy as np
 
 from .compare import compare
-from .template import Template
+from .template import Template, build_template
 from .types import FeatureVec, Frame, Segment
+
+if TYPE_CHECKING:
+    from .pipeline import Pipeline
 
 Evento = dict
 
@@ -36,10 +40,10 @@ class EventBus:
 
 
 class Sink:
-    def on_start(self, pipe: "Pipeline") -> None: ...
-    def on_frame(self, pipe: "Pipeline", frame: Frame, fv: FeatureVec | None) -> None: ...
-    def on_rep(self, pipe: "Pipeline", seg: Segment) -> None: ...
-    def on_stop(self, pipe: "Pipeline") -> None: ...
+    def on_start(self, pipe: Pipeline) -> None: ...
+    def on_frame(self, pipe: Pipeline, frame: Frame, fv: FeatureVec | None) -> None: ...
+    def on_rep(self, pipe: Pipeline, seg: Segment) -> None: ...
+    def on_stop(self, pipe: Pipeline) -> None: ...
 
 
 class MultiSink(Sink):
@@ -75,11 +79,11 @@ class Recorder(Sink):
         self.template: Template | None = None
         self.error: str | None = None
 
-    def on_frame(self, pipe: "Pipeline", frame: Frame, fv: FeatureVec | None) -> None:
+    def on_frame(self, pipe: Pipeline, frame: Frame, fv: FeatureVec | None) -> None:
         if fv is not None and fv.any_valid:
             self.frames.append(fv)
 
-    def on_stop(self, pipe: "Pipeline") -> None:
+    def on_stop(self, pipe: Pipeline) -> None:
         try:
             self.template = build_template(
                 self.frames, pipe.exercise, pipe.extractor, self.radius_frac
@@ -106,7 +110,7 @@ class Evaluator(Sink):
         self.session_id = session_id
         self.scores: list[float] = []
 
-    def on_rep(self, pipe: "Pipeline", seg: Segment) -> None:
+    def on_rep(self, pipe: Pipeline, seg: Segment) -> None:
         score = compare(seg, self.template)
         self.scores.append(score.total)
         if self.storage is not None:

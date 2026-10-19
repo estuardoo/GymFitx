@@ -129,7 +129,7 @@ Para subir cambios a GitHub hay una herramienta aparte, `subir_github/SUBIR_GITH
 | Panel en vivo, conteo y puntaje | funcionando |
 | Corte y etiquetado de clips | funcionando |
 | Preparación reproducible con DVC (etapa 3) | implementada |
-| Remoto de datos de DVC | **pendiente de elegir** ([decisión 0010](docs/decisiones/0010-remoto-de-datos-dvc.md)) |
+| Remoto de datos de DVC | **Google Drive** (carpeta `1YXv5yP8nFHSeF4XjDtRTDb6tpM14XDSx`, cuenta de servicio) ([decisión 0010](docs/decisiones/0010-remoto-de-datos-dvc.md)) |
 | Clasificador bien / mal | prototipo: pocos clips etiquetados, resultados todavía no concluyentes |
 
 Limitaciones conocidas: el volumen de datos es pequeño y está desbalanceado entre ejercicios y personas; por eso la validación se hace por grabación y las métricas deben leerse con cautela.

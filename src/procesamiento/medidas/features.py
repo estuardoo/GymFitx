@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import numpy as np
 
+from src.nucleo.config import params
 from src.nucleo.ejercicio import UNIDAD_POR_TIPO
 from src.nucleo.landmarks import es_landmark, resolve
 from src.nucleo.tipos import FeatureVec, Landmarks
@@ -168,7 +169,7 @@ class FeatureExtractor:
 
 # Escala para llevar cada metrica a 0..1 (tabla normalizada): angulo /180, proporcion /100 y razon de
 # distancias recortada a 0..4 y /4. La cruda se guarda tal cual sale en table_frames.
-ESCALA_TIPO = {"angle": 180.0, "proporcion": 100.0, "distance_ratio": 4.0}
+ESCALA_TIPO = {k: float(v) for k, v in params("formato")["escala"].items()}   # params.yaml: formato.escala
 
 
 def medibles(nombres, features) -> list[dict]:

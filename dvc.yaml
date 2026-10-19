@@ -17,6 +17,7 @@ stages:
         - datos/seleccion_entrenamiento.json
       params:
         - seleccion
+        - formato
       outs:
         - datos/intermedio/${item}/seleccion.json
         - reportes/seleccion_${item}.json:
@@ -62,6 +63,7 @@ stages:
       params:
         - construccion
         - seleccion
+        - formato
       outs:
         - datos/intermedio/${item}/construido
 
@@ -72,7 +74,11 @@ stages:
       cmd: python -m src.preparacion.etapas integrar ${item}
       deps:
         - src/preparacion
+        - src/procesamiento
+        - src/nucleo
         - datos/intermedio/${item}/construido
+      params:
+        - formato
       outs:
         - datos/intermedio/${item}/integrado.json
 

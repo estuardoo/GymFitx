@@ -7,7 +7,7 @@ Cada celda = cuantos imports hay desde la rama de la FILA hacia la rama de la CO
 | **nucleo** |  |  |  |  |  |  |  |  |  |  |
 | **almacenamiento** | 6 |  |  |  |  |  |  |  |  |  |
 | **captura** | 5 |  |  |  |  |  |  |  |  |  |
-| **procesamiento** | 8 |  | 1 |  |  |  |  |  |  |  |
+| **procesamiento** | 10 |  | 1 |  |  |  |  |  |  |  |
 | **evaluacion** | 9 |  |  | 2 |  |  |  |  |  |  |
 | **sesion** | 8 |  | 1 | 3 | 4 |  |  |  |  |  |
 | **etiquetado** | 17 | 8 |  | 9 | 2 |  |  |  |  |  |
