@@ -1,4 +1,4 @@
-# `scripts/estado_busqueda_slurm.py`
+# `scripts/hpc/estado_busqueda_slurm.py`
 
 ```text
 Tabla de avance de una corrida de busqueda_features_slurm.py -- lee los <salida>.estado.json que cada

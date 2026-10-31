@@ -23,6 +23,7 @@
 - `cargarEstado`
 - `cargarGrabaciones`
 - `cargarHistorial`
+- `cargarPersonasCaptura`
 - `empujarRegiones`
 - `guardarEjercicio`
 - `importarCarpeta`

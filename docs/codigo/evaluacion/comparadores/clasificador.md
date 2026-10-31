@@ -1,7 +1,7 @@
 # `src/evaluacion/comparadores/clasificador.py`
 
 ```text
-Comparador con el modelo entrenado (datos/entrenamientos/run_N/modelo.joblib).
+Comparador con el modelo entrenado (output/models/<n>/run_NNN/modelo.joblib).
 
 Convierte los kpoints de la repeticion en el MISMO vector que vio al entrenar
 (procesamiento/puntos/vectorizar.py); el puntaje es P(bien) 0-100.
@@ -10,7 +10,7 @@ Convierte los kpoints de la repeticion en el MISMO vector que vio al entrenar
 ## class `Clasificador`
 
 ```text
-Modelo de datos/entrenamientos/run_N cargado para puntuar en vivo.
+Modelo de output/models/<n>/run_NNN cargado para puntuar en vivo.
 ```
 
 ### `Clasificador.__init__`
@@ -58,7 +58,7 @@ kp = kpoints (K,3) de este cuadro. Devuelve {"clase","p_bien","p_ciclo"} al cerr
 
 ```text
 El modelo.joblib mas reciente entrenado con clips de 'exercise' y con
-spec (los entrenados antes de esta version no la tienen).
+spec (los entrenados antes de esta version no la tienen). Corridas en output/models/<n del ejercicio>/run_NNN.
 ```
 
 ## `cargar_clasificador`

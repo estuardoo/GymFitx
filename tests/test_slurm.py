@@ -3,6 +3,8 @@ sin aplanar, para el script standalone scripts/busqueda_features_slurm.py -- ver
 import numpy as np
 import pytest
 
+pytestmark = pytest.mark.lento   # tarda minutos: lo corre el trabajo "hpc" del CI
+
 
 @pytest.fixture
 def entorno(tmp_path, monkeypatch):
@@ -17,7 +19,7 @@ def entorno(tmp_path, monkeypatch):
              {"name": "pro", "type": "proporcion", "points": ["a", "b"], "cadena": ["a", "b", "c"]}]
     filas = [{"clip": f"{'bien' if i % 2 else 'mal'}/c{i}.mp4", "clase": "bien" if i % 2 else "mal",
               "type": 1, "origen": f"x/{i}.mp4"} for i in range(6)]
-    filas.append({"clip": "base/b.mp4", "clase": "base", "type": 1, "origen": "x"})
+    filas.append({"clip": "sin_etiqueta/b.mp4", "clase": "sin_etiqueta", "type": 1, "origen": "x"})
     crudos = {r["clip"]: (np.zeros((4, 3, 3), dtype=np.float32), np.zeros((4, 2), dtype=np.float32)) for r in filas}
 
     monkeypatch.setattr(EJ, "puntos_de_ejercicio", lambda ex: nombres)
@@ -34,8 +36,8 @@ def entorno(tmp_path, monkeypatch):
 def test_exporta_solo_bien_mal_con_las_metricas_activadas(entorno):
     EXP, out = entorno
     resumen = EXP.exportar("cualquiera", out)
-    assert resumen["clips"] == 6 and resumen["kpoints"] == 3 and resumen["metricas"] == 2   # 'base' fuera
-    d = np.load(out, allow_pickle=True)
+    assert resumen["clips"] == 6 and resumen["kpoints"] == 3 and resumen["metricas"] == 2   # sin_etiqueta fuera
+    d = dict(np.load(out, allow_pickle=True))
     assert d["points"].shape == (6, 4, 3, 3) and d["metrics"].shape == (6, 4, 2)
     assert set(d["metric_types"]) == {"angle", "proporcion"}
     assert set(d["y"]) == {"bien", "mal"}
@@ -61,7 +63,7 @@ def _npz_sintetico(ruta, n=20, T=5, N=4, A=2, semilla=0):
 
 
 def _n_modelos():
-    from scripts import busqueda_features_slurm as BUS
+    from scripts.hpc import busqueda_features_slurm as BUS
     return len(BUS.modelos())
 
 
@@ -73,7 +75,7 @@ def test_busqueda_features_slurm_corre_de_punta_a_punta(tmp_path):
     import subprocess
     import sys
 
-    script = "scripts/busqueda_features_slurm.py"
+    script = "scripts/hpc/busqueda_features_slurm.py"
     n_modelos = _n_modelos()
 
     ds = tmp_path / "ds_entero.npz"
@@ -104,7 +106,7 @@ def test_busqueda_deja_estado_json_con_avance_y_terminado(tmp_path):
     import subprocess
     import sys
 
-    script = "scripts/busqueda_features_slurm.py"
+    script = "scripts/hpc/busqueda_features_slurm.py"
     n_modelos = _n_modelos()
     ds = tmp_path / "ds_estado.npz"
     _npz_sintetico(ds)
@@ -126,9 +128,9 @@ def test_busqueda_con_modelo_evalua_solo_ese_modelo(tmp_path):
     import subprocess
     import sys
 
-    from scripts.busqueda_features_slurm import MODELOS_CODIGO
+    from scripts.hpc.busqueda_features_slurm import MODELOS_CODIGO
 
-    script = "scripts/busqueda_features_slurm.py"
+    script = "scripts/hpc/busqueda_features_slurm.py"
     ds = tmp_path / "ds_modelo.npz"
     _npz_sintetico(ds)
     salida = tmp_path / "res_modelo.csv"
@@ -146,7 +148,7 @@ def test_busqueda_con_modelo_desconocido_falla_claro(tmp_path):
     import subprocess
     import sys
 
-    script = "scripts/busqueda_features_slurm.py"
+    script = "scripts/hpc/busqueda_features_slurm.py"
     ds = tmp_path / "ds_modelo_malo.npz"
     _npz_sintetico(ds)
     r = subprocess.run([sys.executable, script, "--dataset", str(ds), "--z", "3", "--modelo", "no_existe",
@@ -160,7 +162,7 @@ def test_busqueda_deja_avance_txt_con_inicio_fin_y_duracion(tmp_path):
     import subprocess
     import sys
 
-    script = "scripts/busqueda_features_slurm.py"
+    script = "scripts/hpc/busqueda_features_slurm.py"
     ds = tmp_path / "ds_avance.npz"
     _npz_sintetico(ds)
     salida = tmp_path / "res_avance.csv"
@@ -180,7 +182,7 @@ def test_busqueda_no_repite_combinaciones_entre_corridas(tmp_path):
     import subprocess
     import sys
 
-    script = "scripts/busqueda_features_slurm.py"
+    script = "scripts/hpc/busqueda_features_slurm.py"
     ds = tmp_path / "ds.npz"
     _npz_sintetico(ds, N=4)   # 4 kpoints, 1 angulo, 1 proporcion -> 15 combinaciones posibles (espacio > 2*z)
 
@@ -204,7 +206,7 @@ def test_eleccion_ponderada_favorece_los_indices_de_mas_peso():
     tape el tamano al azar -- con k=1 por sorteo, el indice de mas peso debe salir elegido mucho mas seguido."""
     import random
 
-    from scripts import busqueda_features_slurm as BUS
+    from scripts.hpc import busqueda_features_slurm as BUS
 
     class _RngK1(random.Random):
         def randint(self, a, b):
@@ -222,7 +224,7 @@ def test_eleccion_ponderada_favorece_los_indices_de_mas_peso():
 
 
 def test_importancias_devuelve_pesos_positivos_del_tamano_correcto(tmp_path):
-    from scripts import busqueda_features_slurm as BUS
+    from scripts.hpc import busqueda_features_slurm as BUS
 
     ds_ruta = tmp_path / "ds.npz"
     _npz_sintetico(ds_ruta, n=20, T=5, N=4, A=2)
@@ -242,7 +244,7 @@ def test_repetir_semilla_sobre_historial_grande_no_se_traba():
     Fix: sumar len(vistas) a la semilla (lo que hace main()) corre el punto de partida del sorteo."""
     import random
 
-    from scripts import busqueda_features_slurm as BUS
+    from scripts.hpc import busqueda_features_slurm as BUS
 
     m, p, q = 10, 1, 1   # 1023 combos posibles (angulos/proporciones no aportan variedad: solo 1 opcion cada uno)
     vistas = {}   # {firma: escenario_id}
@@ -257,7 +259,7 @@ def test_repetir_semilla_sobre_historial_grande_no_se_traba():
 def test_campos_y_fila_codifican_todo_sin_texto():
     """La tabla detalle no debe llevar nombres/texto -- todo codigo. campos() define el ancho segun m/p/q
     de CADA ejercicio; _fila() calcula llave = escenario*100 + codigo_modelo (ver MODELOS_CODIGO)."""
-    from scripts import busqueda_features_slurm as BUS
+    from scripts.hpc import busqueda_features_slurm as BUS
 
     assert BUS.campos(3, 2, 1) == (["llave", "type", "modelo", "escenario"] + ["K01", "K02", "K03"]
                                     + ["A01", "A02"] + ["P01"] + ["accuracy", "f1_macro", "error"])
@@ -277,7 +279,7 @@ def test_campos_y_fila_codifican_todo_sin_texto():
 def test_vecino_cambia_un_solo_elemento():
     import random
 
-    from scripts import busqueda_features_slurm as BUS
+    from scripts.hpc import busqueda_features_slurm as BUS
 
     rng = random.Random(0)
     combo = ([0, 2], [0], [])   # m=4 kpoints, p=1 angulo, q=0 proporciones
@@ -293,7 +295,7 @@ def test_vecino_cambia_un_solo_elemento():
 def test_vecino_no_deja_una_categoria_vacia():
     import random
 
-    from scripts import busqueda_features_slurm as BUS
+    from scripts.hpc import busqueda_features_slurm as BUS
 
     rng = random.Random(0)
     combo = ([0], [], [])   # K con un solo elemento activo
@@ -308,7 +310,7 @@ def test_escalada_sube_el_score_mas_alla_del_lote_inicial():
     verdad, solo evaluando el lote y parando."""
     import random
 
-    from scripts import busqueda_features_slurm as BUS
+    from scripts.hpc import busqueda_features_slurm as BUS
 
     rng = random.Random(1)
     vistas = {}
@@ -329,7 +331,7 @@ def test_escalada_sube_el_score_mas_alla_del_lote_inicial():
 def test_escalada_respeta_el_presupuesto_z():
     import random
 
-    from scripts import busqueda_features_slurm as BUS
+    from scripts.hpc import busqueda_features_slurm as BUS
 
     rng = random.Random(2)
     vistas = {}
@@ -348,7 +350,7 @@ def test_escalada_sin_espacio_no_revienta():
     fallar -- debe devolver None/-1.0 sin intentar escalar desde un combo inexistente."""
     import random
 
-    from scripts import busqueda_features_slurm as BUS
+    from scripts.hpc import busqueda_features_slurm as BUS
 
     rng = random.Random(0)
     vistas = {BUS._firma(([0], [], [])): 1}   # el unico combo posible con m=1,p=0,q=0 ya esta visto
@@ -365,7 +367,7 @@ def test_multi_arranque_escapa_un_optimo_local_que_un_solo_arranque_no(monkeypat
     presupuesto entre arranques, cual gana al final), no vecino() (ya tiene sus propios tests)."""
     import random
 
-    from scripts import busqueda_features_slurm as BUS
+    from scripts.hpc import busqueda_features_slurm as BUS
 
     def puntaje(combo):
         s = frozenset(combo[0])
@@ -416,7 +418,7 @@ def test_busqueda_con_escalada_corre_de_punta_a_punta_y_reparte_historial_por_ta
     import subprocess
     import sys
 
-    script = "scripts/busqueda_features_slurm.py"
+    script = "scripts/hpc/busqueda_features_slurm.py"
     n_modelos = _n_modelos()
     ds = tmp_path / "ds.npz"
     _npz_sintetico(ds, N=6)   # mas kpoints: espacio grande, para que la escalada tenga donde moverse
@@ -447,7 +449,7 @@ def test_busqueda_con_escalada_corre_de_punta_a_punta_y_reparte_historial_por_ta
 def test_lote_y_arranques_usa_los_porcentajes_por_defecto_si_no_se_pasan():
     """--escalada es default ahora: sin --lote/--arranques explicitos, _lote_y_arranques() calcula 20%/10%
     de --z (ver PARAMETROS POR DEFECTO) -- un --lote/--arranques explicito siempre gana, se usa tal cual."""
-    from scripts.busqueda_features_slurm import _lote_y_arranques
+    from scripts.hpc.busqueda_features_slurm import _lote_y_arranques
 
     assert _lote_y_arranques(500, None, None) == (100, 10)   # 20% de 500 = 100; 10% de 100 = 10
     assert _lote_y_arranques(6, None, None) == (1, 1)         # round(6*0.2)=1, max(1, round(1*0.1))=1 (piso)
@@ -460,7 +462,7 @@ def test_busqueda_con_heuristico_corre_de_punta_a_punta(tmp_path):
     import subprocess
     import sys
 
-    script = "scripts/busqueda_features_slurm.py"
+    script = "scripts/hpc/busqueda_features_slurm.py"
     n_modelos = _n_modelos()
     ds = tmp_path / "ds.npz"
     _npz_sintetico(ds)

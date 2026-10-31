@@ -1,11 +1,11 @@
 # `src/nucleo/ejercicio.py`
 
 ```text
-Carga y validacion del ejercicio declarado en YAML.
+Carga y validacion del ejercicio (su definicion vive en parameters/<n>/, ver nucleo/definicion.py).
 
-Un ejercicio NO es codigo: es un archivo de datos que declara que articulaciones
+Un ejercicio NO es codigo: es un dato que declara que articulaciones
 mirar y como reconocer una repeticion. Agregar manguito rotador o flexion de
-tobillo es escribir un YAML, nunca tocar el motor.
+tobillo es crear su definicion, nunca tocar el motor.
 
 Todo lo que se puede validar se valida al cargar. Un error de dedo en un nombre
 de landmark revienta antes de encender la camara, no a mitad de la serie.
@@ -39,36 +39,46 @@ _sin docstring_
 
 ## `_reglas`
 
-`def _reglas(path, data)`
+`def _reglas(slug, data)`
 
 _sin docstring_
 
 ## `load_exercise`
 
-`def load_exercise(path: str | Path) -> Exercise`
+`def load_exercise(slug: str) -> Exercise`
 
 _sin docstring_
+
+## `construir`
+
+`def construir(slug: str, data: dict) -> Exercise`
+
+```text
+Valida una definicion (leida o por guardar) y arma el Exercise.
+```
 
 ## `load_all`
 
-`def load_all(directory: str | Path) -> dict[str, Exercise]`
+`def load_all() -> dict[str, Exercise]`
 
 ```text
-Todos los ejercicios de la carpeta, indexados por slug.
+Todos los ejercicios activos, indexados por slug.
 ```
 
-## `leer_yaml`
+## `leer_def`
 
-`def leer_yaml(exercise)`
+`def leer_def(exercise)`
 
-_sin docstring_
+```text
+La definicion del ejercicio (dict) o None.
+```
 
 ## `kpoints_de_ejercicio`
 
 `def kpoints_de_ejercicio(exercise)`
 
 ```text
-El catalogo 'kpoints' del .yaml (lista vacia si no tiene).
+El catalogo 'kpoints' de la definicion (lista vacia si no tiene).
 ```
 
 ## `resolver_features`
@@ -76,7 +86,7 @@ El catalogo 'kpoints' del .yaml (lista vacia si no tiene).
 `def resolver_features(features, kpoints)`
 
 ```text
-Un feature del .yaml puede nombrar un landmark crudo (LEFT_ELBOW) aunque el ejercicio tenga catalogo de
+Un feature de la definicion puede nombrar un landmark crudo (LEFT_ELBOW) aunque el ejercicio tenga catalogo de
 kpoints con otro nombre: se traduce al nombre del kpoint que lo representa.
 Sin esto, esos angulos no se encuentran en los datos.
 ```
@@ -86,7 +96,7 @@ Sin esto, esos angulos no se encuentran en los datos.
 `def features_de_ejercicio(exercise)`
 
 ```text
-Los angulos y proporciones ACTIVADOS del .yaml, con sus puntos ya traducidos a kpoints (lista vacia si no tiene).
+Los angulos y proporciones ACTIVADOS de la definicion, con sus puntos ya traducidos a kpoints (lista vacia si no tiene).
 ```
 
 ## `puntos_de_ejercicio`
@@ -94,11 +104,11 @@ Los angulos y proporciones ACTIVADOS del .yaml, con sus puntos ya traducidos a k
 `def puntos_de_ejercicio(exercise: str) -> list[str] | None`
 
 ```text
-Los puntos que le importan a este ejercicio, en orden. Si el .yaml ya
+Los puntos que le importan a este ejercicio, en orden. Si la definicion ya
 tiene catalogo de 'kpoints' (editor de Puntos), son ESOS nombres -- es lo
 que src/procesamiento/offline.py guarda en el .npz. Si no, los landmarks que aparecen en
 'points'/'reference' de sus features, en orden de aparicion.
-None si no se pudo leer el yaml -- quien llama debe caer entonces a la
+None si no se pudo leer la definicion -- quien llama debe caer entonces a la
 lista completa que trae el .npz (mejor eso que perder datos).
 ```
 

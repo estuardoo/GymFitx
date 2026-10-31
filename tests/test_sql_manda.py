@@ -3,10 +3,10 @@
 import json
 
 import pytest
-import yaml
 
 from src.almacenamiento import dataset_sql as SQL
 from src.etiquetado import editor_puntos as EP
+from src.nucleo import definicion as DEF
 
 YAML = {
     "name": "brazo", "source": "pose",
@@ -47,11 +47,9 @@ class SqlFalso:
 
 @pytest.fixture
 def sql(tmp_path, monkeypatch):
-    monkeypatch.setattr(EP, "EJERCICIOS_DIR", tmp_path)
-    monkeypatch.setattr(EP, "RESPALDOS_DIR", tmp_path / ".respaldos")
     monkeypatch.setattr(EP, "PENDIENTES_PATH", tmp_path / "pendientes.json")
     monkeypatch.setattr(EP, "_sql_caido_hasta", 0.0)
-    (tmp_path / "brazo.yaml").write_text(yaml.safe_dump(YAML), "utf-8")
+    DEF.guardar("brazo", YAML)
     return SqlFalso(monkeypatch)
 
 
@@ -59,7 +57,7 @@ def _guardar(features):
     EP.guardar_ejercicio("brazo", {"kpoints": YAML["kpoints"], "features": features})
 
 
-def test_sql_sin_el_ejercicio_recibe_el_yaml(sql):
+def test_sql_sin_el_ejercicio_recibe_la_definicion(sql):
     assert EP.sincronizar("brazo")["estado"] == "enviado"
     assert sql.definiciones[1]["features"][0]["name"] == "codo"
     assert EP.sincronizar("brazo")["estado"] == "sincronizado"
@@ -83,7 +81,7 @@ def test_sin_conexion_queda_pendiente_y_se_sube_al_volver(sql):
     assert EP._pendientes() == {}
 
 
-def test_si_sql_tiene_otra_version_se_aplica_al_yaml(sql):
+def test_si_sql_tiene_otra_version_se_aplica_a_la_local(sql):
     EP.sincronizar("brazo")
     otra = json.loads(json.dumps(sql.definiciones[1]))
     otra["features"].append({"name": "de_sql", "type": "angle", "points": ["RIGHT_ELBOW", "RIGHT_WRIST", "RIGHT_SHOULDER"]})
@@ -93,14 +91,14 @@ def test_si_sql_tiene_otra_version_se_aplica_al_yaml(sql):
     assert EP.sincronizar("brazo")["estado"] == "sincronizado"
 
 
-def test_lo_de_sql_que_dejaria_el_yaml_roto_no_se_aplica(sql):
+def test_lo_de_sql_que_dejaria_la_definicion_rota_no_se_aplica(sql):
     EP.sincronizar("brazo")
     roto = json.loads(json.dumps(sql.definiciones[1]))
-    roto["source"] = "nada"                                      # un source invalido deja el yaml roto
+    roto["source"] = "nada"                                      # un source invalido deja la definicion rota
     sql.definiciones[1] = roto
-    antes = (EP.EJERCICIOS_DIR / "brazo.yaml").read_text("utf-8")
+    antes = DEF.leer("brazo")
     assert EP.sincronizar("brazo")["estado"] == "conflicto"
-    assert (EP.EJERCICIOS_DIR / "brazo.yaml").read_text("utf-8") == antes
+    assert DEF.leer("brazo") == antes
 
 
 def test_reintentar_sube_los_pendientes(sql):

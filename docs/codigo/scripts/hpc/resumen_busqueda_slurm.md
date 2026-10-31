@@ -1,4 +1,4 @@
-# `scripts/resumen_busqueda_slurm.py`
+# `scripts/hpc/resumen_busqueda_slurm.py`
 
 ```text
 Junta el/los .csv que salieron de busqueda_features_slurm.py (una o varias corridas, uno o varios
@@ -32,7 +32,7 @@ conviene, con que modelo, al minimo costo:
 No hace falta el cluster para esto -- se corre en tu PC, donde ya tienes numpy/matplotlib (requirements.txt
 de GYMFITX). Uso:
 
-    python scripts/resumen_busqueda_slurm.py --csv resultados_*.csv --salida resumen_manguito_rotador/
+    python scripts/hpc/resumen_busqueda_slurm.py --csv resultados_*.csv --salida resumen_manguito_rotador/
 
 Sirve igual para 1 corrida o para varias (por ejemplo si corriste busqueda_features_slurm.py mas de una vez
 sobre el mismo ejercicio para agregar mas combinaciones).

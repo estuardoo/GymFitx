@@ -30,9 +30,10 @@ from src.nucleo.ejercicio import load_exercise  # noqa: E402
 from src.nucleo.landmarks import POSE_LANDMARKS  # noqa: E402
 from src.nucleo.tipos import Frame, Landmarks, Segment  # noqa: E402
 from src.procesamiento.puntos import kpoints as KP  # noqa: E402
+from src.procesamiento.puntos import normalizacion as NORM  # noqa: E402
 from src.procesamiento.puntos import vectorizar  # noqa: E402
 
-_CUERPO = load_exercise(ROOT / "ejercicios" / "cuerpo_completo.yaml")
+_CUERPO = load_exercise("cuerpo_completo")
 KPOINTS_DER = _CUERPO.kpoints
 FEATS = _CUERPO.features
 NOMBRES_DER = [kp["nombre"] for kp in KPOINTS_DER]
@@ -94,8 +95,9 @@ def test_clasificador_puntua_una_repeticion_en_vivo():
     spec["n_features"] = X.shape[1]
     modelo = LogisticRegression(max_iter=2000).fit(X, y)
     with tempfile.TemporaryDirectory() as d:
-        run = Path(d) / "run_3"
-        run.mkdir()
+        from src.nucleo import inputs as INP
+        run = Path(d) / str(INP.asegurar_ejercicio("cuerpo_completo")) / "run_003"
+        run.mkdir(parents=True)
         joblib.dump({"modelo": modelo, "clases": ["bien", "mal"][::-1], "nombre": "logistic", "spec": spec},
                     run / "modelo.joblib")
         (run / "meta.json").write_text(json.dumps({"exercise": "cuerpo_completo", "criterio": "f1_macro"}))
@@ -221,7 +223,7 @@ class _CamaraFalsa:
 def test_video_con_todos_los_cuadros_aunque_la_deteccion_sea_lenta():
     from src.sesion.grabacion import VideoLogger
     from src.sesion.pipeline import MultiSink, Pipeline, Sink
-    ej = load_exercise(ROOT / "ejercicios" / "manguito_rotador.yaml")
+    ej = load_exercise("manguito_rotador")
     with tempfile.TemporaryDirectory() as d:
         vl = VideoLogger(d)
         pipe = Pipeline(ej, _CamaraFalsa(n=60, fps=30.0), MultiSink(Sink(), vl), annotate=True)
@@ -282,8 +284,7 @@ def test_entrenar_elige_por_f1_guarda_spec_y_el_vivo_lo_usa():
     from src.entrenamiento import entrenar as ENTRENAR
     from src.entrenamiento import reportes as REPORTES
     from src.nucleo import ejercicio as EJ
-    from src.nucleo.config import formato_de
-    spec_cfg = formato_de("cuerpo_completo")   # la normalizacion sale de params.yaml: entrenar y vivo deben usar la misma
+    spec_cfg = NORM.cfg_normalizacion("cuerpo_completo")   # la normalizacion sale de la definicion del ejercicio: entrenar y vivo deben usar la misma
     filas, vectores = [], {}
     for i in range(24):
         clase = "bien" if i % 3 == 0 else "mal"          # desbalanceado a proposito

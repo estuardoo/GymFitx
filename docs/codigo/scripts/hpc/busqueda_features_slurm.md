@@ -1,29 +1,29 @@
-# `scripts/busqueda_features_slurm.py`
+# `scripts/hpc/busqueda_features_slurm.py`
 
 ```text
 Busqueda aleatoria de que kpoints/angulos/proporciones mueven el accuracy y el F1 de un ejercicio.
 
 Standalone a proposito -- solo necesita numpy + scikit-learn, nada de GYMFITX -- para poder correrlo en un
-cluster/supercomputador copiando UNICAMENTE este archivo y el .npz de scripts/exportar_dataset_slurm.py
+cluster/supercomputador copiando UNICAMENTE este archivo y el .npz de scripts/hpc/exportar_dataset_slurm.py
 (el modulo AHPC del panel arma ambos en un .zip listo para subir).
 
 Flujo completo (repetible para cualquier ejercicio: solo cambia --ejercicio / --dataset):
   1. En la PC con SQL Server (o desde la pestana AHPC del panel):
-       python scripts/exportar_dataset_slurm.py --ejercicio <nombre>
-     -> datos/slurm/<nombre>.npz
+       python scripts/hpc/exportar_dataset_slurm.py --ejercicio <nombre>
+     -> sistema/slurm/<nombre>.npz
   2. Copia ese .npz (y este script) al cluster.
   3. Ahi:
        python busqueda_features_slurm.py --dataset <nombre>.npz --z 300 --salida resultados.csv
      Para repartir las Z pruebas en un SLURM array (mas rapido, mismas combinaciones divididas entre
      tareas): --tarea-id/--n-tareas -- ver slurm_busqueda_features.sbatch, un ejemplo de sbatch listo.
   4. Mientras corre (o cuando termine): cada tarea deja un <salida>.estado.json (cuantas combinaciones ya
-     hizo, cuantas le tocan, % y si termino) -- scripts/estado_busqueda_slurm.py junta los de todas las
+     hizo, cuantas le tocan, % y si termino) -- scripts/hpc/estado_busqueda_slurm.py junta los de todas las
      tareas del array en una tabla (no necesita numpy/sklearn, se puede correr en el cluster aunque el
      modulo de python este roto). ponytail: si una tarea revienta a mitad de una combinacion, su
      estado.json se queda pegado en el ultimo % con terminado=false para siempre -- cruzalo con sacct
      (ver LEEME.txt) para distinguir "sigue corriendo" de "fallo".
   5. Para ver la matriz resumen, la tabla de detalle y la grafica de progreso a partir del/los .csv que
-     salieron: scripts/resumen_busqueda_slurm.py (se corre en tu PC, no hace falta el cluster para eso).
+     salieron: scripts/hpc/resumen_busqueda_slurm.py (se corre en tu PC, no hace falta el cluster para eso).
 
 Que hace: cada 'prueba' es UNA combinacion al azar -- un subconjunto de tamano al azar (1..m) de los m
 kpoints del ejercicio (con sus 3 ejes x,y,z), un subconjunto (1..p) de sus p angulos y un subconjunto (1..q)
@@ -180,7 +180,7 @@ _sin docstring_
 ```text
 Archivo chico (<salida>.estado.json) que esta tarea se va sobreescribiendo sola cada vez que termina
 una combinacion -- para saber cuanto avanzo, si termino o si sigue corriendo SIN depender de sacct/squeue
-ni de contar filas del .csv. Lo lee scripts/estado_busqueda_slurm.py (arma una tabla con todas las tareas
+ni de contar filas del .csv. Lo lee scripts/hpc/estado_busqueda_slurm.py (arma una tabla con todas las tareas
 del array); no necesita numpy/sklearn, se puede mirar aunque el job siga corriendo.
 ```
 

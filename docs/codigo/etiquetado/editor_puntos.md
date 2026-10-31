@@ -1,21 +1,20 @@
 # `src/etiquetado/editor_puntos.py`
 
 ```text
-Editor visual de los .yaml de ejercicio (ejercicios/*.yaml):
+Editor visual de la definicion de cada ejercicio (parameters/<n>/, ver src/nucleo/definicion.py):
 elegir con clic, sobre un diagrama del cuerpo, que landmarks
-arma cada 'feature' (angulo o razon de distancia), en vez de escribir el YAML
-a mano. Mismo archivo que ya lee puntos_de_ejercicio() en src/nucleo/ejercicio.py -- este
+arma cada 'feature' (angulo o razon de distancia), en vez de escribir el archivo a mano.
+Es el mismo dato que ya lee puntos_de_ejercicio() en src/nucleo/ejercicio.py -- este
 modulo es el que ahora tambien puede ESCRIBIRLO.
 
 Solo toca 'name'/'description'/'source'/'features'/'kpoints'; cualquier otra
-clave del yaml (signal, segmentation) se deja tal cual estaba. PyYAML no
-conserva comentarios al reescribir -- por eso se guarda una copia del
-contenido anterior en ejercicios/.respaldos/ antes de cada guardado.
+clave (signal, segmentation...) se deja tal cual estaba. Antes de cada guardado la definicion
+anterior queda en sistema/respaldos/<slug>.json.
 ```
 
 ## Constantes
 
-`RESPALDOS_DIR`, `POSE_PUNTOS`, `POSE_ESQUELETO`, `POSE_GRUPOS`, `TIPOS_FEATURE`, `ANGULOS_CONOCIDOS`, `PENDIENTES_PATH`, `ESPERA_SQL_CAIDO_S`
+`POSE_PUNTOS`, `POSE_ESQUELETO`, `POSE_GRUPOS`, `TIPOS_FEATURE`, `ANGULOS_CONOCIDOS`, `PENDIENTES_PATH`, `ESPERA_SQL_CAIDO_S`
 
 ## `_nombres_landmark_de`
 
@@ -44,7 +43,7 @@ Puntos + esqueleto del diagrama de pose (33, cuerpo).
 `def listar_ejercicios()`
 
 ```text
-Nombres (sin .yaml) de todos los ejercicios en ejercicios/.
+Slugs de los ejercicios activos.
 ```
 
 ## `leer_ejercicio`
@@ -52,13 +51,32 @@ Nombres (sin .yaml) de todos los ejercicios en ejercicios/.
 `def leer_ejercicio(nombre)`
 
 ```text
-Los campos editables de un ejercicio, tal cual estan en su .yaml. None
-si el archivo no existe.
+Los campos editables de un ejercicio. None si no existe.
 ```
+
+## `_normalizacion_panel`
+
+`def _normalizacion_panel(nombre, data)`
+
+_sin docstring_
 
 ## `_validar_features`
 
 `def _validar_features(source, features, kpoints=None)`
+
+_sin docstring_
+
+## `_guardar_valido`
+
+`def _guardar_valido(nombre, data)`
+
+```text
+El ejercicio tiene que poder cargarse (si no, se cae /api/state para TODOS): se valida antes de escribir.
+```
+
+## `_definicion_de`
+
+`def _definicion_de(nombre)`
 
 _sin docstring_
 
@@ -71,10 +89,9 @@ cambios: {name, description, source, features, kpoints}. Valida
 kpoints (numeros/nombres unicos, origenes validos, derivados solo de
 kpoints previos) y luego features (mismo tipo conocido y cantidad de
 puntos/reference de siempre, pero ahora contra los nombres del catalogo
-de kpoints si ya existe uno) -- antes de tocar el archivo. Todo lo demas
-del yaml (signal, segmentation, etc) se deja tal cual estaba. Guarda una
-copia del contenido anterior en ejercicios/.respaldos/ (PyYAML no conserva
-los comentarios del archivo al reescribir).
+de kpoints si ya existe uno) -- antes de tocar nada. Todo lo demas
+(signal, segmentation, etc) se deja tal cual estaba; la definicion anterior queda en
+sistema/respaldos/.
 ```
 
 ## `guardar_reglas`
@@ -82,7 +99,16 @@ los comentarios del archivo al reescribir).
 `def guardar_reglas(nombre, reglas)`
 
 ```text
-Reemplaza `reglas:` del .yaml (validadas por evaluacion/reglas.py) sin tocar el resto; respaldo antes.
+Reemplaza `reglas` de la definicion (validadas por nucleo/reglas.py) sin tocar el resto.
+```
+
+## `guardar_normalizacion`
+
+`def guardar_normalizacion(nombre, norm)`
+
+```text
+Guarda {origen, escala, n_frames} en la definicion (guide.json -> normalizacion) sin tocar el resto.
+-> {normalizacion, cambio}: cambio=True si difiere de lo vigente (gold se rehace solo; modelos ya entrenados: reentrenar).
 ```
 
 ## `crear_ejercicio`
@@ -90,8 +116,8 @@ Reemplaza `reglas:` del .yaml (validadas por evaluacion/reglas.py) sin tocar el 
 `def crear_ejercicio(nombre)`
 
 ```text
-Ejercicio nuevo desde cero (guardar_ejercicio solo puede EDITAR uno que ya exista): stub de
-.yaml minimo pero valido, sus carpetas en datos/clips/<nombre>/ y datos/grabaciones/<nombre>/, y
+Ejercicio nuevo desde cero (guardar_ejercicio solo puede EDITAR uno que ya exista): definicion
+minima pero valida, su numero y carpetas en input/<capa>/<numero>/, y
 lo sube ya a SQL (su 'type' + definicion) para que quede conectado desde el primer guardado en
 el editor de Puntos.
 ```
@@ -103,8 +129,8 @@ el editor de Puntos.
 ```text
 Datos basicos de un ejercicio (el slug NO se renombra: ata 'type' en SQL, carpeta de clips y plantilla).
 cambios: {name, description, direction, min_duration_ms, max_duration_ms}; lo que falte se deja igual.
-Puntos/angulos se editan con guardar_ejercicio. Valida con load_exercise antes de escribir y respalda el
-.yaml anterior. Devuelve base_invalida=True si cambio la segmentacion y ya hay base grabada.
+Puntos/angulos se editan con guardar_ejercicio. Valida antes de escribir y respalda la definicion
+anterior. Devuelve base_invalida=True si cambio la segmentacion y ya hay base grabada.
 ```
 
 ## `eliminar_ejercicio`
@@ -112,9 +138,9 @@ Puntos/angulos se editan con guardar_ejercicio. Valida con load_exercise antes d
 `def eliminar_ejercicio(nombre)`
 
 ```text
-Archiva un ejercicio: su .yaml pasa a ejercicios/.respaldos/ (recuperable). Solo mueve el .yaml; sus clips,
-grabaciones, manifest y SQL los limpia etiquetado/depurar.py (lo llama el endpoint; el 'type' queda reservado
-en sql_tipos.json).
+Archiva un ejercicio: queda inactivo con su numero reservado (recuperable: crearlo de nuevo con el mismo nombre
+lo reactiva). Sus clips, grabaciones, tablas y SQL los limpia etiquetado/depurar.py (lo llama el endpoint; el 'type'
+queda reservado en sql_tipos.json).
 ```
 
 ## `conexiones_kpoints`
@@ -141,7 +167,7 @@ Codigo que ve el usuario: C01..C33 = Cuerpo 33 (ID de MediaPipe + 1); D01.. = de
 `def _definicion(nombre)`
 
 ```text
-Lo que se comparte por SQL: source, kpoints y features (signal/segmentation se quedan en el .yaml).
+Lo que se comparte por SQL: source, kpoints y features (signal/segmentation se quedan en la definicion local).
 ```
 
 ## `_canon`
@@ -192,7 +218,7 @@ _sin docstring_
 `def subir(nombre)`
 
 ```text
-Tras guardar el .yaml: lo sube a SQL. Sin conexion queda pendiente (y se sube solo despues).
+Tras guardar la definicion: lo sube a SQL. Sin conexion queda pendiente (y se sube solo despues).
 ```
 
 ## `sincronizar`
@@ -200,10 +226,10 @@ Tras guardar el .yaml: lo sube a SQL. Sin conexion queda pendiente (y se sube so
 `def sincronizar(nombre)`
 
 ```text
-Deja el .yaml y SQL iguales, con SQL mandando:
+Deja la definicion local y SQL iguales, con SQL mandando:
 - con pendiente local (se guardo sin conexion): se sube lo local;
-- SQL no tiene el ejercicio: se sube el .yaml;
-- SQL tiene otra cosa: se aplica al .yaml (queda copia en .respaldos);
+- SQL no tiene el ejercicio: se sube la definicion local;
+- SQL tiene otra cosa: se aplica a la local (queda copia en sistema/respaldos);
 - sin conexion: no se toca nada.
 ```
 

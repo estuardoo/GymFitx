@@ -3,7 +3,7 @@
 ```text
 Documentos que genera el pipeline (nunca a mano, para que no se desincronicen):
   - diccionario de datos: una fila por columna de la tabla final -> docs/diccionario/<ej>.csv y .md
-  - informe de limpieza en Markdown -> reportes/limpieza_<ej>.md (el .json lo escribe la etapa limpiar)
+  - informe de limpieza en Markdown -> reportes/<n>/limpieza.md (el .json lo escribe la etapa limpiar)
 Sin marcas de tiempo ni nada que cambie de una corrida a otra: mismas entradas, mismos bytes.
 ```
 
@@ -32,6 +32,14 @@ luego las metricas activas (angulos / proporciones). `nombres` = kpoints que tra
 
 ```text
 CSV + Markdown. Falla si las columnas descritas no son exactamente las de la tabla final (criterio: 100 %).
+```
+
+## `ruta_reporte`
+
+`def ruta_reporte(ejercicio: str, nombre: str)`
+
+```text
+output/reportes/<n>/<nombre>: los informes de un ejercicio, en su carpeta numerada.
 ```
 
 ## `escribir_limpieza_md`

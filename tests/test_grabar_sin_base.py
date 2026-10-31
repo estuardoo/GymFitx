@@ -28,7 +28,7 @@ from src.sesion.pipeline import Pipeline, Sink  # noqa: E402
 
 tracker_mod.ensure_model = lambda source: Path("stub.task")
 
-EJ = load_exercise(ROOT / "ejercicios" / "manguito_rotador.yaml")
+EJ = load_exercise("manguito_rotador")
 EXTRACTOR = FeatureExtractor(EJ)
 
 

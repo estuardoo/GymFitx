@@ -4,6 +4,7 @@
 
 ## Funciones
 
+- `irAKpoints`
 - `mostrarVista`
 - `verAhpc`
 - `verDescomp`

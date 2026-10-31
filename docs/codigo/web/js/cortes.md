@@ -8,8 +8,10 @@
 - `actualizarBoton`
 - `borrarCercaDe`
 - `borrarPunto`
+- `cambiarPersonaVid`
 - `cambiarTipoVid`
 - `cargarOverlay`
+- `cargarPersonas`
 - `completo`
 - `dibujarOverlay`
 - `estadoMano`
@@ -17,6 +19,7 @@
 - `guardar`
 - `idxCuadro`
 - `listar`
+- `pintarPersonaVid`
 - `punto`
 - `rehacerTodo`
 - `render`

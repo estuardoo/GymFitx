@@ -6,7 +6,7 @@ Etapa 6: orquesta un entrenamiento: datos -> modelos + validacion -> reportes ->
 
 ## `entrenar`
 
-`def entrenar(test_pct=None, modelos=None, tipo=None, features='ambos', fuera=True)`
+`def entrenar(test_pct=None, modelos=None, tipo=None, features='ambos', fuera=True, personas=None)`
 
 ```text
 Entrena y compara clasificadores sobre table_frames_fix de los clips del
@@ -19,5 +19,6 @@ manifest, con el mismo k-fold para todos.
 - 'anidado' = estimacion sin sesgo del procedimiento de seleccion.
 - El modelo guardado lleva su 'spec' (puntos, normalizacion, features)
   para que el panel en vivo arme exactamente el mismo vector.
+- 'personas' = las personas (P1, P2...) cuyos clips entran; None = todas.
 ```
 

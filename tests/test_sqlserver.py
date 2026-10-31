@@ -47,19 +47,22 @@ def test_dataset_y_storage_usan_la_misma_conexion():
 
 
 
+import os
+
+
 def test_servidor_elegido_en_sistema_se_guarda_en_config_json_y_se_lee_al_arrancar(tmp_path, monkeypatch):
     import importlib
     import json
-    monkeypatch.setattr(config, "CONFIG_PATH", tmp_path / "config.json")
+    monkeypatch.setattr(config, "SERVER_PATH", tmp_path / "server.json")
     host0, base0 = config.SQLSERVER_HOST, config.SQLSERVER_DB
     try:
         config.guardar_servidor_sql(" OTRAPC\\SQL ", "Pruebas")
-        assert json.loads((tmp_path / "config.json").read_text("utf-8")) == {"sqlserver_host": "OTRAPC\\SQL",
-                                                                            "sqlserver_db": "Pruebas"}
+        assert json.loads((tmp_path / "server.json").read_text("utf-8")) == {"host": "OTRAPC\\SQL", "base": "Pruebas"}
         assert sqlserver.estado()["host"] == "OTRAPC\\SQL"           # se aplica sin reiniciar
-        monkeypatch.setenv("GYMFITX_DATOS", str(tmp_path))            # al arrancar, config.json manda
+        previo = os.environ["GYMFITX_PARAMETROS"]
+        monkeypatch.setenv("GYMFITX_PARAMETROS", str(tmp_path))       # al arrancar, parameters/server.json manda
         assert importlib.reload(config).SQLSERVER_HOST == "OTRAPC\\SQL"
     finally:
-        monkeypatch.delenv("GYMFITX_DATOS")
+        os.environ["GYMFITX_PARAMETROS"] = previo
         importlib.reload(config)
         config.SQLSERVER_HOST, config.SQLSERVER_DB = host0, base0

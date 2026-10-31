@@ -3,7 +3,7 @@
 ```text
 Reprocesa una grabacion por el mismo pipeline, sin camara.
 
-    python scripts/reprocesar.py --video datos/grabaciones/2026-08-25/073012_mano_apertura_serie.mp4
+    python scripts/reprocesar.py --video input/raw/2026-08-25/073012_mano_apertura_serie.mp4
     python scripts/reprocesar.py --video ... --exercise mano_apertura --modo grabar
 
 Para esto se archivan los videos crudos. Sirve para:

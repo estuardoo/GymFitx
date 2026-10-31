@@ -1,6 +1,6 @@
 # `src/interfaz/web/js/puntos.js`
 
-> Pestana Kpoints: tablero de kpoints, angulos y proporciones del .yaml. API: /api/puntos/*
+> Pestana Kpoints: tablero de kpoints, angulos y proporciones de la definicion. API: /api/puntos/*
 
 ## Funciones
 
@@ -16,6 +16,7 @@
 - `_ladoDeOrigen`
 - `_marcarPendientes`
 - `_nombresPunto`
+- `_normBody`
 - `_pastelFondo`
 - `_posicionKp`
 - `_recorridoActivo`
@@ -40,16 +41,19 @@
 - `eliminarFilaPuntos`
 - `eliminarKpoint`
 - `guardarEjercicioPuntos`
+- `guardarNormalizacion`
 - `guardarReglas`
 - `kpTodosCapa`
 - `limpiarFormFeaturePuntos`
 - `ordenarFeatures`
 - `ordenarKpoints`
+- `probarNormalizacion`
 - `quitarKpoint`
 - `refrescarEstadoSql`
 - `renderAngulosConocidos`
 - `renderCapas`
 - `renderDiagrama`
+- `renderNormalizacion`
 - `renderReglas`
 - `renderTablaFeaturesPuntos`
 - `renderTablaKpoints`

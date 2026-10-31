@@ -6,7 +6,7 @@ from __future__ import annotations
 import csv
 import json
 
-from scripts import estado_busqueda_slurm as EST
+from scripts.hpc import estado_busqueda_slurm as EST
 
 
 def _estado(ruta, **campos):

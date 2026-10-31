@@ -1,7 +1,7 @@
 """Feature 'proporcion': tramo de una cadena de kpoints / suma de tramos, x100.
 Cubre las 3 reglas pedidas: la cadena necesita 3+ puntos, los tramos de una
 misma cadena siempre suman 100, y 'activo: false' saca la feature del ejercicio
-cargado (pipeline en vivo / entrenamiento) sin borrarla del .yaml.
+cargado (pipeline en vivo / entrenamiento) sin borrarla de la definicion.
 """
 
 from pathlib import Path
@@ -11,6 +11,7 @@ import pytest
 
 ROOT = Path(__file__).resolve().parent.parent
 
+from src.nucleo import definicion as DEF  # noqa: E402
 from src.nucleo.ejercicio import Exercise, load_exercise  # noqa: E402
 from src.procesamiento.medidas.features import FeatureExtractor, compute_features  # noqa: E402
 
@@ -45,27 +46,17 @@ def test_extractor_compilado_igual_al_escalar():
         assert abs(rapido[i] - lento[nombre]) < 1e-3
 
 
-def test_cadena_corta_revienta_al_cargar(tmp_path):
-    yml = tmp_path / "x.yaml"
-    yml.write_text(
-        "name: x\nsource: pose\nfeatures:\n"
-        "  - name: p1\n    type: proporcion\n    points: [LEFT_HIP, LEFT_KNEE]\n"
-        "    cadena: [LEFT_HIP, LEFT_KNEE]\n",
-        encoding="utf-8",
-    )
+def test_cadena_corta_revienta_al_cargar():
+    DEF.guardar("x", {"name": "x", "source": "pose", "features": [
+        {"name": "p1", "type": "proporcion", "points": ["LEFT_HIP", "LEFT_KNEE"], "cadena": ["LEFT_HIP", "LEFT_KNEE"]}]})
     with pytest.raises(ValueError, match="cadena"):
-        load_exercise(yml)
+        load_exercise("x")
 
 
-def test_activo_false_no_entra_al_ejercicio_cargado(tmp_path):
-    yml = tmp_path / "x.yaml"
-    yml.write_text(
-        "name: x\nsource: pose\nfeatures:\n"
-        "  - name: p1\n    type: proporcion\n    points: [LEFT_HIP, LEFT_KNEE]\n"
-        "    cadena: [LEFT_HIP, LEFT_KNEE, LEFT_ANKLE]\n    activo: false\n"
-        "  - name: p2\n    type: proporcion\n    points: [LEFT_KNEE, LEFT_ANKLE]\n"
-        "    cadena: [LEFT_HIP, LEFT_KNEE, LEFT_ANKLE]\n",
-        encoding="utf-8",
-    )
-    ex = load_exercise(yml)
+def test_activo_false_no_entra_al_ejercicio_cargado():
+    cadena = ["LEFT_HIP", "LEFT_KNEE", "LEFT_ANKLE"]
+    DEF.guardar("x", {"name": "x", "source": "pose", "features": [
+        {"name": "p1", "type": "proporcion", "points": ["LEFT_HIP", "LEFT_KNEE"], "cadena": cadena, "activo": False},
+        {"name": "p2", "type": "proporcion", "points": ["LEFT_KNEE", "LEFT_ANKLE"], "cadena": cadena}]})
+    ex = load_exercise("x")
     assert ex.feature_names == ["p2"]   # p1 (activo:false) queda fuera

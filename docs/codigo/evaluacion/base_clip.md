@@ -14,12 +14,6 @@ tau (severidad del puntaje) sale del error DTW contra los demas clips "bien" si 
 
 `_B`, `TAU_DEFECTO`, `MAX_OTROS`
 
-## `_natural`
-
-`def _natural(s: str)`
-
-_sin docstring_
-
 ## `_valores`
 
 `def _valores(ex, ext: FeatureExtractor, npz: Path) -> np.ndarray`
@@ -30,10 +24,10 @@ _sin docstring_
 
 ## `_originales`
 
-`def _originales(d: Path) -> list[Path]`
+`def _originales(slug: str, clase: str) -> list[Path]`
 
 ```text
-.npz de la carpeta en orden natural de nombre, sin los duplicados (_2, _3...) si hay originales.
+.npz de los clips de esa clase en orden de id, sin las copias si hay originales.
 ```
 
 ## `primer_clip`
@@ -53,6 +47,6 @@ _sin docstring_
 `def base_desde_clip(ex, clip: str | None=None, clase: str='bien') -> dict`
 
 ```text
-Crea datos/plantillas/<slug>.npz desde `clip` (nombre o ruta; por defecto el primero de la clase).
+Crea parameters/plantillas/<slug>.npz desde `clip` (nombre o ruta; por defecto el primero de la clase).
 ```
 

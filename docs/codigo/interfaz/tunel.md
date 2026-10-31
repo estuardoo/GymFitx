@@ -8,11 +8,11 @@ pestana Sistema -> "Publicar en internet" se prende/apaga el tunel.
 
 - Tunel: Cloudflare "quick tunnel" (gratis, sin cuenta). Da un enlace
   https://<algo>.trycloudflare.com que cambia cada vez que se prende.
-  cloudflared se busca en el PATH o en herramientas/; si no esta se descarga
-  solo a herramientas/ (Windows).
+  cloudflared se busca en el PATH o en assets/; si no esta se descarga
+  solo a assets/ (Windows).
 - Login (HTTP Basic): se exige SOLO a lo que llega por el tunel (Cloudflare
   agrega la cabecera cf-connecting-ip). Desde esta PC se entra sin clave.
-  Credenciales en datos/acceso.json (solo el hash, nunca la clave en texto).
+  Credenciales en sistema/acceso.json (solo el hash, nunca la clave en texto).
 - Por el tunel NUNCA se permiten /api/system/* ni /api/publicar/* (apagar,
   reinstalar librerias, cambiar Python, apagar el tunel): solo desde la PC.
 ```
