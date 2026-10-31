@@ -17,7 +17,7 @@ from src.evaluacion.plantilla import template_path
 from src.interfaz import tunel
 from src.interfaz.control import plantilla_valida, sesion, store
 from src.nucleo import config as CFG
-from src.nucleo.config import EXERCISES_DIR, TEMPLATES_DIR
+from src.nucleo.config import TEMPLATES_DIR
 from src.nucleo.ejercicio import load_all
 from src.nucleo.landmarks import regiones_de_puntos
 from src.nucleo.tiempos import medir
@@ -93,6 +93,10 @@ class EncenderCamara(BaseModel):
     droidcam: str | None = None   # IP:puerto; si viene, se usa en vez de la camara `camera`
 
 
+class PersonaPedido(BaseModel):
+    persona: str | None = None   # 'P1'..'Pn'; vacio = sin persona
+
+
 class OverlayRegiones(BaseModel):
     regiones: list[str] | None = None
 
@@ -116,7 +120,7 @@ class CambiarEjercicio(BaseModel):
 @router.get("/api/cameras")
 def cameras(max: int = 8) -> dict:
     encontradas = list_cameras(max_index=max)
-    resultado = {"camaras": encontradas, "droidcams": CFG.droidcams()}
+    resultado = {"camaras": encontradas, "droidcams": CFG.droidcams_nombrados()}
     if not encontradas:
         # Distingue "no hay camara" de "hay camara pero no se pudo abrir"
         # (permisos de Windows, en uso por otra app).
@@ -127,8 +131,8 @@ def cameras(max: int = 8) -> dict:
 @router.get("/api/state")
 def state() -> dict:   # def (no async): FastAPI lo corre en un hilo y SQL no congela el servidor
     ejercicios = []
-    with medir("state:yaml"):
-        todos = sorted(load_all(EXERCISES_DIR).items())
+    with medir("state:ejercicios"):
+        todos = sorted(load_all().items())
     for slug, ex in todos:
         ruta = template_path(TEMPLATES_DIR, slug)
         d = ex.to_dict()
@@ -139,7 +143,7 @@ def state() -> dict:   # def (no async): FastAPI lo corre en un hilo y SQL no co
         else:
             d["regiones_default"] = []
         clf = scorers.buscar_clasificador(ex.clasificador or slug)
-        d["clasificador_run"] = clf.parent.name if clf else None
+        d["clasificador_run"] = f"{clf.parent.parent.name}/{clf.parent.name}" if clf else None
         if ruta.exists():
             try:
                 with medir("state:plantilla"):
@@ -194,6 +198,22 @@ def set_routine(items: list[RutinaItem]) -> dict:
 def session_camera_on(cfg: EncenderCamara) -> dict:
     return sesion.camera_on(cfg.exercise, cfg.camera, cfg.mirror, cfg.reps,
                             cfg.archivar, cfg.video, cfg.fps, cfg.regiones, cfg.droidcam)
+
+
+@router.post("/api/session/persona")
+def session_persona(cfg: PersonaPedido) -> dict:
+    """Con quien se graba (P1, P2...): queda en la tabla `raw` de cada grabacion nueva."""
+    return sesion.set_persona(cfg.persona)
+
+
+@router.get("/api/personas")
+def personas() -> dict:
+    """Las personas conocidas (de las tablas) mas P1..P5, y la elegida ahora para grabar."""
+    from src.nucleo import inputs as INP
+    t = INP.tabla()
+    usadas = {r.get("persona") for r in t["raw"]} | {c.get("persona") for c in t["clips"]}
+    todas = sorted({p for p in usadas if p} | {f"P{i}" for i in range(1, 6)}, key=lambda p: (len(p), p))
+    return {"personas": todas, "grabando_con": sesion.persona}
 
 
 @router.post("/api/session/overlay")

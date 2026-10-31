@@ -7,6 +7,7 @@ from __future__ import annotations
 
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
+from pydantic import BaseModel, Field
 
 from src.entrenamiento import datos as DATOS
 from src.entrenamiento import descomposicion as DESCOMP
@@ -48,19 +49,32 @@ def modelos_matriz_guardar(body: dict):
         return JSONResponse({"error": str(e)}, status_code=400)
 
 
+class EntrenarPedido(BaseModel):
+    test_pct: int | float = 20
+    modelos: list | dict | None = None
+    tipo: str | int | None = None   # el panel manda numero (1) o texto; sin esto da 422
+    features: str | None = "ambos"
+    fuera: bool | None = True
+    personas: list[str] | None = None   # casillas de persona del panel (P1, P2...); None = todas
+
+
+class SeleccionPedido(BaseModel):
+    cambios: dict | None = Field(default_factory=dict)
+    tipo: str | int | None = None
+
+
 @router.post("/api/entrenar")
-def dataset_entrenar(body: dict):
+def dataset_entrenar(body: EntrenarPedido):
     try:
-        return entrenar(body.get("test_pct", 20), body.get("modelos"), body.get("tipo"),
-                              body.get("features") or "ambos", body.get("fuera", True))
+        return entrenar(body.test_pct, body.modelos, body.tipo, body.features or "ambos", body.fuera, body.personas)
     except ValueError as e:
         log.info(f"entrenar rechazado: {e}")  # queda en gymfitx.log, no solo en el navegador
         return JSONResponse({"error": str(e)}, status_code=400)
 
 
 @router.post("/api/entrenar/seleccion")
-def dataset_entrenar_seleccion(body: dict):
-    return DATOS.guardar_seleccion(body.get("cambios") or {}, body.get("tipo"))
+def dataset_entrenar_seleccion(body: SeleccionPedido):
+    return DATOS.guardar_seleccion(body.cambios or {}, body.tipo)
 
 
 @router.post("/api/descomp/opciones")

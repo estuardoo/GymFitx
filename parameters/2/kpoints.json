@@ -1,0 +1,213 @@
+{
+ "schema_version": 1,
+ "ejercicio": 2,
+ "kpoints": [
+  {
+   "numero": 1,
+   "nombre": "NOSE",
+   "origen": {
+    "tipo": "landmark",
+    "fuente": "pose",
+    "landmark": "NOSE"
+   }
+  },
+  {
+   "numero": 12,
+   "nombre": "LEFT_SHOULDER",
+   "origen": {
+    "tipo": "landmark",
+    "fuente": "pose",
+    "landmark": "LEFT_SHOULDER"
+   }
+  },
+  {
+   "numero": 13,
+   "nombre": "RIGHT_SHOULDER",
+   "origen": {
+    "tipo": "landmark",
+    "fuente": "pose",
+    "landmark": "RIGHT_SHOULDER"
+   }
+  },
+  {
+   "numero": 14,
+   "nombre": "LEFT_ELBOW",
+   "origen": {
+    "tipo": "landmark",
+    "fuente": "pose",
+    "landmark": "LEFT_ELBOW"
+   }
+  },
+  {
+   "numero": 15,
+   "nombre": "RIGHT_ELBOW",
+   "origen": {
+    "tipo": "landmark",
+    "fuente": "pose",
+    "landmark": "RIGHT_ELBOW"
+   }
+  },
+  {
+   "numero": 16,
+   "nombre": "LEFT_WRIST",
+   "origen": {
+    "tipo": "landmark",
+    "fuente": "pose",
+    "landmark": "LEFT_WRIST"
+   }
+  },
+  {
+   "numero": 17,
+   "nombre": "RIGHT_WRIST",
+   "origen": {
+    "tipo": "landmark",
+    "fuente": "pose",
+    "landmark": "RIGHT_WRIST"
+   }
+  },
+  {
+   "numero": 18,
+   "nombre": "LEFT_PINKY",
+   "origen": {
+    "tipo": "landmark",
+    "fuente": "pose",
+    "landmark": "LEFT_PINKY"
+   }
+  },
+  {
+   "numero": 19,
+   "nombre": "RIGHT_PINKY",
+   "origen": {
+    "tipo": "landmark",
+    "fuente": "pose",
+    "landmark": "RIGHT_PINKY"
+   }
+  },
+  {
+   "numero": 20,
+   "nombre": "LEFT_INDEX",
+   "origen": {
+    "tipo": "landmark",
+    "fuente": "pose",
+    "landmark": "LEFT_INDEX"
+   }
+  },
+  {
+   "numero": 21,
+   "nombre": "RIGHT_INDEX",
+   "origen": {
+    "tipo": "landmark",
+    "fuente": "pose",
+    "landmark": "RIGHT_INDEX"
+   }
+  },
+  {
+   "numero": 22,
+   "nombre": "LEFT_THUMB",
+   "origen": {
+    "tipo": "landmark",
+    "fuente": "pose",
+    "landmark": "LEFT_THUMB"
+   }
+  },
+  {
+   "numero": 23,
+   "nombre": "RIGHT_THUMB",
+   "origen": {
+    "tipo": "landmark",
+    "fuente": "pose",
+    "landmark": "RIGHT_THUMB"
+   }
+  },
+  {
+   "numero": 24,
+   "nombre": "LEFT_HIP",
+   "origen": {
+    "tipo": "landmark",
+    "fuente": "pose",
+    "landmark": "LEFT_HIP"
+   }
+  },
+  {
+   "numero": 25,
+   "nombre": "RIGHT_HIP",
+   "origen": {
+    "tipo": "landmark",
+    "fuente": "pose",
+    "landmark": "RIGHT_HIP"
+   }
+  },
+  {
+   "numero": 26,
+   "nombre": "LEFT_KNEE",
+   "origen": {
+    "tipo": "landmark",
+    "fuente": "pose",
+    "landmark": "LEFT_KNEE"
+   }
+  },
+  {
+   "numero": 27,
+   "nombre": "RIGHT_KNEE",
+   "origen": {
+    "tipo": "landmark",
+    "fuente": "pose",
+    "landmark": "RIGHT_KNEE"
+   }
+  },
+  {
+   "numero": 28,
+   "nombre": "LEFT_ANKLE",
+   "origen": {
+    "tipo": "landmark",
+    "fuente": "pose",
+    "landmark": "LEFT_ANKLE"
+   }
+  },
+  {
+   "numero": 29,
+   "nombre": "RIGHT_ANKLE",
+   "origen": {
+    "tipo": "landmark",
+    "fuente": "pose",
+    "landmark": "RIGHT_ANKLE"
+   }
+  },
+  {
+   "numero": 30,
+   "nombre": "LEFT_HEEL",
+   "origen": {
+    "tipo": "landmark",
+    "fuente": "pose",
+    "landmark": "LEFT_HEEL"
+   }
+  },
+  {
+   "numero": 31,
+   "nombre": "RIGHT_HEEL",
+   "origen": {
+    "tipo": "landmark",
+    "fuente": "pose",
+    "landmark": "RIGHT_HEEL"
+   }
+  },
+  {
+   "numero": 32,
+   "nombre": "LEFT_FOOT_INDEX",
+   "origen": {
+    "tipo": "landmark",
+    "fuente": "pose",
+    "landmark": "LEFT_FOOT_INDEX"
+   }
+  },
+  {
+   "numero": 33,
+   "nombre": "RIGHT_FOOT_INDEX",
+   "origen": {
+    "tipo": "landmark",
+    "fuente": "pose",
+    "landmark": "RIGHT_FOOT_INDEX"
+   }
+  }
+ ]
+}

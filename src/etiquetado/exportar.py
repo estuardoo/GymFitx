@@ -1,7 +1,9 @@
 """Etapa 4: exportar cada segmento etiquetado como clip (.mp4 + .npz con sus kpoints) al disco y, si Sistema lo pide
 (respaldo_sql.al_cortar), copiarlo a SQL.
 
-Salta los videos cuyos cortes no cambiaron (hash por video en export_estado.json)."""
+Cada clip es una fila de la tabla `clips` (parameters/inputs.json) y vive en input/bronze/<ej>/<id>.{mp4,npz}. Un corte que ya
+tenia clip (mismo video y numero de corte) conserva su id al volver a exportar. Salta los videos cuyos cortes no cambiaron
+(hash por video en sistema/export_estado.json)."""
 
 from __future__ import annotations
 
@@ -10,11 +12,12 @@ import subprocess
 import threading
 
 from src.almacenamiento import dataset_sql as SQL
-from src.etiquetado.cortes import CFG
-from src.etiquetado.manifest import DATA, LABELS, MANIFEST, OUT, _exercise_de, _manifest, _ruta_video, _slug, log
+from src.etiquetado.manifest import DATA, _exercise_de, _ruta_video, log
 from src.etiquetado.previews import ffmpeg_exe
 from src.etiquetado.tablas import RESUMEN_VACIO, respaldar_sql
-from src.nucleo.config import EXPORT_ESTADO_PATH, respaldo_sql
+from src.nucleo import config as CONF
+from src.nucleo import inputs as INP
+from src.nucleo.config import EXPORT_ESTADO_PATH, INPUTS_PATH, respaldo_sql
 from src.procesamiento import offline as deteccion
 
 
@@ -31,7 +34,7 @@ def recorta_npz(src, ini, fin, dst):
     npz = src.with_suffix(".npz")
     if not npz.exists():
         return None
-    d = np.load(npz, allow_pickle=True)
+    d = np.load(npz, allow_pickle=False)
     t = d["t_ms"] - d["t_ms"][0]
     m = (t >= ini * 1000) & (t <= fin * 1000)
     extra = {}
@@ -62,12 +65,9 @@ def recorta_npz(src, ini, fin, dst):
     return dst.name
 
 
-def limpiar_previos(labels):
-    """Borra los clips ya exportados de estos videos antes de recortar de nuevo (evita huerfanos si cambiaste la cantidad o clase de los cortes)."""
-    for vid in labels:
-        slug = _slug(vid)
-        for f in OUT.glob(f"*/*/{slug}_s*"):   # OUT/<ejercicio>/<clase>/<archivo>
-            f.unlink()
+def _quitar_archivos(ej, cid):
+    for ext in ("mp4", "npz"):
+        INP.ruta_clip(ej, cid, ext).unlink(missing_ok=True)
 
 
 ESTADO = EXPORT_ESTADO_PATH  # hash de segmentos por video en el ultimo export, para saltar los que no cambiaron
@@ -88,7 +88,7 @@ def _npz_tiene_puntos(mp4_path):
         return ""
     import numpy as np
     try:
-        d = np.load(npz, allow_pickle=True)
+        d = np.load(npz, allow_pickle=False)
         if "points" not in d.files:
             return ""
         v = int(d["deteccion_version"]) if "deteccion_version" in d.files else 1
@@ -111,7 +111,7 @@ def _avanzar(vid):
 
 def _videos_a_cortar(labels):
     def con_clase(info):
-        return any(s.get("clase") and s["clase"] not in CFG["no_exportar"] for s in info.get("segmentos", []))
+        return any(s.get("clase") in INP.EXPORTABLES for s in info.get("segmentos", []))
     out = []
     for vid, info in labels.items():
         try:
@@ -136,14 +136,38 @@ def exportar(labels, todo=False, subir_sql=None):
             PROGRESO["activo"] = False
 
 
+def _planear(vid, segs, exercise):
+    """Dentro de la tabla: un clip por corte bien/mal (reusa el id del corte que ya tenia) y fuera los que sobran.
+    -> (ej, [(seg, clip_row)], ids_sobrantes) o None si el video no esta en la tabla `raw`."""
+    with INP.editar() as t:
+        raw = INP.raw_de_vid(vid, t)
+        if raw is None:
+            return None
+        previos = {c.get("seg"): c for c in t["clips"] if c.get("raw_id") == raw["id"]}
+        plan = []
+        for i, seg in enumerate(segs, 1):
+            if seg.get("clase") not in INP.EXPORTABLES:
+                continue
+            campos = {"etiqueta": INP.ETIQUETA_DE[seg["clase"]], "t_ini_ms": round(seg["ini"] * 1000),
+                      "t_fin_ms": round(seg["fin"] * 1000), "reps": seg.get("reps", 0)}
+            c = previos.pop(i, None)
+            if c is None:
+                c = INP.registrar_clip(t, exercise, raw_id=raw["id"], seg=i, **campos)
+            else:
+                c.update(campos, rev=c.get("rev", 1) + 1)
+            plan.append((i, seg, c))
+        sobran = list(previos.values())
+        t["clips"] = [c for c in t["clips"] if c not in sobran]
+        return raw["ej"], plan, [c["id"] for c in sobran]
+
+
 def _exportar(labels, todo, subir_sql):
     estado = json.loads(ESTADO.read_text("utf-8")) if ESTADO.exists() else {}
     prev_rows = {}
-    for row in _manifest():
-        row.pop("type", None)   # derivado, no se guarda en manifest.json
+    for row in INP.filas():
         prev_rows.setdefault(row["origen"], []).append(row)
 
-    rows, errs, saltados = [], [], 0
+    errs, saltados = [], 0
     deteccion_errores = {}
     for vid, info in labels.items():
         try:
@@ -162,44 +186,41 @@ def _exportar(labels, todo, subir_sql):
         PROGRESO["video"] = vid
         h = _hash(segs, _npz_tiene_puntos(src))
         prev = prev_rows.get(vid, [])
-        # el hash sin cambios solo confirma que los CORTES no cambiaron -- si
-        # alguien borro los .mp4/.npz ya exportados por fuera de esta app (o
-        # quedaron huerfanos de una corrida anterior), hay que re-exportar de
-        # todas formas en vez de arrastrar filas de manifest.json que apuntan
-        # a archivos que ya no existen (eso es lo que se ve como "cortes que
-        # no cargan").
-        if not todo and estado.get(vid) == h and all((OUT / r["clip"]).exists() for r in prev):
-            rows.extend(prev)
+        # el hash sin cambios solo confirma que los CORTES no cambiaron -- si alguien borro los .mp4/.npz ya exportados por
+        # fuera de esta app, hay que re-exportar de todas formas en vez de arrastrar filas que apuntan a archivos que no existen.
+        if not todo and estado.get(vid) == h and all((CONF.CLIPS_DIR / r["clip"]).exists() for r in prev):
             saltados += 1
             _avanzar(vid)
             continue
-        limpiar_previos({vid: info})
-        for i, seg in enumerate(segs, 1):
-            cl = seg.get("clase")
-            if not cl or cl in CFG["no_exportar"]:
-                continue
-            d = OUT / exercise / cl
-            d.mkdir(parents=True, exist_ok=True)
-            name = f"{_slug(vid)}_s{i:02d}_{cl}_r{seg.get('reps', 0)}"
+        plan = _planear(vid, segs, exercise)
+        if plan is None:
+            continue
+        ej, cortes, sobran = plan
+        for cid in sobran:
+            _quitar_archivos(ej, cid)
+        malos = []
+        for i, seg, c in cortes:
+            mp4, npz = INP.ruta_clip(ej, c["id"], "mp4"), INP.ruta_clip(ej, c["id"], "npz")
+            mp4.unlink(missing_ok=True)   # los migrados son enlaces duros a datos/: se escribe un archivo nuevo, no el original
+            npz.unlink(missing_ok=True)
             cmd = [ffmpeg_exe(), "-y", "-hide_banner", "-loglevel", "error", "-i", str(src),
                    "-ss", f"{seg['ini']:.3f}", "-to", f"{seg['fin']:.3f}",
-                   "-c:v", "libx264", "-preset", "veryfast", "-pix_fmt", "yuv420p", "-an",
-                   str(d / (name + ".mp4"))]
+                   "-c:v", "libx264", "-preset", "veryfast", "-pix_fmt", "yuv420p", "-an", str(mp4)]
             r = subprocess.run(cmd, capture_output=True, text=True)
             if r.returncode:
-                errs.append(f"{name}: {(r.stderr or '')[:180]}")
+                errs.append(f"{vid} corte {i}: {(r.stderr or '')[:180]}")
+                malos.append(c["id"])
                 continue
-            rows.append({"clip": f"{exercise}/{cl}/{name}.mp4", "npz": recorta_npz(src, seg["ini"], seg["fin"], d / (name + ".npz")),
-                         "origen": vid, "seg": i, "clase": cl, "reps": seg.get("reps", 0),
-                         "ini": round(seg["ini"], 3),
-                         "fin": round(seg["fin"], 3), "dur": round(seg["fin"] - seg["ini"], 3),
-                         "exercise": exercise})
+            if recorta_npz(src, seg["ini"], seg["fin"], npz) is None:
+                npz.unlink(missing_ok=True)
+        if malos:   # sin video no hay clip: fuera de la tabla
+            with INP.editar() as t:
+                t["clips"] = [c for c in t["clips"] if c["id"] not in malos]
+            for cid in malos:
+                _quitar_archivos(ej, cid)
         estado[vid] = h
         _avanzar(vid)
-    # clips de un 'origen' que no esta en labels (importados aparte, sin video fuente que cortar aqui):
-    # se conservan tal cual -- si no, este write_text los borraba del manifest en el proximo "Generar".
-    rows.extend(r for origen, prev in prev_rows.items() if origen not in labels for r in prev)
-    MANIFEST.write_text(json.dumps(rows, indent=2, ensure_ascii=False), "utf-8")
+    rows = INP.filas()
     ESTADO.write_text(json.dumps(estado, indent=1), "utf-8")
 
     sql_resumen, sql_error = None, None
@@ -210,17 +231,17 @@ def _exportar(labels, todo, subir_sql):
     log.info(f"exportar: {len(rows)} clips, {saltados} saltados, {len(errs)} errores"
              f"{f', sql_error={sql_error}' if sql_error else f', sql={sql_resumen}'}"
              f"{f', deteccion_errores={deteccion_errores}' if deteccion_errores else ''}")
-    return {"clips": len(rows), "errores": errs, "manifest": MANIFEST.name, "saltados": saltados,
+    return {"clips": len(rows), "errores": errs, "manifest": INPUTS_PATH.name, "saltados": saltados,
             "sql": sql_resumen, "sql_error": sql_error, "deteccion_errores": deteccion_errores}
 
 
 def estado_export():
-    labels = json.loads(LABELS.read_text("utf-8")) if LABELS.exists() else {}
+    labels = INP.leer_labels()
     estado = json.loads(ESTADO.read_text("utf-8")) if ESTADO.exists() else {}
     total = pend = 0
     for vid, info in labels.items():
         segs = info.get("segmentos", [])
-        if not any(s.get("clase") for s in segs):
+        if not any(s.get("clase") in INP.EXPORTABLES for s in segs):
             continue
         total += 1
         if estado.get(vid) != _hash(segs, _npz_tiene_puntos(DATA / vid)):
@@ -229,14 +250,13 @@ def estado_export():
 
 
 def sql_generar():
-    """Boton manual de Sistema → Tablas del dataset. No lee manifest.json y ya -- eso solo
+    """Boton manual de Sistema → Tablas del dataset. No lee la tabla de clips y ya -- eso solo
     veria los clips como quedaron la ULTIMA vez que se corto, y un clip
     cortado antes de tener deteccion de puntos se quedaria "omitido_sin_puntos"
     para siempre por mas veces que le des click. Por eso reusa exportar():
     si a un video le faltan puntos los detecta y re-recorta antes de subir a
     SQL (exportar ya se salta los que no cambiaron, via el hash)."""
-    labels = json.loads(LABELS.read_text("utf-8")) if LABELS.exists() else {}
-    r = exportar(labels, subir_sql=True)   # boton manual: sube aunque el respaldo automatico este apagado
+    r = exportar(INP.leer_labels(), subir_sql=True)   # boton manual: sube aunque el respaldo automatico este apagado
     if r["sql_error"]:
         raise SQL.SQLServerNoDisponible(r["sql_error"])
     resumen = r["sql"] or dict(RESUMEN_VACIO)

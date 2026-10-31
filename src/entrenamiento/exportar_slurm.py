@@ -2,10 +2,10 @@
 metricas -- angulos y proporciones activados -- ya normalizadas 0..1) a un .npz AUTOCONTENIDO: para leerlo
 despues no hace falta SQL Server ni el resto de GYMFITX, solo numpy.
 
-Pensado para copiarlo a un cluster/supercomputador y correr ahi scripts/busqueda_features_slurm.py (ver ese
+Pensado para copiarlo a un cluster/supercomputador y correr ahi scripts/hpc/busqueda_features_slurm.py (ver ese
 archivo para el flujo completo). Se corre en la PC que SI tiene acceso a SQL Server:
 
-    python scripts/exportar_dataset_slurm.py --ejercicio manguito_rotador
+    python scripts/hpc/exportar_dataset_slurm.py --ejercicio manguito_rotador
 
 Repetible para cualquier ejercicio: solo cambia --ejercicio."""
 
@@ -17,7 +17,7 @@ from pathlib import Path
 import numpy as np
 
 from src.almacenamiento import dataset_sql as SQL
-from src.entrenamiento.datos import CLASES_NO_ENTRENABLES, seleccion
+from src.entrenamiento.datos import CLASES_NO_ENTRENABLES, grupo_de, seleccion
 from src.etiquetado.editor_puntos import codigo_kpoint, leer_ejercicio
 from src.etiquetado.manifest import _manifest
 from src.nucleo import ejercicio as EJ
@@ -69,6 +69,7 @@ def exportar(ejercicio: str, out) -> dict:
         point_codes=np.array(point_codes),
         metrics=np.stack(metricas).astype(np.float32), metric_names=np.array(metric_names),
         metric_types=np.array(metric_types), clips=np.array(clips), y=np.array(y),
+        grupos=np.array([grupo_de(c) for c in clips]),
         ejercicio=ejercicio, tipo=tipo,
     )
     return {"archivo": str(out), "clips": len(clips), "frames_por_clip": comun, "kpoints": len(point_names),

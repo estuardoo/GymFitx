@@ -11,6 +11,7 @@ import cv2
 import numpy as np
 from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 from fastapi.responses import FileResponse, JSONResponse, Response
+from pydantic import BaseModel, ConfigDict
 
 from src.almacenamiento import dataset_sql as SQL
 from src.etiquetado import cortes as CORTES
@@ -22,6 +23,7 @@ from src.etiquetado import previews as PREVIEWS
 from src.etiquetado import tablas as TABLAS
 from src.etiquetado.manifest import _manifest, _ruta_video
 from src.interfaz.control import sesion, store
+from src.preparacion import tabla as TABLA
 
 router = APIRouter()
 
@@ -34,7 +36,7 @@ except Exception:
 
 @router.get("/data/{name:path}")
 def dataset_data(name: str):
-    # name = ruta relativa a datos/grabaciones/ (ej. "sentadilla/2026-08-25/073012_serie.mp4"):
+    # name = ruta relativa a input/raw/ (ej. "1/000007.mp4"):
     # _ruta_video valida que no se escape de ahi (nada de "..").
     try:
         archivo = _ruta_video(name)
@@ -55,6 +57,25 @@ def dataset_config():
 @router.get("/api/labels")
 def dataset_labels_get():
     return CORTES.leer_labels()
+
+
+class PersonaVideo(BaseModel):
+    id: int                      # id del video en la tabla `raw`
+    persona: str | None = None   # 'P1'..'Pn'; vacio = sin persona
+
+
+@router.post("/api/raw/persona")
+def raw_persona(body: PersonaVideo):
+    """Con quien se grabo este video: llega solo a sus clips (la persona vive en `raw`)."""
+    import re
+    persona = (body.persona or "").strip() or None
+    if persona is not None and not re.fullmatch(r"P\d{1,3}", persona):
+        return JSONResponse({"error": "Persona invalida: usa P1, P2, P3..."}, status_code=400)
+    from src.nucleo import inputs as INP
+    try:
+        return {"ok": True, **INP.asignar_persona(body.id, persona)}
+    except ValueError as e:
+        return JSONResponse({"error": str(e)}, status_code=404)
 
 
 @router.post("/api/labels")
@@ -93,11 +114,6 @@ def dataset_tipos():
 @router.get("/api/sql/estado")
 def dataset_sql_estado(tipo: str | None = None):
     return TABLAS.sql_estado(tipo)
-
-
-@router.post("/api/sql/config")
-def dataset_sql_config(body: dict, tipo: str | None = None):
-    return TABLAS.sql_guardar_config(body, tipo)
 
 
 @router.post("/api/sql/blanquear")
@@ -154,18 +170,31 @@ def dataset_puntos_catalogo(source: str = "pose"):
     return PUNTOS.catalogo(source)
 
 
-@router.get("/api/puntos/yaml")
-def dataset_puntos_yaml_get(ejercicio: str = ""):
+@router.get("/api/puntos/definicion")
+def dataset_puntos_definicion_get(ejercicio: str = ""):
     data = PUNTOS.leer_ejercicio(ejercicio)
     if data is None:
         return JSONResponse({"error": "no existe"}, status_code=404)
     return data
 
 
+class NombrePedido(BaseModel):
+    nombre: str | None = None
+
+
+class PuntosPedido(BaseModel):
+    model_config = ConfigDict(extra="allow")   # el resto son puntos y angulos del ejercicio
+    nombre: str | None = None
+
+
+class SlugsPedido(BaseModel):
+    slugs: list[str] | None = None
+
+
 @router.post("/api/puntos/crear")
-def dataset_puntos_crear(body: dict):
+def dataset_puntos_crear(body: NombrePedido):
     try:
-        return PUNTOS.crear_ejercicio(body.get("nombre"))
+        return PUNTOS.crear_ejercicio(body.nombre)
     except ValueError as e:
         return JSONResponse({"error": str(e)}, status_code=400)
 
@@ -176,17 +205,17 @@ def dataset_puntos_sincronizar(ejercicio: str = ""):
 
 
 @router.post("/api/puntos/modificar")
-def dataset_puntos_modificar(body: dict):
+def dataset_puntos_modificar(body: PuntosPedido):
     try:
-        body = dict(body)
-        return PUNTOS.modificar_ejercicio(body.pop("nombre", None), body)
+        datos = body.model_dump()
+        return PUNTOS.modificar_ejercicio(datos.pop("nombre", None), datos)
     except (ValueError, KeyError) as e:
         return JSONResponse({"error": str(e)}, status_code=400)
 
 
 @router.post("/api/puntos/eliminar")
-def dataset_puntos_eliminar(body: dict):
-    nombre = body.get("nombre")
+def dataset_puntos_eliminar(body: NombrePedido):
+    nombre = body.nombre
     if sesion.activa and sesion.info.get("exercise") == nombre:
         return JSONResponse({"error": "Detén la sesión de este ejercicio antes de archivarlo."}, status_code=409)
     try:
@@ -197,7 +226,7 @@ def dataset_puntos_eliminar(body: dict):
         store.set_routine([i for i in store.routine() if i["exercise"] != nombre])
     except Exception:
         r["rutina"] = "no se pudo actualizar (sin conexion a SQL)"
-    try:   # y con el: sus clips salen del manifest, de los cortes y de SQL (los archivos pasan a datos/archivados/)
+    try:   # y con el: sus clips salen del manifest, de los cortes y de SQL (los archivos pasan a sistema/archivados/)
         r["depurado"] = DEPURAR.depurar(nombre)
     except Exception as e:
         r["depurado"] = {"error": str(e)[:200]}
@@ -211,18 +240,17 @@ def archivados_plan():
 
 
 @router.post("/api/archivados/depurar")
-def archivados_depurar(body: dict):
-    return DEPURAR.depurar_todos(body.get("slugs"))
+def archivados_depurar(body: SlugsPedido):
+    return DEPURAR.depurar_todos(body.slugs)
 
 
 @router.post("/api/ejercicio/base-clip")
 def ejercicio_base_clip(body: dict):
     """Rehace la base del ejercicio desde un clip (por defecto el primero de 'bien'). Reinicia la camara para tomarla."""
     from src.evaluacion.base_clip import base_desde_clip
-    from src.nucleo.config import EXERCISES_DIR
     from src.nucleo.ejercicio import load_exercise
     try:
-        ex = load_exercise(EXERCISES_DIR / f"{body['ejercicio']}.yaml")
+        ex = load_exercise(body["ejercicio"])
         return {"ok": True, **base_desde_clip(ex, body.get("clip"), body.get("clase", "bien"))}
     except (ValueError, KeyError, FileNotFoundError) as e:
         return JSONResponse({"error": str(e)}, status_code=400)
@@ -236,8 +264,24 @@ def dataset_puntos_reglas(body: dict):
         return JSONResponse({"error": str(e)}, status_code=400)
 
 
-@router.post("/api/puntos/yaml")
-def dataset_puntos_yaml_post(body: dict):
+@router.post("/api/puntos/normalizacion")
+def dataset_puntos_normalizacion(body: dict):
+    try:
+        return {"ok": True, **PUNTOS.guardar_normalizacion(body["ejercicio"], body)}
+    except (ValueError, KeyError) as e:
+        return JSONResponse({"error": str(e)}, status_code=400)
+
+
+@router.post("/api/puntos/normalizacion/previa")
+def dataset_puntos_normalizacion_previa(body: dict):
+    try:
+        return {"ok": True, **TABLA.previa_normalizacion(body["ejercicio"], body, body.get("clip"))}
+    except (ValueError, KeyError) as e:
+        return JSONResponse({"error": str(e)}, status_code=400)
+
+
+@router.post("/api/puntos/definicion")
+def dataset_puntos_definicion_post(body: dict):
     try:
         body = dict(body)
         ejercicio = body.pop("ejercicio")
@@ -253,7 +297,7 @@ def dataset_puntos_yaml_post(body: dict):
 
 @router.get("/api/ejercicio/clips")
 def ejercicio_clips(slug: str):
-    """Cuantos clips bien/mal/base tiene el ejercicio (para el dialogo de subida)."""
+    """Cuantos clips bien/mal tiene el ejercicio (para el dialogo de subida)."""
     cuenta = dict.fromkeys(IMPORTAR.CLASES, 0)
     for r in _manifest():
         if r.get("exercise") == slug and r.get("clase") in cuenta:
@@ -263,7 +307,7 @@ def ejercicio_clips(slug: str):
 
 @router.post("/api/ejercicio/clips/carpeta")
 def ejercicio_importar_carpeta(body: dict):
-    """Importa una carpeta Base/Bien/Mal/P1..Pn del disco del servidor (segundo plano; avance en .../progreso)."""
+    """Importa una carpeta Bien/Mal/P1..Pn del disco del servidor (segundo plano; avance en .../progreso)."""
     try:
         IMPORTAR.iniciar_carpeta(body.get("slug", ""), body.get("carpeta", ""))
     except ValueError as e:

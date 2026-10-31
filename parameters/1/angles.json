@@ -1,0 +1,78 @@
+{
+ "schema_version": 1,
+ "ejercicio": 1,
+ "angulos": [
+  {
+   "name": "codo_izq",
+   "points": [
+    "LEFT_SHOULDER",
+    "LEFT_ELBOW",
+    "LEFT_WRIST"
+   ],
+   "type": "angle"
+  },
+  {
+   "name": "cadera_izq",
+   "points": [
+    "LEFT_SHOULDER",
+    "LEFT_HIP",
+    "LEFT_KNEE"
+   ],
+   "type": "angle"
+  },
+  {
+   "name": "codo_der",
+   "points": [
+    "RIGHT_SHOULDER",
+    "RIGHT_ELBOW",
+    "RIGHT_WRIST"
+   ],
+   "type": "angle"
+  },
+  {
+   "name": "cadera_der",
+   "points": [
+    "RIGHT_SHOULDER",
+    "RIGHT_HIP",
+    "RIGHT_KNEE"
+   ],
+   "type": "angle"
+  },
+  {
+   "name": "hombro_izq",
+   "points": [
+    "LEFT_HIP",
+    "LEFT_SHOULDER",
+    "LEFT_ELBOW"
+   ],
+   "type": "angle"
+  },
+  {
+   "name": "rodilla_izq",
+   "points": [
+    "LEFT_HIP",
+    "LEFT_KNEE",
+    "LEFT_ANKLE"
+   ],
+   "type": "angle"
+  },
+  {
+   "name": "hombro_der",
+   "points": [
+    "RIGHT_HIP",
+    "RIGHT_SHOULDER",
+    "RIGHT_ELBOW"
+   ],
+   "type": "angle"
+  },
+  {
+   "name": "rodilla_der",
+   "points": [
+    "RIGHT_HIP",
+    "RIGHT_KNEE",
+    "RIGHT_ANKLE"
+   ],
+   "type": "angle"
+  }
+ ]
+}

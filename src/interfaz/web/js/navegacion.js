@@ -43,6 +43,7 @@ function verTrain(){ mostrarVista('train'); v.pause(); cargarEntrenamientos(); c
 function verRank(){ mostrarVista('rank'); v.pause(); cargarRanking(); }
 function verDescomp(){ mostrarVista('descomp'); cargarDescompTipos(); }
 async function verPuntos(){ mostrarVista('puntos'); await cargarCatalogosPuntos(); await cargarListaEjercicios(); }
+function irAKpoints(){ irATab('panel'); verPuntos(); }
 async function verAhpc(){ mostrarVista('ahpc'); await cargarAhpc(); }
 
 // abrir_interfaz.bat abre http://.../#cortar para entrar directo a esta pestana
