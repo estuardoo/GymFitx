@@ -1,8 +1,11 @@
-# La receta de la etapa 3 (preparacion de datos): las 5 tareas de CRISP-DM como etapas, una por ejercicio de params.yaml.
+# La receta de la etapa 3 (preparacion de datos): las 5 tareas de CRISP-DM como etapas, una por ejercicio (su NUMERO,
+# lista `ejercicios` de parameters/config.json). Los informes (output/reportes, docs/diccionario) se escriben pero no se rastrean.
 #   dvc repro          rehace lo que cambio            dvc dag      dibuja el grafo
 #   dvc repro --force  rehace todo (lo usa el CI)      dvc status   que dejo de estar al dia
-# Cada etapa apunta en `desc` a su entrada de la bitacora (docs/decisiones/). El crudo es de solo lectura: datos/clips,
-# datos/grabaciones y las etiquetas entran solo como punteros (.dvc) y ninguna etapa los declara como salida.
+# Cada etapa apunta en `desc` a su entrada de la bitacora (docs/decisiones/). El crudo es de solo lectura: input/bronze,
+# input/raw y las etiquetas entran solo como punteros (.dvc) y ninguna etapa los declara como salida.
+vars:
+  - parameters/config.json
 stages:
   seleccionar:
     foreach: ${ejercicios}
@@ -12,15 +15,14 @@ stages:
       deps:
         - src/preparacion
         - src/nucleo
-        - datos/clips
-        - datos/manifest.json
-        - datos/seleccion_entrenamiento.json
+        - input/bronze
+        - parameters/inputs.json
       params:
-        - seleccion
+        - parameters/config.json:
+            - seleccion
+            - formato
       outs:
-        - datos/intermedio/${item}/seleccion.json
-        - reportes/seleccion_${item}.json:
-            cache: false
+        - input/plate/${item}/seleccion.json
 
   limpiar:
     foreach: ${ejercicios}
@@ -31,19 +33,16 @@ stages:
         - src/preparacion
         - src/procesamiento
         - src/nucleo
-        - ejercicios/${item}.yaml
-        - datos/clips
-        - datos/intermedio/${item}/seleccion.json
+        - ejercicios
+        - input/bronze
+        - input/plate/${item}/seleccion.json
       params:
-        - limpieza
-        - formato
+        - parameters/config.json:
+            - limpieza
+            - formato
       outs:
-        - datos/intermedio/${item}/limpio.json
-        - reportes/limpieza_${item}.md:
-            cache: false
+        - input/plate/${item}/limpio.json
       metrics:
-        - reportes/limpieza_${item}.json:
-            cache: false
 
   construir:
     foreach: ${ejercicios}
@@ -54,16 +53,18 @@ stages:
         - src/preparacion
         - src/procesamiento
         - src/nucleo
-        - ejercicios/${item}.yaml
-        - datos/clips
-        - datos/grabaciones
-        - datos/etiquetas.json
-        - datos/intermedio/${item}/limpio.json
+        - ejercicios
+        - input/bronze
+        - input/raw
+        - parameters/inputs.json
+        - input/plate/${item}/limpio.json
       params:
-        - construccion
-        - seleccion
+        - parameters/config.json:
+            - construccion
+            - seleccion
+            - formato
       outs:
-        - datos/intermedio/${item}/construido
+        - input/plate/${item}/construido.json
 
   integrar:
     foreach: ${ejercicios}
@@ -72,9 +73,14 @@ stages:
       cmd: python -m src.preparacion.etapas integrar ${item}
       deps:
         - src/preparacion
-        - datos/intermedio/${item}/construido
+        - src/procesamiento
+        - src/nucleo
+        - input/plate/${item}/construido.json
+      params:
+        - parameters/config.json:
+            - formato
       outs:
-        - datos/intermedio/${item}/integrado.json
+        - input/plate/${item}/integrado.json
 
   formatear:
     foreach: ${ejercicios}
@@ -85,17 +91,14 @@ stages:
         - src/preparacion
         - src/procesamiento
         - src/nucleo
-        - ejercicios/${item}.yaml
-        - datos/intermedio/${item}/construido
-        - datos/intermedio/${item}/integrado.json
+        - ejercicios
+        - input/plate/${item}/construido.json
+        - input/plate/${item}/integrado.json
       params:
-        - formato
+        - parameters/config.json:
+            - formato
       outs:
-        - datos/final/${item}
-        - docs/diccionario/${item}.csv:
-            cache: false
-        - docs/diccionario/${item}.md:
-            cache: false
+        - input/gold/${item}
 
   documentar_codigo:
     desc: "documentacion del codigo (docs/codigo) · docs/decisiones/0008-documentacion-del-codigo.md"

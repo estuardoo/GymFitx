@@ -67,7 +67,7 @@ function pintarEntrenos(){
   const cont = $("#entrenos"), ex = STATE && STATE.ejercicios.find(e => e.slug === SEL);
   if (!cont || !ex){ if (cont) cont.innerHTML = ""; return; }
   const dueño = ex.clasificador || ex.slug, ses = STATE.sesion || {};
-  const runs = ENTRENOS.filter(m => m.exercise === dueño).sort((a, b) => b.numero - a.numero);
+  const runs = ENTRENOS.filter(m => m.exercise === dueño).sort((a, b) => (b.fecha || "").localeCompare(a.fecha || ""));
   const uso = ACTIVA && ses.clasificador ? ses.clasificador.run : ex.clasificador_run;
   let estado;
   if (!runs.length) estado = "Sin entrenamientos de este ejercicio todavía.";
@@ -78,11 +78,11 @@ function pintarEntrenos(){
     + (CONTEO.otra ? ` · ${CONTEO.otra} otras` : "") + ` <span class="ex-sub">(${ses.clasificador.run})</span>`;
   cont.innerHTML = `<div class="eh">Entrenamientos · ${ex.name}</div><div class="cuenta">${estado}</div>`
     + runs.map(m => {
-      const ok = !!m.criterio, es = `run_${m.numero}` === uso;
+      const ok = !!m.criterio, es = m.dir === uso;
       const f1 = m.f1_macro != null ? `F1 ${(+m.f1_macro).toFixed(2)}` : `acc ${(+m.accuracy).toFixed(2)}`;
-      return `<div class="er ${ok ? "ok" : "off"} ${es ? "uso" : ""}" ${ok ? `onclick="usarEntreno('run_${m.numero}')"` : ""}
+      return `<div class="er ${ok ? "ok" : "off"} ${es ? "uso" : ""}" ${ok ? `onclick="usarEntreno('${m.dir}')"` : ""}
         title="${ok ? "Usar este entrenamiento para contar en vivo" : "Entrenado antes de guardar su spec: reentrena para usarlo en vivo"}">
-        <b>${es ? "●" : "○"} run_${m.numero}</b><span>${m.mejor_modelo}</span><span class="ex-sub">${f1} · ${(m.fecha || "").slice(0, 10)}${m.fuera ? " · cuenta sola" : ""}</span></div>`;
+        <b>${es ? "●" : "○"} ${m.dir}</b><span>${m.mejor_modelo}</span><span class="ex-sub">${f1} · ${(m.fecha || "").slice(0, 10)}${m.fuera ? " · cuenta sola" : ""}</span></div>`;
     }).join("");
 }
 
@@ -119,7 +119,7 @@ async function cargarGrabaciones(){
   const r = await (await fetch("/api/recordings?limit=60")).json();
   RECS_ALL = r.grabaciones;
   $("#disco").textContent =
-    `${r.disco.sesiones} sesiones · ${r.disco.videos} videos · ${r.disco.mb} MB en datos/grabaciones/`;
+    `${r.disco.sesiones} sesiones · ${r.disco.videos} videos · ${r.disco.mb} MB en input/raw/`;
   renderGrabaciones();
 }
 
@@ -245,7 +245,7 @@ function pintarRutina(){
         <input type="number" min="1" max="99" data-reps="${ex.slug}" value="${reps}" onchange="cambioRutina()">
       </td>
       <td class="acc">
-        <button class="iconbtn" title="Subir videos bien / mal / base" onclick="abrirVideos('${ex.slug}')">🎞</button>
+        <button class="iconbtn" title="Subir videos bien / mal" onclick="abrirVideos('${ex.slug}')">🎞</button>
         <button class="iconbtn" title="Editar" onclick="abrirEjercicio('${ex.slug}')">✎</button>
         <button class="iconbtn danger" title="Archivar" onclick="archivarEjercicio('${ex.slug}')">🗑</button>
       </td>
@@ -297,13 +297,13 @@ async function guardarEjercicio(){
 let VID_SLUG = null;
 async function _contarClips(){
   const n = await (await fetch("/api/ejercicio/clips?slug=" + encodeURIComponent(VID_SLUG))).json();
-  for (const c of ["bien", "mal", "base"]) $("#vid-n-" + c).textContent = `(${n[c]} en el dataset)`;
+  for (const c of ["bien", "mal"]) $("#vid-n-" + c).textContent = `(${n[c]} en el dataset)`;
 }
 function abrirVideos(slug){
   VID_SLUG = slug;
   $("#vid-slug").textContent = slug;
   $("#vid-aviso").textContent = "";
-  for (const c of ["bien", "mal", "base"]) $("#vid-" + c).value = "";
+  for (const c of ["bien", "mal"]) $("#vid-" + c).value = "";
   _contarClips();
   $("#dlg-vid").showModal();
 }
@@ -323,11 +323,10 @@ async function subirVideos(){
   btn.disabled = true; aviso.textContent = "Subiendo y detectando puntos… (puede tardar)";
   const lineas = [];
   try {
-    for (const clase of ["bien", "mal", "base"]) {
+    for (const clase of ["bien", "mal"]) {
       if (!$("#vid-" + clase).files.length) continue;
-      let j = await _subirClase(clase, false);
-      if (j.base_existente && confirm("Ya hay un clip base para este ejercicio. ¿Reemplazarlo?")) j = await _subirClase(clase, true);
-      lineas.push(`${clase}: ${j.ok.length} subido(s)` + (j.base_reemplazada ? " (base reemplazada)" : ""));
+      const j = await _subirClase(clase, false);
+      lineas.push(`${clase}: ${j.ok.length} subido(s)`);
       lineas.push(...j.errores.map(e => "⚠ " + e));
       if (j.sql_error) lineas.push("⚠ SQL no respondió: quedó local, usa Sistema → Generar tablas. " + j.sql_error);
       else if (j.sql) lineas.push(`SQL: ${j.sql.archivos_nuevos} archivo(s) nuevo(s), ${j.sql.omitidos_sin_puntos} sin puntos`);
@@ -366,7 +365,7 @@ async function importarCarpeta(){
 
 async function archivarEjercicio(slug){
   if (!confirm(`¿Archivar "${slug}"? Sale de la app y de la rutina, y se borran sus clips del manifest y todos sus datos de SQL. ` +
-    `Los archivos (clips, grabaciones) no se borran: pasan a datos/archivados/.`)) return;
+    `Los archivos (clips, grabaciones) no se borran: pasan a sistema/archivados/.`)) return;
   try {
     const r = await _post("/api/puntos/eliminar", {nombre: slug});
     const d = r.depurado || {};
@@ -387,7 +386,7 @@ async function cargarCamaras(){
   try {
     const r = await (await fetch("/api/cameras")).json();
     const usb = r.camaras.map(c => `<option value="${c.index}">${c.name || ("Cámara " + c.index)} · ${c.width}×${c.height}</option>`);
-    const droid = (r.droidcams || []).map(d => `<option class="opt-droid" value="droid:${d}">📱 DroidCam · ${d}</option>`);
+    const droid = (r.droidcams || []).map(d => `<option class="opt-droid" value="droid:${d.ip}">📱 ${d.nombre ? d.nombre + " · " : "DroidCam · "}${d.ip}</option>`);
     sel.innerHTML = (usb.length || droid.length) ? usb.concat(droid).join("")
       : `<option value="0">Cámara 0 (predeterminada)</option>`;
     if (prev && [...sel.options].some(o => o.value === prev)) sel.value = prev;
@@ -566,3 +565,17 @@ $("#btn-detener-grab").onclick = async () => {
     actualizarControlesCamara();
   }
 };
+
+
+// --- Persona con la que se graba (P1..Pn): se guarda en el video y pasa a sus clips ---
+async function cargarPersonasCaptura(){
+  const sel = $("#sel-persona"); if (!sel) return;
+  try {
+    const d = await (await fetch("/api/personas")).json();
+    sel.innerHTML = '<option value="">sin persona</option>' + d.personas.map(p => `<option>${p}</option>`).join("");
+    sel.value = d.grabando_con || "";
+  } catch (e) { /* sin servidor aun: queda "sin persona" */ }
+}
+$("#sel-persona").onchange = () => fetch("/api/session/persona", {method: "POST", headers: {"Content-Type": "application/json"},
+  body: JSON.stringify({persona: $("#sel-persona").value || null})});
+cargarPersonasCaptura();

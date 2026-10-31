@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from src.nucleo.config import matriz_modelos, params
 
-SEMILLA = params("entrenamiento")["semilla"]   # params.yaml
+SEMILLA = params("entrenamiento")["semilla"]   # parameters/config.json
 
 
 def catalogo():

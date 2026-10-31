@@ -1,4 +1,4 @@
-"""Etapa 6c: lo que queda de cada corrida en datos/entrenamientos/run_N/ (graficas, meta.json) y su listado."""
+"""Etapa 6c: lo que queda de cada corrida en output/models/<ejercicio>/run_NNN/ (graficas, meta.json) y su listado."""
 
 from __future__ import annotations
 
@@ -16,13 +16,19 @@ def _plt():
     return plt
 
 
-def nueva_corrida():
-    """(numero, carpeta) de la proxima datos/entrenamientos/run_N/."""
-    ENTR.mkdir(exist_ok=True)
-    numero = 1 + max([int(p.name[4:]) for p in ENTR.glob("run_*") if p.name[4:].isdigit()], default=0)
-    out = ENTR / f"run_{numero}"
+def nueva_corrida(ejercicio_id):
+    """(numero, carpeta) de la proxima output/models/<ejercicio_id>/run_NNN/ (el numero cuenta por ejercicio)."""
+    base = ENTR / str(int(ejercicio_id))
+    base.mkdir(parents=True, exist_ok=True)
+    numero = 1 + max([int(p.name[4:]) for p in base.glob("run_*") if p.name[4:].isdigit()], default=0)
+    out = base / f"run_{numero:03d}"
     out.mkdir(parents=True)
     return numero, out
+
+
+def dir_de(ejercicio_id, numero) -> str:
+    """Como se nombra una corrida para el panel y las rutas web: '1/run_001'."""
+    return f"{int(ejercicio_id)}/run_{int(numero):03d}"
 
 
 def grafico_comparacion(out, numero, resultados, linea_base, mejor):
@@ -174,17 +180,20 @@ def comparar(m, previa):
 
 
 def entrenamientos():
-    """Todas las corridas, cada una con 'parametros' y 'vs_anterior' (contra la corrida
-    anterior del mismo ejercicio; se calcula al leer, asi tambien sirve para corridas viejas)."""
+    """Todas las corridas, cada una con 'parametros', 'dir' y 'vs_anterior' (contra la corrida anterior del mismo
+    ejercicio; se calcula al leer, asi tambien sirve para corridas viejas). En orden cronologico."""
     if not ENTR.exists():
         return []
+    metas = []
+    for mp in ENTR.glob("*/run_*/meta.json"):
+        m = json.loads(mp.read_text("utf-8"))
+        m["ejercicio_id"] = int(mp.parent.parent.name)
+        m["dir"] = f"{mp.parent.parent.name}/{mp.parent.name}"
+        metas.append(m)
     out, ultima = [], {}
-    for p in sorted(ENTR.glob("run_*"), key=lambda p: int(p.name[4:]) if p.name[4:].isdigit() else 0):
-        mp = p / "meta.json"
-        if mp.exists():
-            m = json.loads(mp.read_text("utf-8"))
-            m["parametros"] = parametros(m)
-            m["vs_anterior"] = comparar(m, ultima.get(m.get("tipo")))
-            ultima[m.get("tipo")] = m
-            out.append(m)
+    for m in sorted(metas, key=lambda m: (m.get("fecha", ""), m["dir"])):
+        m["parametros"] = parametros(m)
+        m["vs_anterior"] = comparar(m, ultima.get(m.get("tipo")))
+        ultima[m.get("tipo")] = m
+        out.append(m)
     return out

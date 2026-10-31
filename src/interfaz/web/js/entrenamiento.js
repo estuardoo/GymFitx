@@ -29,7 +29,38 @@ async function cargarClipsTrain(){
   TCLIPS=await (await fetch('/api/entrenar/clips'+(t?`?tipo=${t}`:''))).json();
   const cs=[...new Set(TCLIPS.map(c=>c.clase))].sort(), actual=$F('#tclipsClase').value;
   $F('#tclipsClase').innerHTML='<option value="">todas</option>'+cs.map(c=>`<option ${c===actual?'selected':''}>${c}</option>`).join('');
+  renderPersonas();
   renderClipsTrain();
+}
+
+// --- Personas para entrenar: P1, P2... (casilla = sus clips entran). Desmarcadas se guardan en este navegador ---
+const _PERS_KEY='gymfit.personasDesmarcadas';
+function personasDesmarcadas(){
+  try{ return new Set(JSON.parse(localStorage.getItem(_PERS_KEY)||'[]')); }catch(e){ return new Set(); }
+}
+function guardarPersonasDesmarcadas(set){
+  try{ localStorage.setItem(_PERS_KEY, JSON.stringify([...set])); }catch(e){}
+}
+function renderPersonas(){
+  const cont=$F('#tpersonas');
+  const cnt={};
+  TCLIPS.forEach(c=>{ cnt[c.persona]=(cnt[c.persona]||0)+1; });
+  const nombres=Object.keys(cnt).sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}));
+  const off=personasDesmarcadas();
+  cont.innerHTML=nombres.map(p=>`<label class="mchk"><input type="checkbox" value="${p}" ${off.has(p)?'':'checked'}> ${p} <span class="hint">(${cnt[p]})</span></label>`).join('')
+    || '<span class="hint">Sin clips para este ejercicio</span>';
+  cont.querySelectorAll('input').forEach(chk=>{
+    chk.onchange=()=>{
+      const s=personasDesmarcadas();
+      chk.checked ? s.delete(chk.value) : s.add(chk.value);
+      guardarPersonasDesmarcadas(s);
+    };
+  });
+}
+// personas marcadas para entrenar (null = todas, p.ej. si aun no hay panel)
+function personasUsadas(){
+  const cks=[...document.querySelectorAll('#tpersonas input')];
+  return cks.length ? cks.filter(c=>c.checked).map(c=>c.value) : null;
 }
 function clipsVisibles(){
   const cl=$F('#tclipsClase').value, ver=$F('#tclipsVer').value, fl=$F('#tclipsFiltro').value.trim().toLowerCase();
@@ -153,17 +184,18 @@ function mostrarEntrenamiento(m){
   $F('#trainf1').textContent=pct(m.f1_macro);
   $F('#trainbase').textContent=m.linea_base?`F1 ${pct(m.linea_base.f1_macro)} · acc ${pct(m.linea_base.accuracy)}`:'— (corrida vieja)';
   $F('#trainanid').textContent=m.anidado?`F1 ${pct(m.anidado.f1_macro)} · acc ${pct(m.anidado.accuracy)}`:(m.criterio?'— (muy pocos clips)':'— (corrida vieja)');
-  $F('#trainmeta').textContent=`${m.n_muestras} clips · ${m.k}-fold (test ${m.test_pct}%) · features: ${featTxt(m.features)} · ${m.fecha.replace('T',' ')}`+(m.excluidas&&m.excluidas.length?` · excluidas por pocos clips: ${m.excluidas.join(', ')}`:'')+(m.excluidos_manual&&m.excluidos_manual.length?` · ${m.excluidos_manual.length} clips desmarcados`:'')+(m.desincronizados&&m.desincronizados.length?` · ⚠ ${m.desincronizados.length} clips quedaron fuera por estar con otro catalogo de puntos: dale a "Generar cortes" y luego a "Generar / actualizar tablas"`:'');
+  const cf=(m.composicion_folds||[]).map(f=>`#${f.fold} `+Object.entries(f.prueba).map(([p,n])=>`${p} ${n}`).join(' · ')).join(' | ');
+  $F('#trainmeta').textContent=`${m.n_muestras} clips · ${m.k}-fold (test ${m.test_pct}%) · features: ${featTxt(m.features)} · ${m.fecha.replace('T',' ')}`+(m.personas?` · personas: ${m.personas.join(', ')}`:'')+(cf?` · clips de cada persona en prueba por fold: ${cf}`:'')+(m.excluidas&&m.excluidas.length?` · excluidas por pocos clips: ${m.excluidas.join(', ')}`:'')+(m.excluidos_manual&&m.excluidos_manual.length?` · ${m.excluidos_manual.length} clips desmarcados`:'')+(m.desincronizados&&m.desincronizados.length?` · ⚠ ${m.desincronizados.length} clips quedaron fuera por estar con otro catalogo de puntos: dale a "Generar cortes" y luego a "Generar / actualizar tablas"`:'');
   const ord=(m.modelos||[]).slice().sort((a,b)=>(b.f1_macro??-1)-(a.f1_macro??-1));
   $F('#trainmodels').innerHTML=ord.map(mm=>
     `<tr${mm.nombre===m.mejor_modelo?' class="sel"':''}><td>${mm.nombre}</td><td>${mm.error?'—':(mm.accuracy*100).toFixed(1)+'%'}</td><td>${mm.error?'—':(mm.f1_macro*100).toFixed(1)+'%'}</td><td>${itTxt(mm.iteraciones)}</td><td>${mm.error?'error: '+mm.error:mm.tiempo_seg+'s'}</td></tr>`).join('');
   const im=m.iteraciones_mejor;
   $F('#trainiters').textContent=im?`${im.usadas} de ${im.tope}${im.usadas<im.tope?' (frenó antes)':' (llegó al tope)'}`:'— (no itera / corrida vieja)';
-  $F('#imgComp').src=`/entrenamientos/run_${m.numero}/comparacion.png?t=${Date.now()}`;
+  $F('#imgComp').src=`/entrenamientos/${m.dir}/comparacion.png?t=${Date.now()}`;
   $F('#trainrep').innerHTML=Object.entries(m.reporte).filter(([k])=>!['accuracy'].includes(k)).map(([cl,r])=>
     `<tr><td>${cl}</td><td>${(r.precision*100).toFixed(0)}%</td><td>${(r.recall*100).toFixed(0)}%</td><td>${(r['f1-score']*100).toFixed(0)}%</td><td>${r.support}</td></tr>`).join('');
-  $F('#imgConf').src=`/entrenamientos/run_${m.numero}/confusion.png?t=${Date.now()}`;
-  $F('#imgRoc').src=`/entrenamientos/run_${m.numero}/roc.png?t=${Date.now()}`;
+  $F('#imgConf').src=`/entrenamientos/${m.dir}/confusion.png?t=${Date.now()}`;
+  $F('#imgRoc').src=`/entrenamientos/${m.dir}/roc.png?t=${Date.now()}`;
 }
 
 // lo que entra al vector: letras x,y,z (ejes de cada kpoint), a (angulos), p (proporciones)
@@ -180,7 +212,7 @@ async function entrenar(){
   $F('#btrain').disabled=true; $F('#btrain').textContent='Entrenando…';
   try{
     const tipo=$F('#trainTipo').value;
-    const resp=await fetch('/api/entrenar',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({test_pct:pct, modelos, tipo:tipo?+tipo:null, features:featSel()})});
+    const resp=await fetch('/api/entrenar',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({test_pct:pct, modelos, tipo:tipo?+tipo:null, features:featSel(), personas:personasUsadas()})});
     const m=await resp.json();
     if(!resp.ok) throw new Error(m.error||'error desconocido');
     await cargarEntrenamientos();

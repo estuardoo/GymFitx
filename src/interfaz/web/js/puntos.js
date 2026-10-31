@@ -1,4 +1,4 @@
-/* Pestana Kpoints: tablero de kpoints, angulos y proporciones del .yaml. API: /api/puntos/* */
+/* Pestana Kpoints: tablero de kpoints, angulos y proporciones de la definicion. API: /api/puntos/* */
 // UN solo grafico con los 33 puntos del cuerpo (MediaPipe Pose).
 let ptCatalogoPose=null, ptTipos=null, ptActual=null, ptReglas=[];
 let ptFeatures=[], ptKpoints=[], ptCadena=[];
@@ -47,7 +47,7 @@ async function crearEjercicioPuntos(){
 async function eliminarEjercicioPuntos(){
   const nombre = $F('#ptEjercicio').value;
   if(!nombre) return;
-  if(!confirm(`Eliminar el ejercicio '${nombre}' de la app?\nSu .yaml queda en ejercicios/.respaldos/; clips, grabaciones y SQL no se tocan.`)) return;
+  if(!confirm(`Eliminar el ejercicio '${nombre}' de la app?\nEl ejercicio queda inactivo (se recupera creandolo de nuevo con el mismo nombre); clips, grabaciones y SQL no se tocan.`)) return;
   const r = await fetch('/api/puntos/eliminar',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nombre})});
   const j = await r.json();
   if(!r.ok) return msg('Error: '+j.error);
@@ -59,7 +59,7 @@ async function eliminarEjercicioPuntos(){
 async function cargarEjercicioPuntos(sincronizar=true){
   const ejercicio = $F('#ptEjercicio').value;
   if(!ejercicio) return;
-  ptActual = await (await fetch('/api/puntos/yaml?ejercicio='+encodeURIComponent(ejercicio))).json();
+  ptActual = await (await fetch('/api/puntos/definicion?ejercicio='+encodeURIComponent(ejercicio))).json();
   ptFeatures = (ptActual.features||[]).map(f=>({...f, points:[...(f.points||[])], reference:[...(f.reference||[])]}));
   ptKpoints = (ptActual.kpoints||[]).map(k=>({...k, origen:{...k.origen}}));
   ptModo='marcar'; ptCadena=[]; ptResaltar=null; ptNombre=''; ptEditando=null;
@@ -69,6 +69,7 @@ async function cargarEjercicioPuntos(sincronizar=true){
   ptSnapshot = _estadoEditor();
   renderTodoPuntos();
   renderReglas();
+  renderNormalizacion();
   if(sincronizar) refrescarEstadoSql();
 }
 
@@ -270,7 +271,7 @@ function _info(nombre){
   if(_esPend(nombre)){ const [fuente, landmark] = nombre.slice(1).split('|'); return {fuente, landmark, pend:true}; }
   const kp = ptKpoints.find(k=>k.nombre===nombre);
   if(kp) return kp.origen.tipo==='landmark' ? {fuente:kp.origen.fuente, landmark:kp.origen.landmark, pend:false} : null;
-  // nombre crudo de MediaPipe (filas viejas del .yaml): es un punto que todavia no esta marcado en el catalogo
+  // nombre crudo de MediaPipe (filas viejas de la definicion): es un punto que todavia no esta marcado en el catalogo
   if(ptCatalogoPose && ptCatalogoPose.puntos.some(q=>q.nombre===nombre)) return {fuente:'pose', landmark:nombre, pend:true};
   return null;
 }
@@ -424,7 +425,7 @@ function limpiarFormFeaturePuntos(){
   renderTodoPuntos();
 }
 
-// Una FILA de la matriz = un recorrido de kpoints (3 o mas, de cuerpo). En el .yaml sigue siendo un feature
+// Una FILA de la matriz = un recorrido de kpoints (3 o mas, de cuerpo). En la definicion sigue siendo un feature
 // 'angle' (solo con 3 puntos) y un feature 'proporcion' por tramo, con 'activo:false' cuando esta apagado.
 // Siempre ordenadas del kpoint menor al mayor: primero los C01..
 function _filasFeatures(){
@@ -442,7 +443,7 @@ function _filasFeatures(){
     return x.length-y.length || a.base.localeCompare(b.base);
   });
 }
-// deja ptFeatures en el mismo orden que la matriz (asi se guarda en el .yaml)
+// deja ptFeatures en el mismo orden que la matriz (asi se guarda en la definicion)
 function ordenarFeatures(){ ptFeatures = _filasFeatures().flatMap(f=>[f.ang, ...f.pros, f.ratio].filter(Boolean)); }
 const _on = f => f && f.activo!==false;
 
@@ -596,13 +597,13 @@ async function guardarEjercicioPuntos(){
   renderTodoPuntos();
   const source = 'pose';
   const body = {ejercicio, source, kpoints: ptKpoints, features: ptFeatures};
-  const r = await fetch('/api/puntos/yaml',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  const r = await fetch('/api/puntos/definicion',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
   const j = await r.json();
   if(!r.ok){ $F('#ptResumen').textContent='Error: '+j.error; return msg('Error: '+j.error); }
   ptActual.source = source; ptSnapshot = _estadoEditor();
   const sql = j.sql && j.sql.ok ? `SQL (type ${j.sql.type}) actualizado` : 'SQL sin conexion: guardado en local, se subira solo cuando vuelva';
   const aviso = j.features_cambiaron ? ' Cambiaron las filas o su orden: graba de nuevo la base de este ejercicio (la anterior ya no se usa).' : '';
-  msg((agregados.length ? `Se marcaron ${agregados.length} kpoints que usaban las filas (${agregados.join(', ')}). ` : '')+'Guardado en el .yaml. '+sql);
+  msg((agregados.length ? `Se marcaron ${agregados.length} kpoints que usaban las filas (${agregados.join(', ')}). ` : '')+'Guardado en la definicion. '+sql);
   $F('#ptResumen').textContent = `${ptKpoints.length} kpoint(s) y ${ptFeatures.length} feature(s) guardadas${agregados.length ? ` (${agregados.length} se marcaron solos porque las filas los usaban: ${agregados.join(', ')})` : ''}. ${sql}. Si cambio el orden o los puntos, vuelve a generar cortes y tablas SQL para reentrenar.${aviso}`;
   refrescarEstadoSql();
 }
@@ -636,5 +637,38 @@ async function guardarReglas(){
   const j = await r.json();
   if(!r.ok) return msg('Error: '+(j.error||j.detail));
   ptReglas = j.reglas; renderReglas();
-  msg(`${ptReglas.length} regla(s) guardadas en el .yaml. Reinicia la sesión para que las tome.`);
+  msg(`${ptReglas.length} regla(s) guardadas en la definicion. Reinicia la sesión para que las tome.`);
+}
+
+
+// ---------------------------------------------------------------- normalizacion (gold): origen / escala / cuadros
+function renderNormalizacion(){
+  const n=(ptActual&&ptActual.normalizacion)||{};
+  $F('#ptNormOrigen').value=n.origen||''; $F('#ptNormEscala').value=n.escala||''; $F('#ptNormN').value=n.n_frames||30;
+  $F('#ptNormClip').innerHTML='<option value="">(uno del medio)</option>';
+  $F('#ptNormMsg').innerHTML = n.error ? `<span class="errmark">⚠ ${n.error}</span>`
+    : !n.origen ? 'Este ejercicio no trae hombros y caderas: sin fórmula se usa la caja 100×100 antigua. Define una fórmula.'
+    : n.propia ? '' : 'Valores por defecto (todavía no guardados): origen = medio de caderas, escala = largo del tronco.';
+}
+function _normBody(){
+  return {ejercicio:$F('#ptEjercicio').value, origen:$F('#ptNormOrigen').value, escala:$F('#ptNormEscala').value,
+          n_frames:+$F('#ptNormN').value||0, clip:$F('#ptNormClip').value||null};
+}
+async function probarNormalizacion(){
+  const r=await fetch('/api/puntos/normalizacion/previa',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(_normBody())});
+  const j=await r.json();
+  if(!r.ok){ $F('#ptNormMsg').innerHTML=`<span class="errmark">✗ ${j.error||j.detail}</span>`; return; }
+  const sel=$F('#ptNormClip'), cur=sel.value;
+  sel.innerHTML='<option value="">(uno del medio)</option>'+j.clips.map(c=>`<option value="${c}">${c}</option>`).join('');
+  sel.value=String(j.clip);
+  const ej=Object.entries(j.ejemplo).map(([k,v])=>`${k} → (${v[0]}, ${v[1]})`).join(' · ');
+  $F('#ptNormMsg').innerHTML=`<span class="okmark">✓ clip ${j.clip}</span> · ${j.cuadros} cuadros (${j.validos} con escala válida) · origen típico (${j.origen[0]}, ${j.origen[1]}) · escala = <b>${j.escala}</b> (cuadros: ${j.escala_min} a ${j.escala_max}) · cuadro del medio normalizado: ${ej}`;
+}
+async function guardarNormalizacion(){
+  const r=await fetch('/api/puntos/normalizacion',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(_normBody())});
+  const j=await r.json();
+  if(!r.ok){ $F('#ptNormMsg').innerHTML=`<span class="errmark">✗ ${j.error||j.detail}</span>`; return; }
+  if(ptActual) ptActual.normalizacion={...j.normalizacion, propia:true, error:null};
+  $F('#ptNormMsg').innerHTML=`<span class="okmark">✓ guardada</span>`+(j.cambio?' · cambió: «Generar documentación» rehace gold y lo sube a SQL; los modelos ya entrenados usaron la normalización anterior, vuelve a entrenar.':'');
+  msg('Normalización guardada');
 }

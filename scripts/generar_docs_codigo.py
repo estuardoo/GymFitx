@@ -8,7 +8,7 @@ Salida (sin fechas: mismas fuentes, mismos bytes):
     INDICE.md            que hay en cada rama y modulo
     dependencias.md      matriz de quien importa a quien (el arbol de capas)
     api_rutas.md         todas las rutas REST/WebSocket
-    parametros.md        cada clave de params.yaml y los modulos que la usan
+    parametros.md        cada clave de parameters/config.json y los modulos que la usan
     <rama>/<modulo>.md   clases, funciones y constantes con su docstring (src/), scripts/ y la web (js)"""
 
 from __future__ import annotations
@@ -108,7 +108,7 @@ def _doc_py(rel: str, texto: str):
                     rutas.append((r[0], r[1], n.name, _resumen(ast.get_docstring(n))))
                     md += [f"Ruta: **{r[0]} {r[1]}**", ""]
             md += [_doc(ast.get_docstring(n))]
-    parametros = sorted(set(re.findall(r'params\("(\w+)"\)', texto)) | ({"formato"} if "formato_de(" in texto else set()))
+    parametros = sorted(set(re.findall(r'params\("(\w+)"\)', texto)))
     return "\n".join(md), _resumen(modulo), rutas, _importados(arbol), parametros, (funciones, clases)
 
 
@@ -170,7 +170,7 @@ def generar(raiz: Path = RAIZ) -> dict[str, str]:
     api += [f"| {m} | `{r}` | `{f}` | {d} | {a} |" for m, r, f, d, a in sorted(rutas_api, key=lambda x: (x[1], x[0]))]
     docs["api_rutas.md"] = "\n".join(api) + "\n"
 
-    par = ["# Parametros (`params.yaml`)", "", "Cada seccion de `params.yaml` y los modulos que la leen con `params(\"seccion\")`. "
+    par = ["# Parametros (`parameters/config.json`)", "", "Cada seccion de `parameters/config.json` y los modulos que la leen con `params(\"seccion\")`. "
            "La decision que la origina esta en `docs/decisiones/`.", "", "| Seccion | Usada en |", "|---|---|"]
     par += [f"| `{p}` | {', '.join(f'`{f}`' for f in sorted(set(fs)))} |" for p, fs in sorted(usan.items())]
     docs["parametros.md"] = "\n".join(par) + "\n"

@@ -1,0 +1,761 @@
+{
+ "clips": [
+  {
+   "clase": "bien",
+   "clip": "cuerpo_completo/bien/cuerpo_completo__2026-08-25__205453_base_s02_bien_r0.mp4",
+   "cuadros": 17,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "bien",
+   "clip": "cuerpo_completo/bien/cuerpo_completo__2026-08-25__211230_base_s02_bien_r0.mp4",
+   "cuadros": 47,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "bien",
+   "clip": "cuerpo_completo/bien/cuerpo_completo__2026-08-25__211230_base_s04_bien_r0.mp4",
+   "cuadros": 78,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "bien",
+   "clip": "cuerpo_completo/bien/cuerpo_completo__2026-08-25__211230_base_s08_bien_r0.mp4",
+   "cuadros": 53,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "bien",
+   "clip": "cuerpo_completo/bien/cuerpo_completo__2026-08-25__211856_base_s04_bien_r0.mp4",
+   "cuadros": 39,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "bien",
+   "clip": "cuerpo_completo/bien/cuerpo_completo__2026-08-25__211856_base_s05_bien_r0.mp4",
+   "cuadros": 32,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "bien",
+   "clip": "cuerpo_completo/bien/cuerpo_completo__2026-08-25__211856_base_s08_bien_r0.mp4",
+   "cuadros": 15,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "bien",
+   "clip": "cuerpo_completo/bien/cuerpo_completo__2026-08-25__211856_base_s11_bien_r0.mp4",
+   "cuadros": 15,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "bien",
+   "clip": "cuerpo_completo/bien/cuerpo_completo__2026-08-25__215049_base_s02_bien_r0.mp4",
+   "cuadros": 40,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "bien",
+   "clip": "cuerpo_completo/bien/cuerpo_completo__2026-08-25__215049_base_s03_bien_r0.mp4",
+   "cuadros": 27,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "bien",
+   "clip": "cuerpo_completo/bien/cuerpo_completo__2026-08-25__215049_base_s04_bien_r0.mp4",
+   "cuadros": 28,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "bien",
+   "clip": "cuerpo_completo/bien/cuerpo_completo__2026-08-25__215049_base_s05_bien_r0.mp4",
+   "cuadros": 20,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "bien",
+   "clip": "cuerpo_completo/bien/cuerpo_completo__2026-08-25__215049_base_s06_bien_r0.mp4",
+   "cuadros": 11,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "bien",
+   "clip": "cuerpo_completo/bien/cuerpo_completo__2026-08-25__215049_base_s07_bien_r0.mp4",
+   "cuadros": 36,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "bien",
+   "clip": "cuerpo_completo/bien/cuerpo_completo__2026-08-25__215049_base_s08_bien_r0.mp4",
+   "cuadros": 32,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "bien",
+   "clip": "cuerpo_completo/bien/cuerpo_completo__2026-08-25__215049_base_s09_bien_r0.mp4",
+   "cuadros": 31,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "bien",
+   "clip": "cuerpo_completo/bien/cuerpo_completo__2026-08-25__215049_base_s10_bien_r0.mp4",
+   "cuadros": 32,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "bien",
+   "clip": "cuerpo_completo/bien/cuerpo_completo__2026-08-25__215106_base_s02_bien_r0.mp4",
+   "cuadros": 205,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "bien",
+   "clip": "cuerpo_completo/bien/cuerpo_completo__2026-08-25__215119_base_s03_bien_r0.mp4",
+   "cuadros": 209,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "bien",
+   "clip": "cuerpo_completo/bien/cuerpo_completo__2026-08-25__215132_base_s03_bien_r0.mp4",
+   "cuadros": 174,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "bien",
+   "clip": "cuerpo_completo/bien/cuerpo_completo__2026-08-25__215145_base_s02_bien_r0.mp4",
+   "cuadros": 28,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "bien",
+   "clip": "cuerpo_completo/bien/cuerpo_completo__2026-08-25__215145_base_s03_bien_r0.mp4",
+   "cuadros": 27,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "bien",
+   "clip": "cuerpo_completo/bien/cuerpo_completo__2026-08-25__215145_base_s04_bien_r0.mp4",
+   "cuadros": 32,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "bien",
+   "clip": "cuerpo_completo/bien/cuerpo_completo__2026-08-25__215145_base_s05_bien_r0.mp4",
+   "cuadros": 20,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "bien",
+   "clip": "cuerpo_completo/bien/cuerpo_completo__2026-08-25__215145_base_s06_bien_r0.mp4",
+   "cuadros": 27,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "bien",
+   "clip": "cuerpo_completo/bien/cuerpo_completo__2026-08-25__215145_base_s07_bien_r0.mp4",
+   "cuadros": 24,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "bien",
+   "clip": "cuerpo_completo/bien/cuerpo_completo__2026-08-25__215155_base_s02_bien_r0.mp4",
+   "cuadros": 181,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "bien",
+   "clip": "cuerpo_completo/bien/cuerpo_completo__2026-08-25__215207_base_s01_bien_r0.mp4",
+   "cuadros": 174,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "bien",
+   "clip": "cuerpo_completo/bien/cuerpo_completo__2026-08-25__230526_base_s02_bien_r0.mp4",
+   "cuadros": 167,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "bien",
+   "clip": "cuerpo_completo/bien/cuerpo_completo__2026-08-25__230551_base_s03_bien_r0.mp4",
+   "cuadros": 155,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "bien",
+   "clip": "cuerpo_completo/bien/cuerpo_completo__2026-08-25__230605_base_s02_bien_r0.mp4",
+   "cuadros": 168,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "bien",
+   "clip": "cuerpo_completo/bien/cuerpo_completo__2026-08-25__230620_base_s04_bien_r0.mp4",
+   "cuadros": 65,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "bien",
+   "clip": "cuerpo_completo/bien/cuerpo_completo__2026-08-25__230640_base_s04_bien_r0.mp4",
+   "cuadros": 41,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "bien",
+   "clip": "cuerpo_completo/bien/cuerpo_completo__2026-08-25__230655_base_s02_bien_r0.mp4",
+   "cuadros": 148,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "bien",
+   "clip": "cuerpo_completo/bien/cuerpo_completo__2026-08-25__231020_base_s02_bien_r0.mp4",
+   "cuadros": 25,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "bien",
+   "clip": "cuerpo_completo/bien/cuerpo_completo__2026-08-25__231020_base_s03_bien_r0.mp4",
+   "cuadros": 38,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "bien",
+   "clip": "cuerpo_completo/bien/cuerpo_completo__2026-08-25__231020_base_s05_bien_r0.mp4",
+   "cuadros": 58,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "bien",
+   "clip": "cuerpo_completo/bien/cuerpo_completo__2026-08-25__231036_base_s02_bien_r0.mp4",
+   "cuadros": 44,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "bien",
+   "clip": "cuerpo_completo/bien/cuerpo_completo__2026-08-25__231036_base_s03_bien_r0.mp4",
+   "cuadros": 33,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "bien",
+   "clip": "cuerpo_completo/bien/cuerpo_completo__2026-08-25__231036_base_s04_bien_r0.mp4",
+   "cuadros": 28,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "bien",
+   "clip": "cuerpo_completo/bien/cuerpo_completo__2026-08-25__231036_base_s05_bien_r0.mp4",
+   "cuadros": 29,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "bien",
+   "clip": "cuerpo_completo/bien/cuerpo_completo__2026-08-25__231046_base_s01_bien_r0.mp4",
+   "cuadros": 32,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "bien",
+   "clip": "cuerpo_completo/bien/cuerpo_completo__2026-08-25__231046_base_s02_bien_r0.mp4",
+   "cuadros": 33,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "bien",
+   "clip": "cuerpo_completo/bien/cuerpo_completo__2026-08-25__231046_base_s03_bien_r0.mp4",
+   "cuadros": 20,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "bien",
+   "clip": "cuerpo_completo/bien/cuerpo_completo__2026-08-25__231046_base_s04_bien_r0.mp4",
+   "cuadros": 32,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "bien",
+   "clip": "cuerpo_completo/bien/cuerpo_completo__2026-08-25__231055_base_s01_bien_r0.mp4",
+   "cuadros": 31,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "bien",
+   "clip": "cuerpo_completo/bien/cuerpo_completo__2026-08-25__231055_base_s02_bien_r0.mp4",
+   "cuadros": 35,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "bien",
+   "clip": "cuerpo_completo/bien/cuerpo_completo__2026-08-25__231055_base_s03_bien_r0.mp4",
+   "cuadros": 21,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "bien",
+   "clip": "cuerpo_completo/bien/cuerpo_completo__2026-08-25__231055_base_s04_bien_r0.mp4",
+   "cuadros": 26,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "bien",
+   "clip": "cuerpo_completo/bien/cuerpo_completo__2026-08-25__231055_base_s05_bien_r0.mp4",
+   "cuadros": 21,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "mal",
+   "clip": "cuerpo_completo/mal/cuerpo_completo__2026-08-25__205453_base_s03_mal_r0.mp4",
+   "cuadros": 6,
+   "motivos": [
+    "muy corto (<10 cuadros)"
+   ],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "mal",
+   "clip": "cuerpo_completo/mal/cuerpo_completo__2026-08-25__211230_base_s06_mal_r0.mp4",
+   "cuadros": 30,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "mal",
+   "clip": "cuerpo_completo/mal/cuerpo_completo__2026-08-25__211230_base_s07_mal_r0.mp4",
+   "cuadros": 52,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "mal",
+   "clip": "cuerpo_completo/mal/cuerpo_completo__2026-08-25__211856_base_s01_mal_r0.mp4",
+   "cuadros": 36,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "mal",
+   "clip": "cuerpo_completo/mal/cuerpo_completo__2026-08-25__211856_base_s02_mal_r0.mp4",
+   "cuadros": 36,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "mal",
+   "clip": "cuerpo_completo/mal/cuerpo_completo__2026-08-25__211856_base_s06_mal_r0.mp4",
+   "cuadros": 28,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "mal",
+   "clip": "cuerpo_completo/mal/cuerpo_completo__2026-08-25__211856_base_s07_mal_r0.mp4",
+   "cuadros": 67,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "mal",
+   "clip": "cuerpo_completo/mal/cuerpo_completo__2026-08-25__211856_base_s09_mal_r0.mp4",
+   "cuadros": 36,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "mal",
+   "clip": "cuerpo_completo/mal/cuerpo_completo__2026-08-25__211856_base_s10_mal_r0.mp4",
+   "cuadros": 24,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "mal",
+   "clip": "cuerpo_completo/mal/cuerpo_completo__2026-08-25__211856_base_s12_mal_r0.mp4",
+   "cuadros": 32,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "mal",
+   "clip": "cuerpo_completo/mal/cuerpo_completo__2026-08-25__214947_base_s01_mal_r0.mp4",
+   "cuadros": 28,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "mal",
+   "clip": "cuerpo_completo/mal/cuerpo_completo__2026-08-25__214947_base_s02_mal_r0.mp4",
+   "cuadros": 48,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "mal",
+   "clip": "cuerpo_completo/mal/cuerpo_completo__2026-08-25__215049_base_s01_mal_r0.mp4",
+   "cuadros": 28,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "mal",
+   "clip": "cuerpo_completo/mal/cuerpo_completo__2026-08-25__215049_base_s11_mal_r0.mp4",
+   "cuadros": 47,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "mal",
+   "clip": "cuerpo_completo/mal/cuerpo_completo__2026-08-25__215049_base_s12_mal_r0.mp4",
+   "cuadros": 13,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "mal",
+   "clip": "cuerpo_completo/mal/cuerpo_completo__2026-08-25__215119_base_s01_mal_r0.mp4",
+   "cuadros": 32,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "mal",
+   "clip": "cuerpo_completo/mal/cuerpo_completo__2026-08-25__215132_base_s02_mal_r0.mp4",
+   "cuadros": 63,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "mal",
+   "clip": "cuerpo_completo/mal/cuerpo_completo__2026-08-25__215145_base_s01_mal_r0.mp4",
+   "cuadros": 28,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "mal",
+   "clip": "cuerpo_completo/mal/cuerpo_completo__2026-08-25__215145_base_s08_mal_r0.mp4",
+   "cuadros": 15,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "mal",
+   "clip": "cuerpo_completo/mal/cuerpo_completo__2026-08-25__215207_base_s02_mal_r0.mp4",
+   "cuadros": 83,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "mal",
+   "clip": "cuerpo_completo/mal/cuerpo_completo__2026-08-25__215207_base_s03_mal_r0.mp4",
+   "cuadros": 48,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "mal",
+   "clip": "cuerpo_completo/mal/cuerpo_completo__2026-08-25__230526_base_s01_mal_r0.mp4",
+   "cuadros": 35,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "mal",
+   "clip": "cuerpo_completo/mal/cuerpo_completo__2026-08-25__230526_base_s03_mal_r0.mp4",
+   "cuadros": 27,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "mal",
+   "clip": "cuerpo_completo/mal/cuerpo_completo__2026-08-25__230551_base_s02_mal_r0.mp4",
+   "cuadros": 29,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "mal",
+   "clip": "cuerpo_completo/mal/cuerpo_completo__2026-08-25__230605_base_s01_mal_r0.mp4",
+   "cuadros": 27,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "mal",
+   "clip": "cuerpo_completo/mal/cuerpo_completo__2026-08-25__230620_base_s01_mal_r0.mp4",
+   "cuadros": 22,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "mal",
+   "clip": "cuerpo_completo/mal/cuerpo_completo__2026-08-25__230620_base_s02_mal_r0.mp4",
+   "cuadros": 52,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "mal",
+   "clip": "cuerpo_completo/mal/cuerpo_completo__2026-08-25__230620_base_s03_mal_r0.mp4",
+   "cuadros": 48,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "mal",
+   "clip": "cuerpo_completo/mal/cuerpo_completo__2026-08-25__230620_base_s05_mal_r0.mp4",
+   "cuadros": 22,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "mal",
+   "clip": "cuerpo_completo/mal/cuerpo_completo__2026-08-25__230640_base_s01_mal_r0.mp4",
+   "cuadros": 29,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "mal",
+   "clip": "cuerpo_completo/mal/cuerpo_completo__2026-08-25__230640_base_s02_mal_r0.mp4",
+   "cuadros": 57,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "mal",
+   "clip": "cuerpo_completo/mal/cuerpo_completo__2026-08-25__230640_base_s03_mal_r0.mp4",
+   "cuadros": 113,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "mal",
+   "clip": "cuerpo_completo/mal/cuerpo_completo__2026-08-25__230655_base_s03_mal_r0.mp4",
+   "cuadros": 147,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "mal",
+   "clip": "cuerpo_completo/mal/cuerpo_completo__2026-08-25__231020_base_s04_mal_r0.mp4",
+   "cuadros": 25,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "mal",
+   "clip": "cuerpo_completo/mal/cuerpo_completo__2026-08-25__231020_base_s06_mal_r0.mp4",
+   "cuadros": 119,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "mal",
+   "clip": "cuerpo_completo/mal/cuerpo_completo__2026-08-25__231036_base_s01_mal_r0.mp4",
+   "cuadros": 25,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "mal",
+   "clip": "cuerpo_completo/mal/cuerpo_completo__2026-08-25__231036_base_s06_mal_r0.mp4",
+   "cuadros": 20,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "mal",
+   "clip": "cuerpo_completo/mal/cuerpo_completo__2026-08-25__231036_base_s07_mal_r0.mp4",
+   "cuadros": 18,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "mal",
+   "clip": "cuerpo_completo/mal/cuerpo_completo__2026-08-25__231046_base_s05_mal_r0.mp4",
+   "cuadros": 33,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "mal",
+   "clip": "cuerpo_completo/mal/cuerpo_completo__2026-08-25__231046_base_s06_mal_r0.mp4",
+   "cuadros": 36,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "mal",
+   "clip": "cuerpo_completo/mal/cuerpo_completo__2026-08-25__231055_base_s06_mal_r0.mp4",
+   "cuadros": 48,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "mal",
+   "clip": "cuerpo_completo/mal/cuerpo_completo__2026-08-25__231104_base_s01_mal_r0.mp4",
+   "cuadros": 193,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "mal",
+   "clip": "cuerpo_completo/mal/cuerpo_completo__2026-08-25__231113_base_s02_mal_r0.mp4",
+   "cuadros": 165,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "mal",
+   "clip": "cuerpo_completo/mal/cuerpo_completo__2026-08-25__231123_base_s02_mal_r0.mp4",
+   "cuadros": 141,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "mal",
+   "clip": "cuerpo_completo/mal/cuerpo_completo__2026-08-25__231132_base_s02_mal_r0.mp4",
+   "cuadros": 125,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "mal",
+   "clip": "cuerpo_completo/mal/cuerpo_completo__2026-08-25__231142_base_s02_mal_r0.mp4",
+   "cuadros": 121,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "mal",
+   "clip": "cuerpo_completo/mal/cuerpo_completo__2026-08-25__231151_base_s02_mal_r0.mp4",
+   "cuadros": 18,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "mal",
+   "clip": "cuerpo_completo/mal/cuerpo_completo__2026-08-25__231151_base_s03_mal_r0.mp4",
+   "cuadros": 9,
+   "motivos": [
+    "muy corto (<10 cuadros)"
+   ],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "mal",
+   "clip": "cuerpo_completo/mal/cuerpo_completo__2026-08-25__231151_base_s04_mal_r0.mp4",
+   "cuadros": 94,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "mal",
+   "clip": "cuerpo_completo/mal/cuerpo_completo__2026-08-25__231200_base_s02_mal_r0.mp4",
+   "cuadros": 25,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "mal",
+   "clip": "cuerpo_completo/mal/cuerpo_completo__2026-08-25__231200_base_s03_mal_r0.mp4",
+   "cuadros": 41,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "mal",
+   "clip": "cuerpo_completo/mal/cuerpo_completo__2026-08-25__231200_base_s04_mal_r0.mp4",
+   "cuadros": 20,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "mal",
+   "clip": "cuerpo_completo/mal/cuerpo_completo__2026-08-25__231200_base_s05_mal_r0.mp4",
+   "cuadros": 49,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "mal",
+   "clip": "cuerpo_completo/mal/cuerpo_completo__2026-08-25__231200_base_s06_mal_r0.mp4",
+   "cuadros": 32,
+   "motivos": [],
+   "nan_pct": 0.0
+  },
+  {
+   "clase": "mal",
+   "clip": "cuerpo_completo/mal/cuerpo_completo__2026-08-25__231200_base_s07_mal_r0.mp4",
+   "cuadros": 37,
+   "motivos": [],
+   "nan_pct": 0.0
+  }
+ ],
+ "clips_total": 107,
+ "copias": 0,
+ "ejercicio": "cuerpo_completo",
+ "entran": 105,
+ "motivos": {
+  "muy corto": 2
+ },
+ "parametros": {
+  "aplicar": true,
+  "max_nan_pct": 20,
+  "min_frames": 10
+ },
+ "por_clase_quedan": {
+  "bien": 50,
+  "mal": 53
+ },
+ "quedan": 103,
+ "salen": 2
+}

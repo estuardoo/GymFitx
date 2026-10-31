@@ -15,7 +15,7 @@ def descomp_opciones(tipo):
     este ejercicio -- en el mismo orden que su numero (point) real en
     table_kpoints, para que 'K1, K2...' en la interfaz sea el mismo punto que
     calcula el indicador. Si SQL no responde, cae al catalogo derivado del
-    .npz+yaml (mismo orden en la practica, pero no es la fuente de verdad)."""
+    .npz+definicion (mismo orden en la practica, pero no es la fuente de verdad)."""
     rows_tipo = _rows_de_tipo(tipo)
     clips = {"base": [], "bien": [], "mal": []}
     for row in rows_tipo:

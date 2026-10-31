@@ -57,7 +57,7 @@ def _npz_de(clip):
     npz_path = OUT / Path(fila["clip"]).parent / (fila.get("npz") or "")
     if not fila.get("npz") or not npz_path.exists():
         raise LookupError(f"'{clip}' no tiene .npz")
-    return fila, np.load(npz_path, allow_pickle=True)
+    return fila, np.load(npz_path, allow_pickle=False)
 
 
 @router.get("/api/sim/opciones")

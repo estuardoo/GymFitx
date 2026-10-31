@@ -72,6 +72,9 @@
             Cámara <select id="sel-camera"><option value="0">detectando…</option></select>
           </label>
           <button class="iconbtn" id="btn-cam-refresh" title="Detectar cámaras">🔄</button>
+          <label class="row" style="gap:6px;font-size:12.5px;color:var(--ink-2)" title="Con quién se graba: queda en el video (tabla raw) y pasa a sus clips">
+            Persona <select id="sel-persona"><option value="">sin persona</option></select>
+          </label>
           <span class="row" style="gap:8px;margin-left:auto">
             <span id="grab-controls" class="row" style="display:none">
               <button id="btn-grabar" class="b-green"
@@ -122,8 +125,7 @@
         <div class="ex-sub">Clips ya cortados (uno por repetición o serie). Se guardan en el dataset del ejercicio, se les detectan los puntos y se registran en SQL para el modelo.</div>
         <label>Bien <span class="ex-sub" id="vid-n-bien"></span><input type="file" id="vid-bien" accept="video/*" multiple></label>
         <label>Mal <span class="ex-sub" id="vid-n-mal"></span><input type="file" id="vid-mal" accept="video/*" multiple></label>
-        <label>Base (uno solo) <span class="ex-sub" id="vid-n-base"></span><input type="file" id="vid-base" accept="video/*"></label>
-        <label>…o una carpeta entera <span class="ex-sub">(Base/Bien/Mal con subcarpetas P1, P2…; se salta lo ya importado)</span>
+        <label>…o una carpeta entera <span class="ex-sub">(Bien/Mal con subcarpetas P1, P2…; se salta lo ya importado y a lo ya importado sin persona se le pone la de la carpeta)</span>
           <span class="row" style="gap:6px"><input type="text" id="vid-carpeta" placeholder="D:\Users\estua\Downloads\01Zancada" style="flex:1">
           <button type="button" id="vid-carpeta-ir" onclick="importarCarpeta()">Importar carpeta</button></span></label>
         <div id="vid-aviso" class="ex-sub" style="white-space:pre-wrap"></div>
@@ -212,17 +214,20 @@
     <div class="row" style="align-items:flex-start;gap:14px;margin-top:6px">
       <select id="dc-lista" size="5" class="droid-lista" style="min-width:260px"></select>
       <div style="display:flex;flex-direction:column;gap:6px">
-        <input id="dc-nueva" type="text" placeholder="192.168.1.20:4747" style="width:220px">
+        <input id="dc-nombre" type="text" placeholder="Nombre (se muestra en el selector)" maxlength="40" style="width:260px">
+        <input id="dc-nueva" type="text" placeholder="100.101.102.103:4747" style="width:260px">
         <div class="row" style="gap:6px">
           <button id="btn-dc-agregar" class="b-blue">＋ Agregar</button>
+          <button id="btn-dc-guardar" class="b-blue" title="Cambia el nombre/IP de la fila elegida en la lista">💾 Guardar cambios</button>
           <button id="btn-dc-quitar" class="b-red">Quitar</button>
         </div>
       </div>
     </div>
     <div class="filtro" id="dc-hint" style="margin-top:8px">
-      Una línea por celular, con IP y puerto juntos (IP:puerto). Abre la app DroidCam en el celular: ahí ves la «WiFi IP» y el «DroidCam Port»
-      (4747 si no lo cambiaste; si escribes solo la IP se usa 4747). Celular y PC en la misma red WiFi. Después, en Panel → selector de cámara
-      (🔄) aparece en amarillo.
+      Una línea por celular: <b>nombre</b> (lo que se muestra) e <b>IP:puerto</b>. Elige una fila para editarla y pulsa «Guardar cambios». Con <b>Tailscale</b>: pon la IP de Tailscale del celular (empieza con 100., la ves en la app
+      Tailscale del celular o en <code>tailscale status</code>) o su nombre MagicDNS (<code>celular.tu-red.ts.net</code>); no hace falta estar en la misma WiFi,
+      solo que celular y PC estén conectados a Tailscale. Con WiFi normal sirve la «WiFi IP» que muestra DroidCam. El puerto es el «DroidCam Port»
+      (4747 si no lo cambiaste; si escribes solo la IP se usa 4747). Después, en Panel → selector de cámara (🔄) aparece en amarillo.
     </div>
   </div>
 
@@ -259,26 +264,11 @@
     </div>
   <div class="frow" style="margin-top:8px"><label class="hint">Ejercicio (type) a configurar:</label> <select id="sqlTipo" onchange="cargarSql()"></select></div>
   <span class="hint">table_file / table_kpoints / table_frames guardan los puntos tal cual los detecta GYMFITX (ya acotados a la parte del cuerpo del ejercicio: 21 de mano o 33 de cuerpo). table_frames_fix los normaliza para que sean comparables entre clips y se remuestrea a una cantidad fija de frames. Se genera solo/a automatico cada vez que cortas videos; este boton sirve para forzarlo (por ejemplo, tras cambiar estos parametros).</span>
-  <div class="frow" style="margin-top:10px;gap:14px">
-   <label class="hint">Modo:<br><select id="sqlModo" onchange="cambiarModoSql()">
-     <option value="rectangulo">Rectangulo (recomendado)</option>
-     <option value="punto">Punto de referencia</option>
-   </select></label>
-   <label class="hint">Frames fijos:<br><input id="sqlNFrames" type="number" min="5" max="300" style="width:70px"></label>
-  </div>
-  <div class="frow" id="sqlModoRect" style="margin-top:6px;gap:14px;flex-wrap:wrap">
-   <span class="hint" style="max-width:420px">Toma el rectangulo (min,max) de todo el clip y lo encaja dentro de un lienzo fijo de 100x100 con un solo factor de escala (no deforma la figura) -- los valores quedan siempre en el mismo rango 0-100 sin importar el tamano real del movimiento. Usa todos los puntos del catalogo de la pestaña Puntos.</span>
-  </div>
-  <div class="frow" id="sqlModoPunto" style="margin-top:6px;gap:14px;display:none">
-   <label class="hint">Centrar en:<br><select id="sqlCentro"></select></label>
-   <label class="hint">Escala — punto A:<br><select id="sqlEscA"></select></label>
-   <label class="hint">Escala — punto B:<br><select id="sqlEscB"></select></label>
-  </div>
+  <div class="frow" style="margin-top:10px"><span class="hint">Normalizacion de este ejercicio: <b id="sqlNorm">—</b> · se define por ejercicio en <a href="#" onclick="irAKpoints();return false">Kpoints → Normalización</a> (formula entre kpoints y cuadros por ciclo).</span></div>
   <div class="frow" style="margin-top:10px">
-   <button onclick="guardarConfigSql()">💾 Guardar configuracion</button>
    <button class="pri" onclick="generarSql()" id="bsqlgen">🗄️ Generar / actualizar tablas</button>
    <button onclick="rehacerTodo()" style="background:#5a2a2a" title="Vacia las tablas SQL de los clips y vuelve a cortar y cargar todo">🧨 Blanquear tablas y rehacer todo</button>
-   <button onclick="depurarArchivados()" id="bdepurar" title="Ejercicios que ya no estan en la rutina: quita sus clips del manifest y todos sus datos de SQL (los archivos pasan a datos/archivados/)">🧹 Quitar de SQL lo archivado</button>
+   <button onclick="depurarArchivados()" id="bdepurar" title="Ejercicios que ya no estan en la rutina: quita sus clips del manifest y todos sus datos de SQL (los archivos pasan a sistema/archivados/)">🧹 Quitar de SQL lo archivado</button>
   </div>
   <div id="sqlresumen" class="hint" style="margin-top:8px"></div>
   </div>
@@ -342,6 +332,7 @@
 <div id="lista"><div id="listahead">
   <h3>Videos <span id="prog"></span></h3>
   <select id="tipoVid" onchange="cambiarTipoVid()" style="width:100%;margin-bottom:6px"></select>
+  <label class="hint" style="display:block;margin-bottom:6px">Persona de este video: <select id="personaVid" onchange="cambiarPersonaVid()"></select></label>
   <input id="filtro" placeholder="Filtrar por numero...">
   <button id="bexp" class="pri" onclick="exportar()" style="width:100%;margin-top:8px">⬇ Generar Cortes</button>
   <button id="bexpTodo" onclick="exportar(true)" style="width:100%;margin-top:4px" title="Vuelve a cortar TODOS los videos, aunque no hayan cambiado">🔁 Regenerar todos los cortes</button>
@@ -417,14 +408,19 @@
   </div>
   <div class="frow" style="margin-top:6px;gap:10px" id="modelchecks"></div>
   <span class="hint">Épocas, max_iter y parada de cada modelo: <a href="#" onclick="irATab('sistema');document.getElementById('card-modelos').scrollIntoView();return false">Sistema → Modelos de entrenamiento</a>.</span>
-  <span class="hint">Usa los clips ya exportados en dataset/ (manifest.json) que esten marcados abajo en "Clips para entrenar". Compara hasta 17 modelos (Random Forest, Extra Trees, Gradient Boosting, Hist Gradient Boosting, AdaBoost, Logistic, SGD, Ridge, LDA, SVM, KNN, Decision Tree, MLP, Naive Bayes + LightGBM/XGBoost/CatBoost si estan instalados; los sensibles a la escala llevan su StandardScaler). Verde = se entrena; toca uno para apagarlo con el mismo k-fold cross-validation (k ≈ 100/%test) y se queda con el mejor.</span>
+  <span class="hint">Usa los clips ya exportados en input/bronze (tabla de clips en parameters/inputs.json) que esten marcados abajo en "Clips para entrenar". Compara hasta 17 modelos (Random Forest, Extra Trees, Gradient Boosting, Hist Gradient Boosting, AdaBoost, Logistic, SGD, Ridge, LDA, SVM, KNN, Decision Tree, MLP, Naive Bayes + LightGBM/XGBoost/CatBoost si estan instalados; los sensibles a la escala llevan su StandardScaler). Verde = se entrena; toca uno para apagarlo con el mismo k-fold cross-validation (k ≈ 100/%test) y se queda con el mejor.</span>
  </div>
  <div class="tcard">
   <div class="frow" style="justify-content:space-between">
    <h3 style="margin:0">Clips para entrenar</h3>
    <span class="hint" id="tclipsInfo"></span>
   </div>
-  <span class="hint">Clic en una fila = ver el clip. Casilla = usarlo o no para entrenar (se guarda solo, en seleccion_entrenamiento.json). Desmarca los que esten mal etiquetados.</span>
+  <span class="hint">Clic en una fila = ver el clip. Casilla = usarlo o no para entrenar (se guarda solo, en la tabla de clips (campo usar)). Desmarca los que esten mal etiquetados.</span>
+  <div class="frow" style="margin-top:8px;gap:8px;flex-wrap:wrap">
+   <label class="hint">Personas para entrenar:</label>
+   <span id="tpersonas" class="frow" style="gap:10px;flex-wrap:wrap"></span>
+  </div>
+  <span class="hint">Desmarca una persona (p.ej. P1) para que sus clips no entren al entrenamiento. Se recuerda en este navegador.</span>
   <div class="frow" style="margin-top:8px;gap:8px">
    <label class="hint">Clase:</label>
    <select id="tclipsClase" onchange="renderClipsTrain()"><option value="">todas</option></select>
@@ -508,7 +504,7 @@
  </div>
  <div class="tcard" style="display:flex;gap:16px;flex-wrap:wrap">
   <div style="min-width:150px">
-   <h3 style="margin:0 0 6px;font-size:13px">Puntos (del yaml)</h3>
+   <h3 style="margin:0 0 6px;font-size:13px">Puntos (de la definicion)</h3>
    <span class="hint">Clic para activar/desactivar en las graficas.</span>
    <table style="margin-top:6px"><thead><tr><th>N</th><th>Nombre</th></tr></thead><tbody id="dcKpoints"></tbody></table>
   </div>
@@ -577,7 +573,7 @@
 <div class="pfila" data-i="4" onmouseenter="detallePaso(4)" onclick="detallePaso(4,true)">
    <div class="pcaja" style="border-color:#4c8c5a">
     <span class="pnum" style="background:#4c8c5a">5</span>
-    <span><b>Exportar</b><br><small class="hint">dataset/ + manifest.json</small></span>
+    <span><b>Exportar</b><br><small class="hint">input/bronze + tabla de clips</small></span>
    </div>
    <div class="ptxt hint">Cada segmento se recorta a un .mp4 y un .npz propios dentro de dataset/&lt;clase&gt;/.</div>
   </div>
@@ -662,13 +658,13 @@
 <div id="puntosview" style="display:none">
  <div class="tcard">
   <h3 style="margin:0 0 8px">Tablero de kpoints por ejercicio</h3>
-  <span class="hint">Un solo grafico para todo: marca los kpoints, arma los recorridos de angulos y proporciones, y guarda. Se guarda en el .yaml y en SQL (por type); antes de cada guardado queda una copia en ejercicios/.respaldos/.</span>
+  <span class="hint">Un solo grafico para todo: marca los kpoints, arma los recorridos de angulos y proporciones, y guarda. Se guarda en la definicion y en SQL (por type); antes de cada guardado queda una copia en ejercicios/.respaldos/.</span>
   <div class="frow" style="margin-top:10px">
    <label class="hint">Tipo de movimiento:<br><select id="ptEjercicio" onchange="cargarEjercicioPuntos()"></select></label>
    <label class="hint">Ejercicio nuevo:<br><span style="display:flex;gap:4px">
     <input id="ptNuevoNombre" placeholder="nombre_ejercicio" style="width:160px">
-    <button onclick="crearEjercicioPuntos()" title="Crea el .yaml, sus carpetas en datos/clips y datos/grabaciones, y lo sube a SQL">➕ Crear</button>
-    <button onclick="eliminarEjercicioPuntos()" title="Quita el ejercicio seleccionado de la app (su .yaml queda en ejercicios/.respaldos/; clips, grabaciones y SQL no se tocan)">🗑 Eliminar</button>
+    <button onclick="crearEjercicioPuntos()" title="Crea el ejercicio, sus carpetas en input/bronze y input/raw, y lo sube a SQL">➕ Crear</button>
+    <button onclick="eliminarEjercicioPuntos()" title="Quita el ejercicio seleccionado de la app (queda inactivo, se recupera creandolo de nuevo con el mismo nombre; clips, grabaciones y SQL no se tocan)">🗑 Eliminar</button>
    </span></label>
   </div>
 
@@ -678,7 +674,7 @@
    <span class="hint" id="kpModelos" style="margin-left:8px"></span>
    <span style="flex:1"></span>
    <button onclick="agregarKpointDerivado()" title="Punto medio de dos kpoints">➕ Derivado</button>
-   <button class="pri" onclick="guardarEjercicioPuntos()" title="Guarda en el .yaml y en SQL (type de este ejercicio)">💾 Guardar</button>
+   <button class="pri" onclick="guardarEjercicioPuntos()" title="Guarda en la definicion y en SQL (type de este ejercicio)">💾 Guardar</button>
    <span class="hint" id="kpSqlEstado"></span>
   </div>
   <div class="frow" style="margin-top:6px;gap:6px;flex-wrap:wrap">
@@ -709,6 +705,21 @@
     <table style="margin-top:6px"><thead><tr><th>Punto</th><th>Recorrido</th><th>En uso&nbsp;&nbsp;∠&nbsp;&nbsp;%</th><th></th></tr></thead>
      <tbody id="ptFeatTabla"></tbody></table>
    </div>
+  </div>
+  <div style="margin-top:14px" id="ptNorm">
+   <h3 style="margin:0 0 6px;font-size:13px">Normalización (de plata a gold)</h3>
+   <span class="hint">Plata guarda los puntos crudos; gold los entrega normalizados: <b>x' = (K − origen) / escala</b>, en x e y (z solo se divide por la escala). Los puntos se escriben con su <b>código fijo C##</b> (igual en todos los ejercicios: MediaPipe + 1; el punto tiene que estar marcado en los kpoints del ejercicio) y se combinan con <code>medio(a,b)</code>, <code>prom(a,b,…)</code>, <code>dist(a,b)</code>, <code>max(…)</code>, <code>min(…)</code>, + − × ÷. El <b>origen</b> da un punto por cuadro (ej. <code>medio(C24,C25)</code>); la <b>escala</b> da un número (ej. <code>dist(medio(C12,C13), medio(C24,C25))</code>) y se fija por clip con la mediana de sus cuadros. Códigos: <b>C01</b> nariz · <b>C12/C13</b> hombros izq./der. · <b>C14/C15</b> codos · <b>C16/C17</b> muñecas · <b>C24/C25</b> caderas · <b>C26/C27</b> rodillas · <b>C28/C29</b> tobillos · <b>C30/C31</b> talones · <b>C32/C33</b> punta del pie (los demás, en la columna «Recorrido» de la matriz). La fórmula es de este ejercicio. Al formatear, gold se rehace solo y se sube a SQL (table_frames_fix). Cambiar la fórmula o los cuadros deja obsoletos los modelos ya entrenados: hay que reentrenar.</span>
+   <div class="frow" style="margin-top:6px;gap:14px;flex-wrap:wrap">
+    <label class="hint">Origen (punto)<br><input id="ptNormOrigen" style="width:300px" placeholder="medio(C24,C25)"></label>
+    <label class="hint">Escala (número)<br><input id="ptNormEscala" style="width:420px" placeholder="dist(medio(C12,C13), medio(C24,C25))"></label>
+    <label class="hint">Cuadros por ciclo<br><input id="ptNormN" type="number" min="2" max="300" style="width:70px"></label>
+   </div>
+   <div class="frow" style="margin-top:6px;gap:8px;flex-wrap:wrap">
+    <label class="hint">Probar en el clip nº <select id="ptNormClip"><option value="">(uno del medio)</option></select></label>
+    <button onclick="probarNormalizacion()">🧪 Probar</button>
+    <button class="pri" onclick="guardarNormalizacion()">💾 Guardar normalización</button>
+   </div>
+   <div id="ptNormMsg" class="hint" style="margin-top:6px"></div>
   </div>
   <div style="margin-top:14px">
    <h3 style="margin:0 0 6px;font-size:13px">Reglas de postura (verde / rojo en el video)</h3>

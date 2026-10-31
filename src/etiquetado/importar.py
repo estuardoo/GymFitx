@@ -1,9 +1,9 @@
-"""Subir clips ya cortados (bien / mal / base) a un ejercicio, sin pasar por grabacion + etiquetado.
+"""Subir clips ya cortados (bien / mal) a un ejercicio, sin pasar por grabacion + etiquetado.
 
-Cada clip queda como si lo hubiera exportado el panel: datos/clips/<ejercicio>/<clase>/<nombre>.mp4
-+ .npz con los puntos del catalogo, fila en manifest.json y, si el SQL Server responde, registro en
-SQL (poblar_desde_manifest). Si SQL no responde el clip queda local y "Sistema -> Generar tablas"
-lo sube despues (estas filas tienen 'origen' fuera de labels, exportar() las conserva)."""
+Cada clip queda como si lo hubiera exportado el panel: una fila en la tabla `clips` (parameters/inputs.json, etiqueta 1/0 y
+persona si se sabe) y sus archivos input/bronze/<n del ejercicio>/<id>.mp4 + .npz con los puntos del catalogo. Si el SQL
+Server responde, registro en SQL (poblar_desde_manifest); si no, el clip queda local y "Sistema -> Generar tablas" lo sube
+despues. Un clip sin video fuente (raw_id vacio) lleva su propia persona."""
 
 from __future__ import annotations
 
@@ -21,26 +21,19 @@ import numpy as np
 from src.almacenamiento import dataset_sql as SQL
 from src.etiquetado import editor_puntos as EP
 from src.etiquetado import exportar as EXPORTAR
-from src.etiquetado.manifest import DATA, LABELS, MANIFEST, OUT, log
+from src.etiquetado.manifest import OUT, log
 from src.etiquetado.previews import ffmpeg_exe
 from src.etiquetado.tablas import poblar_desde_manifest
+from src.nucleo import inputs as INP
 from src.procesamiento import offline as deteccion
 
-CLASES = ("bien", "mal", "base")
+CLASES = INP.EXPORTABLES   # ('bien', 'mal'): la clase base ya no existe
 _VIDEO = re.compile(r"\.(mp4|mov|avi|mkv|webm|m4v)$", re.I)
 
 
 def _nombre(original: str) -> str:
     stem = re.sub(r"[^a-z0-9_-]+", "_", Path(original).stem.lower()).strip("_") or "clip"
     return stem[:60]
-
-
-def _unico(carpeta: Path, stem: str) -> str:
-    n, cand = 1, stem
-    while (carpeta / f"{cand}.mp4").exists():
-        n += 1
-        cand = f"{stem}_{n}"
-    return cand
 
 
 def _duracion(mp4: Path) -> float:
@@ -54,29 +47,27 @@ def _duracion(mp4: Path) -> float:
 
 
 def _quitar_clip(row):
-    for p in (OUT / row["clip"], (OUT / row["clip"]).with_suffix(".npz")):
-        p.unlink(missing_ok=True)
+    for ext in ("mp4", "npz"):
+        (OUT / row["clip"]).with_suffix("." + ext).unlink(missing_ok=True)
+    with INP.editar() as t:
+        t["clips"] = [c for c in t["clips"] if INP.clave(c) != row["clip"]]
 
 
-def _borrar_en_sql(type_, archivo):
-    """Quita un clip de SQL (indicadores, frames, fila); los indicadores se recalculan al registrar el nuevo."""
-    with SQL.conexion() as cx:
-        r = SQL.archivo_registrado(cx, type_, archivo)
-        if r:
-            fid = r[0]
-            cx.execute("DELETE FROM table_indicator WHERE file_id=? OR base_file_id=?", (fid, fid))
-            for t in ("table_frame_base", "table_frames_fix", "table_frames"):
-                cx.execute(f"DELETE FROM {t} WHERE file_id=?", (fid,))
-            cx.execute("DELETE FROM table_file WHERE id=?", (fid,))
-            cx.commit()
+def _fila(cid):
+    return next(r for r in INP.filas() if r["id"] == cid)
 
 
-def _una(slug, clase, nombre_original, src: Path):
-    """Un archivo: transcodifica, detecta puntos, devuelve la fila de manifest (o lanza)."""
-    d = OUT / slug / clase
-    d.mkdir(parents=True, exist_ok=True)
-    name = _unico(d, _nombre(nombre_original))
-    mp4, npz = d / f"{name}.mp4", d / f"{name}.npz"
+def _una(slug, clase, nombre_original, src: Path, extras=None):
+    """Un archivo: transcodifica, detecta puntos, registra el clip y devuelve su fila (o lanza)."""
+    extras = extras or {}
+    with INP.editar() as t:
+        c = INP.registrar_clip(t, slug, etiqueta=INP.ETIQUETA_DE[clase], t_ini_ms=0, t_fin_ms=0, seg=1,
+                               persona=extras.get("persona") or None,
+                               origen_viejo=f"importados/{slug}/{_nombre(nombre_original)}.mp4")
+        c["nombre"] = _nombre(nombre_original)
+        c.update({k: extras[k] for k in ("vista", "fecha", "video_origen") if extras.get(k)})
+        cid, ej = c["id"], c["ej"]
+    mp4, npz = INP.ruta_clip(ej, cid, "mp4"), INP.ruta_clip(ej, cid, "npz")
     try:
         r = subprocess.run([ffmpeg_exe(), "-y", "-hide_banner", "-loglevel", "error", "-i", str(src),
                             "-c:v", "libx264", "-preset", "veryfast", "-pix_fmt", "yuv420p", "-an", str(mp4)],
@@ -87,28 +78,31 @@ def _una(slug, clase, nombre_original, src: Path):
         np.savez_compressed(npz, values=np.zeros((0, 0), np.float32), t_ms=np.zeros(0, np.int64),
                             names=np.array([], dtype=str), units=np.array([], dtype=str))
         deteccion.detectar_puntos_si_faltan(mp4, slug)   # DeteccionNoDisponible sube tal cual
-        if "points" not in np.load(npz, allow_pickle=True).files:
+        if "points" not in np.load(npz, allow_pickle=False).files:
             raise ValueError("no se detecto ninguna persona en el video")
         dur = _duracion(mp4)
     except Exception:
         mp4.unlink(missing_ok=True)
         npz.unlink(missing_ok=True)
+        with INP.editar() as t:
+            t["clips"] = [c for c in t["clips"] if c["id"] != cid]
         raise
-    return {"clip": f"{slug}/{clase}/{name}.mp4", "npz": f"{name}.npz",
-            "origen": f"importados/{slug}/{name}.mp4", "seg": 1, "clase": clase, "reps": 0,
-            "ini": 0.0, "fin": dur, "dur": dur, "exercise": slug}
+    with INP.editar() as t:
+        for c in t["clips"]:
+            if c["id"] == cid:
+                c["t_fin_ms"] = round(dur * 1000)
+    return _fila(cid)
 
 
 def importar_clips(slug, clase, archivos, reemplazar=False, avance=None):
-    """archivos: [(nombre_original, ruta_temporal[, extras])]; extras (persona, vista, fecha...) van a la fila del manifest. Devuelve {"ok": [clips], "errores": [str],
-    "sql": resumen|None, "sql_error": str|None, "base_reemplazada": bool}."""
+    """archivos: [(nombre_original, ruta_temporal[, extras])]; extras (persona, vista, fecha...) van a la fila del clip.
+    `reemplazar` ya no hace nada (no hay clip base que reemplazar). Devuelve {"ok": [clips], "errores": [str],
+    "sql": resumen|None, "sql_error": str|None}."""
     if clase not in CLASES:
-        raise ValueError(f"clase invalida: {clase}")
+        raise ValueError(f"clase invalida: {clase} (solo {', '.join(CLASES)})")
     if EP.leer_ejercicio(slug) is None:
         raise ValueError(f"no existe el ejercicio '{slug}'")
-    if clase == "base" and len(archivos) > 1:
-        raise ValueError("solo puede haber un clip base por ejercicio: sube uno")
-    out = {"ok": [], "errores": [], "sql": None, "sql_error": None, "base_reemplazada": False}
+    out = {"ok": [], "errores": [], "sql": None, "sql_error": None}
 
     nuevas = []
     for nombre, ruta, *extra in archivos:
@@ -118,39 +112,19 @@ def importar_clips(slug, clase, archivos, reemplazar=False, avance=None):
             out["errores"].append(f"{nombre}: no es un video")
             continue
         try:
-            nuevas.append({**_una(slug, clase, nombre, Path(ruta)), **(extra[0] if extra else {})})
+            nuevas.append(_una(slug, clase, nombre, Path(ruta), extra[0] if extra else None))
         except (ValueError, deteccion.DeteccionNoDisponible) as e:
             out["errores"].append(f"{nombre}: {e}")
     if not nuevas:
         return out
-
-    viejas = []
-    with EXPORTAR._EXPORT_LOCK:   # mismo candado que exportar(): manifest.json se reescribe entero
-        rows = json.loads(MANIFEST.read_text("utf-8")) if MANIFEST.exists() else []
-        if clase == "base":
-            viejas = [r for r in rows if r.get("exercise") == slug and r.get("clase") == "base"]
-            if viejas and not reemplazar:
-                for r in nuevas:
-                    _quitar_clip(r)
-                out["errores"].append("ya hay un clip base para este ejercicio")
-                out["base_existente"] = True
-                return out
-            rows = [r for r in rows if r not in viejas]
-            out["base_reemplazada"] = bool(viejas)
-        rows.extend(nuevas)
-        MANIFEST.write_text(json.dumps(rows, indent=2, ensure_ascii=False), "utf-8")
     out["ok"] = [r["clip"] for r in nuevas]
 
     try:   # SQL caido: el clip ya quedo local, "Generar tablas" lo sube luego
         SQL.asegurar_base_y_tablas()
         tipo = SQL.tipo_de_ejercicio(slug)
-        for r in viejas:
-            _borrar_en_sql(tipo, r["clip"])
         out["sql"] = poblar_desde_manifest(nuevas, OUT, type_=tipo)
     except SQL.SQLServerNoDisponible as e:
         out["sql_error"] = str(e)
-    for r in viejas:
-        _quitar_clip(r)
     log.info(f"importar {slug}/{clase}: {len(nuevas)} clips, {len(out['errores'])} errores, "
              f"sql_error={out['sql_error']}")
     return out
@@ -170,7 +144,7 @@ def guardar_subidas(subidas):
 
 
 # ---------------------------------------------------------------------------
-# Carpeta completa: <carpeta>/{Base,Bien,Mal}/P1..Pn/*.mp4 (+ indice.csv opcional con persona/vista/fecha)
+# Carpeta completa: <carpeta>/{Bien,Mal}/P1..Pn/*.mp4 (+ indice.csv opcional con persona/vista/fecha). Una carpeta Base se ignora.
 # ---------------------------------------------------------------------------
 PROGRESO = {"activo": False, "hecho": 0, "total": 0, "archivo": "", "resultado": None}
 
@@ -224,7 +198,7 @@ def _npz_unido(clips, durs, destino):
     from src.procesamiento.puntos.kpoints import VERSION_DETECCION
     pts, tms, scr, off, nombres, version = [], [], [], 0.0, None, VERSION_DETECCION
     for clip, dur in zip(clips, durs, strict=True):
-        d = np.load(clip.with_suffix(".npz"), allow_pickle=True)
+        d = np.load(clip.with_suffix(".npz"), allow_pickle=False)
         if "points" not in d.files:
             return False
         n = len(d["points"])
@@ -244,66 +218,69 @@ def _npz_unido(clips, durs, destino):
     return True
 
 
+def _clip_de(t, clase, nombre, persona):
+    """Fila de `clips` importada con ese nombre y clase (la de esa persona, o la que aun no tiene persona)."""
+    et = INP.ETIQUETA_DE[clase]
+    cand = [c for c in t["clips"] if c.get("nombre") == nombre and c.get("etiqueta") == et]
+    return next((c for c in cand if (c.get("persona") or "") == (persona or "")), None) or \
+        next((c for c in cand if not c.get("persona") and c.get("raw_id") is None), None)
+
+
 def reconstruir_originales(slug, carpeta):
     """Con el indice.csv de la carpeta (video_origen, inicio_s...) arma, por cada video original, UN video con sus
     clips unidos en orden (los tramos entre cortes no existen: el original no se tiene), lo deja en
-    datos/grabaciones/<slug>/<fecha>/<persona>_<origen>.mp4 con su .npz/.json, registra sus cortes en
-    etiquetas.json (pestana Cut/Edit) y apunta los clips del manifest a el. Agrega al indice.csv
-    video_reconstruido / ini_rec_s / fin_rec_s. Repetible: lo ya reconstruido se salta."""
-    from src.etiquetado import exportar as EXPORTAR
+    input/raw/<n>/<id>.mp4 con su .npz/.json, registra sus cortes en la tabla `raw` (pestana Cut/Edit) y apunta los
+    clips a el. Agrega al indice.csv video_reconstruido / ini_rec_s / fin_rec_s. Repetible: lo ya reconstruido se salta."""
     idx = Path(carpeta) / "indice.csv"
     if not idx.exists():
         return {"videos": 0, "motivo": "no hay indice.csv"}
     raw = idx.read_bytes()
     filas = list(csv.DictReader(io.StringIO(raw.decode("utf-8-sig"), newline="")))
-    grupos = {}
-    for f in filas:
-        clip = f"{slug}/{f['clase'].lower()}/{_nombre(Path(f['archivo']).name)}.mp4"
-        if f.get("video_origen") and (OUT / clip).exists():
-            grupos.setdefault((f.get("persona", ""), f.get("fecha") or "sin_fecha", f["video_origen"]), []).append(
-                (float(f.get("inicio_s") or 0), f, clip))
-    hechos = 0
-    with EXPORTAR._EXPORT_LOCK:   # manifest, etiquetas y export_estado se reescriben enteros
-        rows = json.loads(MANIFEST.read_text("utf-8")) if MANIFEST.exists() else []
-        por_clip = {r["clip"]: r for r in rows}
-        labels = json.loads(LABELS.read_text("utf-8")) if LABELS.exists() else {}
+    hechos, pos, grupos = 0, {}, {}   # pos: archivo del indice -> (video reconstruido, ini, fin)
+    with EXPORTAR._EXPORT_LOCK:   # tabla de clips, cortes y export_estado se reescriben enteros
         estado = json.loads(EXPORTAR.ESTADO.read_text("utf-8")) if EXPORTAR.ESTADO.exists() else {}
-        pos = {}   # archivo del indice -> (video reconstruido, ini, fin)
-        for (persona, fecha, origen), items in sorted(grupos.items(), key=lambda kv: (_natural(kv[0][0]), kv[0][1:])):
-            items.sort(key=lambda t: t[0])
-            vid = f"{slug}/{fecha}/{persona}_{Path(origen).stem}.mp4".replace("//", "/")
-            dst = DATA / vid
-            segs = (labels.get(vid) or {}).get("segmentos") or []
-            if dst.exists() and len(segs) == len(items):
-                pass   # ya reconstruido con estos mismos clips
-            else:
-                dst.parent.mkdir(parents=True, exist_ok=True)
-                rutas = [OUT / c for _, _, c in items]
-                durs = [_duracion(p) for p in rutas]
-                _unir(rutas, dst)
-                segs, t = [], 0.0
-                for (_, f, _clip), dur in zip(items, durs, strict=True):
-                    segs.append({"ini": round(t, 3), "fin": round(t + dur, 3), "clase": f["clase"].lower(), "reps": 1,
-                                 "persona": persona, "ini_orig": float(f.get("inicio_s") or 0),
-                                 "fin_orig": float(f.get("fin_s") or 0)})
-                    t += dur
-                tiene_npz = _npz_unido(rutas, durs, dst.with_suffix(".npz"))
-                dst.with_suffix(".json").write_text(json.dumps({
-                    "exercise": slug, "modo": "reconstruido", "reconstruido": True, "persona": persona, "fecha": fecha,
-                    "video": dst.name, "features": dst.with_suffix(".npz").name if tiene_npz else None,
-                    "fuente": f"indice.csv ({origen})", "duration_ms": int(t * 1000), "reps": len(items)},
-                    ensure_ascii=False, indent=2), "utf-8")
-                labels[vid] = {"segmentos": segs, "reconstruido": True, "persona": persona}
-                estado[vid] = EXPORTAR._hash(segs, EXPORTAR._npz_tiene_puntos(dst))   # "Generar cortes" no los vuelve a cortar
-                hechos += 1
-            for n, ((_, f, clip), sg) in enumerate(zip(items, segs, strict=True), 1):
-                if clip in por_clip:
-                    por_clip[clip].update(origen=vid, seg=n, ini=sg["ini"], fin=sg["fin"],
-                                          dur=round(sg["fin"] - sg["ini"], 3), persona=persona)
-                pos[f["archivo"]] = (vid, sg["ini"], sg["fin"])
+        with INP.editar() as t:
+            for f in filas:
+                clase = f["clase"].lower()
+                c = _clip_de(t, clase, _nombre(Path(f["archivo"]).name), f.get("persona", "")) if clase in CLASES else None
+                if c is not None and f.get("video_origen"):
+                    grupos.setdefault((f.get("persona", ""), f.get("fecha") or "sin_fecha", f["video_origen"]), []).append(
+                        (float(f.get("inicio_s") or 0), f, c))
+            for (persona, fecha, origen), items in sorted(grupos.items(), key=lambda kv: (_natural(kv[0][0]), kv[0][1:])):
+                items.sort(key=lambda it: it[0])
+                marca = f"{persona}|{fecha}|{origen}"
+                rv = next((r for r in t["raw"] if r.get("reconstruido_de") == marca), None)
+                if rv is not None and len(rv.get("segmentos") or []) == len(items) and INP.ruta_raw(rv["ej"], rv["id"]).exists():
+                    pass   # ya reconstruido con estos mismos clips
+                else:
+                    if rv is None:
+                        rv = INP.registrar_raw(t, slug, fecha=None if fecha == "sin_fecha" else fecha, persona=persona or None,
+                                               origen_viejo=f"importados/{persona}_{Path(origen).stem}")
+                        rv["reconstruido_de"] = marca
+                    dst = INP.ruta_raw(rv["ej"], rv["id"])
+                    rutas = [INP.ruta_clip(c["ej"], c["id"]) for _, _, c in items]
+                    durs = [_duracion(p) for p in rutas]
+                    _unir(rutas, dst)
+                    segs, tt = [], 0.0
+                    for (_, f, _c), dur in zip(items, durs, strict=True):
+                        segs.append({"ini": round(tt, 3), "fin": round(tt + dur, 3), "clase": f["clase"].lower(), "reps": 1,
+                                     "persona": persona, "ini_orig": float(f.get("inicio_s") or 0),
+                                     "fin_orig": float(f.get("fin_s") or 0)})
+                        tt += dur
+                    tiene_npz = _npz_unido(rutas, durs, dst.with_suffix(".npz"))
+                    dst.with_suffix(".json").write_text(json.dumps({
+                        "exercise": slug, "modo": "reconstruido", "reconstruido": True, "persona": persona, "fecha": fecha,
+                        "video": dst.name, "features": dst.with_suffix(".npz").name if tiene_npz else None,
+                        "fuente": f"indice.csv ({origen})", "duration_ms": int(tt * 1000), "reps": len(items)},
+                        ensure_ascii=False, indent=2), "utf-8")
+                    rv.update(segmentos=segs, reconstruido=True, persona=persona or rv.get("persona"))
+                    estado[INP.vid_de(rv)] = EXPORTAR._hash(segs, EXPORTAR._npz_tiene_puntos(dst))   # "Generar cortes" no los vuelve a cortar
+                    hechos += 1
+                vid = INP.vid_de(rv)
+                for n, ((_, f, c), sg) in enumerate(zip(items, rv["segmentos"], strict=True), 1):
+                    c.update(raw_id=rv["id"], seg=n, t_ini_ms=round(sg["ini"] * 1000), t_fin_ms=round(sg["fin"] * 1000))
+                    pos[f["archivo"]] = (vid, sg["ini"], sg["fin"])
         if hechos or pos:
-            MANIFEST.write_text(json.dumps(rows, indent=2, ensure_ascii=False), "utf-8")
-            LABELS.write_text(json.dumps(labels, indent=1, ensure_ascii=False), "utf-8")
             EXPORTAR.ESTADO.write_text(json.dumps(estado, indent=1), "utf-8")
     nuevos = ["video_reconstruido", "ini_rec_s", "fin_rec_s"]
     campos = list(filas[0].keys()) + [c for c in nuevos if c not in filas[0]] if filas else []
@@ -318,26 +295,56 @@ def reconstruir_originales(slug, carpeta):
     return {"videos": len(grupos), "nuevos": hechos}
 
 
+def _ya_importados(slug):
+    """Claves (clase, nombre, persona) de los clips ya importados de este ejercicio."""
+    t = INP.tabla()
+    raws = {r["id"]: r for r in t["raw"]}
+    ej = INP.id_de(slug)
+    return {(INP.CLASE_DE.get(c["etiqueta"]), c.get("nombre"), INP.persona_de(c, raws) or "")
+            for c in t["clips"] if c["ej"] == ej and c.get("nombre")}
+
+
+def _asignar_personas(slug, todos):
+    """Un clip importado antes SIN persona que ahora aparece en la carpeta con persona la recibe (en vez de duplicarse)."""
+    ej, n = INP.id_de(slug), 0
+    with INP.editar() as t:
+        for clase, nombre, _ruta, extras in todos:
+            p = extras.get("persona")
+            if not p:
+                continue
+            for c in t["clips"]:
+                if (c["ej"] == ej and c.get("nombre") == _nombre(nombre) and c.get("etiqueta") == INP.ETIQUETA_DE[clase]
+                        and not c.get("persona") and c.get("raw_id") is None):
+                    c["persona"] = p
+                    n += 1
+                    break
+    return n
+
+
 def importar_carpeta(slug, carpeta, reemplazar_base=True):
-    """Importa una carpeta entera, incremental: lo que ya esta en datos/clips/<slug>/<clase>/ se salta, asi que
-    repetirlo solo suma lo nuevo. Devuelve {"ok", "saltados", "errores", "sql_error", "por_clase"}."""
+    """Importa una carpeta entera, incremental: lo que ya esta importado (misma clase, nombre y persona) se salta, asi que
+    repetirlo solo suma lo nuevo; los ya importados sin persona reciben la de la carpeta. Devuelve
+    {"ok", "saltados", "errores", "sql_error", "por_clase", "personas_asignadas"}."""
     if EP.leer_ejercicio(slug) is None:
         raise ValueError(f"no existe el ejercicio '{slug}'")
     todos = listar_carpeta(carpeta)
     if not todos:
-        raise ValueError("no hay videos en Base/Bien/Mal dentro de esa carpeta")
-    nuevos = [t for t in todos if not (OUT / slug / t[0] / f"{_nombre(t[1])}.mp4").exists()]
+        raise ValueError("no hay videos en Bien/Mal dentro de esa carpeta")
+    asignadas = _asignar_personas(slug, todos)
+    hechos = _ya_importados(slug)
+    nuevos = [t for t in todos if (t[0], _nombre(t[1]), t[3].get("persona") or "") not in hechos]
     PROGRESO.update(total=len(nuevos), hecho=0, archivo="")
-    res = {"ok": 0, "saltados": len(todos) - len(nuevos), "errores": [], "sql_error": None, "por_clase": {}}
+    res = {"ok": 0, "saltados": len(todos) - len(nuevos), "errores": [], "sql_error": None, "por_clase": {},
+           "personas_asignadas": asignadas}
 
     def avance(nombre):
         PROGRESO.update(hecho=PROGRESO["hecho"] + 1, archivo=nombre)
 
-    for clase in ("base", "bien", "mal"):
+    for clase in CLASES:
         lote = [(n, r, e) for c, n, r, e in nuevos if c == clase]
         if not lote:
             continue
-        r = importar_clips(slug, clase, lote, reemplazar=reemplazar_base, avance=avance)
+        r = importar_clips(slug, clase, lote, avance=avance)
         res["ok"] += len(r["ok"])
         res["por_clase"][clase] = len(r["ok"])
         res["errores"] += r["errores"]

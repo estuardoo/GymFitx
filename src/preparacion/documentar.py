@@ -1,6 +1,6 @@
 """Documentos que genera el pipeline (nunca a mano, para que no se desincronicen):
   - diccionario de datos: una fila por columna de la tabla final -> docs/diccionario/<ej>.csv y .md
-  - informe de limpieza en Markdown -> reportes/limpieza_<ej>.md (el .json lo escribe la etapa limpiar)
+  - informe de limpieza en Markdown -> reportes/<n>/limpieza.md (el .json lo escribe la etapa limpiar)
 Sin marcas de tiempo ni nada que cambie de una corrida a otra: mismas entradas, mismos bytes."""
 
 from __future__ import annotations
@@ -8,6 +8,7 @@ from __future__ import annotations
 import csv
 
 from src.etiquetado.editor_puntos import codigo_kpoint
+from src.nucleo import inputs as INP
 from src.nucleo.componentes import componentes, mascara_metricas
 from src.nucleo.config import DICCIONARIO_DIR, REPORTES_DIR
 from src.procesamiento.medidas.features import ESCALA_TIPO, medibles
@@ -31,15 +32,18 @@ def columnas(spec: dict, nombres: list[str]) -> list[dict]:
     cod = {k["nombre"]: codigo_kpoint(k, spec["kpoints"]) for k in spec["kpoints"]}
     activas = mascara_metricas([m["type"] for m in mets], spec["features"], len(mets))
     mets = [m for m, ok in zip(mets, activas) if ok]
-    rect = cfg.get("modo") == "rectangulo"
-    norm = (f"caja {LADO_LIENZO}x{LADO_LIENZO} (rectangulo), 2 decimales" if rect
-            else f"centrado en {cfg.get('punto_centro')} / distancia {cfg.get('punto_escala_a')}-{cfg.get('punto_escala_b')}")
+    rect, form = cfg.get("modo") == "rectangulo", cfg.get("modo") == "formula"
+    if form:   # K<N> = kpoint numero N del ejercicio; x,y: (K - origen) / escala, 4 decimales
+        norm = f"(K - {cfg['origen']}) / ({cfg['escala']}) en x,y (z solo / escala); escala = mediana por clip; 4 decimales"
+    else:
+        norm = (f"caja {LADO_LIENZO}x{LADO_LIENZO} (rectangulo), 2 decimales" if rect
+                else f"centrado en {cfg.get('punto_centro')} / distancia {cfg.get('punto_escala_a')}-{cfg.get('punto_escala_b')}")
     filas = []
     for f in range(1, n + 1):
         for p in nombres:
             for e in ejes:
                 filas.append({"columna": f"f{f:02d}_{p}_{e}", "cuadro": f, "tipo": "kpoint", "unidad": "coordenada",
-                              "rango": f"0..{LADO_LIENZO}" if rect else "libre", "origen": f"MediaPipe Pose {p}, eje {e}",
+                              "rango": f"0..{LADO_LIENZO}" if rect else "libre (largos de escala)" if form else "libre", "origen": f"MediaPipe Pose {p}, eje {e}",
                               "transformacion": f"{norm}; remuestreado a {n} cuadros",
                               "descripcion": f"Posicion {e} de {p} en el cuadro {f} de {n} del ciclo"})
         for m in mets:
@@ -62,7 +66,7 @@ def escribir_diccionario(ejercicio: str, spec: dict, filas: list[dict], n_featur
         w.writeheader()
         w.writerows(filas)
     md = [f"# Diccionario de datos: {ejercicio}", "",
-          f"{len(filas)} columnas = las de `datos/final/{ejercicio}/X.npy` (contrastado al generarlo) · componentes `{spec['features']}` · "
+          f"{len(filas)} columnas = las de `input/gold/{ejercicio}/X.npy` (contrastado al generarlo) · componentes `{spec['features']}` · "
           f"{spec['cfg']['n_frames_fijo']} cuadros por ciclo.", "",
           "Lo genera `python -m src.preparacion.etapas formatear " + ejercicio + "` (etapa 3.5). El CSV trae ademas `cuadro` y `descripcion`.", "",
           "| columna | tipo | unidad | rango | origen | transformacion |", "|---|---|---|---|---|---|"]
@@ -70,10 +74,15 @@ def escribir_diccionario(ejercicio: str, spec: dict, filas: list[dict], n_featur
     _escribir(DICCIONARIO_DIR / f"{ejercicio}.md", "\n".join(md) + "\n")
 
 
+def ruta_reporte(ejercicio: str, nombre: str):
+    """output/reportes/<n>/<nombre>: los informes de un ejercicio, en su carpeta numerada."""
+    return REPORTES_DIR / str(INP.id_de(ejercicio)) / nombre
+
+
 def escribir_limpieza_md(inf: dict) -> None:
     p = inf["parametros"]
     md = [f"# Informe de limpieza: {inf['ejercicio']}", "",
-          f"Umbrales de `params.yaml` (limpieza): min_frames={p['min_frames']}, max_nan_pct={p['max_nan_pct']}, aplicar={p['aplicar']}.", "",
+          f"Umbrales de `parameters/config.json` (limpieza): min_frames={p['min_frames']}, max_nan_pct={p['max_nan_pct']}, aplicar={p['aplicar']}.", "",
           f"- Clips seleccionados para limpiar: **{inf['entran']}** de {inf['clips_total']} en el manifest",
           f"- Salen por la limpieza: **{inf['salen']}**" + (" (marcados, no se sacan: `aplicar: false`)" if not p["aplicar"] else ""),
           f"- Quedan para construir: **{inf['quedan']}** ({', '.join(f'{c}: {n}' for c, n in sorted(inf['por_clase_quedan'].items())) or 'ninguno'})",
@@ -82,4 +91,4 @@ def escribir_limpieza_md(inf: dict) -> None:
     md += [f"- {k}: {n}" for k, n in sorted(inf["motivos"].items())] or ["- (ninguno)"]
     md += ["", "## Clips marcados", "", "| clip | clase | cuadros | % NaN | motivos |", "|---|---|---|---|---|"]
     md += [f"| {c['clip']} | {c['clase']} | {c['cuadros']} | {c['nan_pct']} | {'; '.join(c['motivos'])} |" for c in inf["clips"] if c["motivos"]]
-    _escribir(REPORTES_DIR / f"limpieza_{inf['ejercicio']}.md", "\n".join(md) + "\n")
+    _escribir(ruta_reporte(inf["ejercicio"], "limpieza.md"), "\n".join(md) + "\n")

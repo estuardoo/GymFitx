@@ -200,9 +200,12 @@ async function guardarMatriz(){
 }
 
 /* ---------------------------- DroidCam ---------------------------- */
+let DC_LISTA = [];   // [{nombre, ip}] tal como esta guardado
+const dcTexto = d => d.nombre ? `${d.nombre} · ${d.ip}` : d.ip;
 async function cargarDroidcam(){
   const r = await (await fetch("/api/system/droidcam")).json();
-  $("#dc-lista").innerHTML = r.lista.map(d => `<option value="${d}">${d}</option>`).join("");
+  DC_LISTA = r.lista;
+  $("#dc-lista").innerHTML = DC_LISTA.map((d, i) => `<option value="${i}">${dcTexto(d).replace(/</g, "&lt;")}</option>`).join("");
 }
 async function guardarDroidcam(lista){
   const r = await fetch("/api/system/droidcam", {method:"POST", headers:{"Content-Type":"application/json"},
@@ -213,15 +216,24 @@ async function guardarDroidcam(lista){
   if (typeof cargarCamaras === "function") cargarCamaras();   // el selector del panel las muestra en amarillo
   return true;
 }
+const dcCampos = () => ({nombre: $("#dc-nombre").value.trim(), ip: $("#dc-nueva").value.trim()});
+$("#dc-lista").onchange = () => {   // elegir una fila la carga en los campos para editarla
+  const d = DC_LISTA[+$("#dc-lista").value];
+  if (d){ $("#dc-nombre").value = d.nombre; $("#dc-nueva").value = d.ip; }
+};
 $("#btn-dc-agregar").onclick = async () => {
-  const nueva = $("#dc-nueva").value.trim();
-  if (!nueva) return;
-  const actual = [...$("#dc-lista").options].map(o => o.value);
-  if (await guardarDroidcam([...actual, nueva])) $("#dc-nueva").value = "";
+  const nueva = dcCampos();
+  if (!nueva.ip) return;
+  if (await guardarDroidcam([...DC_LISTA, nueva])) $("#dc-nombre").value = $("#dc-nueva").value = "";
+};
+$("#btn-dc-guardar").onclick = async () => {
+  const i = $("#dc-lista").selectedIndex, nueva = dcCampos();
+  if (i < 0 || !nueva.ip) return;
+  await guardarDroidcam(DC_LISTA.map((d, k) => k === i ? nueva : d));
 };
 $("#btn-dc-quitar").onclick = () => {
-  const lista = $("#dc-lista"), quitar = lista.value;
-  if (quitar) guardarDroidcam([...lista.options].map(o => o.value).filter(v => v !== quitar));
+  const i = $("#dc-lista").selectedIndex;
+  if (i >= 0) guardarDroidcam(DC_LISTA.filter((_, k) => k !== i));
 };
 
 const POST_JSON = (url, cuerpo) => fetch(url, {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify(cuerpo)});
@@ -232,7 +244,7 @@ $("#btn-docs-generar").onclick = async () => {
   const r = await POST_JSON("/api/docs/generar", {});
   const j = await r.json();
   $("#docs-msg").textContent = r.ok ? "✔ " + Object.entries(j).map(([ej, x]) => x.error ? `${ej}: ${x.error}` : `${ej}: ${x.formatear.filas} filas × ${x.formatear.columnas} columnas`).join(" · ")
-    + " → docs/diccionario/, reportes/ y datos/final/" : "Error " + r.status;
+    + " → docs/diccionario/, reportes/ y input/gold/" : "Error " + r.status;
 };
 
 /* ---------------------------- respaldo en SQL (el disco manda) ---------------------------- */
@@ -242,7 +254,7 @@ async function cargarRespaldoSql(){
 }
 $("#btn-rs-guardar").onclick = async () => {
   const r = await POST_JSON("/api/system/respaldo-sql", {al_cortar: $("#rs-cortar").checked, al_entrenar: $("#rs-entrenar").checked});
-  $("#rs-msg").textContent = r.ok ? "Guardado en datos/config.json." : "No se pudo guardar.";
+  $("#rs-msg").textContent = r.ok ? "Guardado en parameters/server.json." : "No se pudo guardar.";
 };
 $("#btn-rs-ahora").onclick = async () => {
   const b = $("#btn-rs-ahora"); b.disabled = true; $("#rs-msg").textContent = "Copiando a SQL… (puede tardar)";

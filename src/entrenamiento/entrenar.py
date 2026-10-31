@@ -11,13 +11,14 @@ from src.etiquetado import editor_puntos as PUNTOS
 from src.etiquetado import tablas as TABLAS
 from src.etiquetado.manifest import log
 from src.nucleo import ejercicio as EJ
+from src.nucleo import inputs as INP
 from src.nucleo.componentes import componentes, mascara_metricas
 from src.nucleo.config import leer_ajustes, matriz_modelos, params, respaldo_sql
 from src.preparacion import tabla as TABLA
 from src.procesamiento.medidas import features as FEAT
 
 
-def entrenar(test_pct=None, modelos=None, tipo=None, features="ambos", fuera=True):
+def entrenar(test_pct=None, modelos=None, tipo=None, features="ambos", fuera=True, personas=None):
     """Entrena y compara clasificadores sobre table_frames_fix de los clips del
     manifest, con el mismo k-fold para todos.
 
@@ -27,7 +28,8 @@ def entrenar(test_pct=None, modelos=None, tipo=None, features="ambos", fuera=Tru
       comparar; nunca puede ganar.
     - 'anidado' = estimacion sin sesgo del procedimiento de seleccion.
     - El modelo guardado lleva su 'spec' (puntos, normalizacion, features)
-      para que el panel en vivo arme exactamente el mismo vector."""
+      para que el panel en vivo arme exactamente el mismo vector.
+    - 'personas' = las personas (P1, P2...) cuyos clips entran; None = todas."""
     try:
         import joblib
         import matplotlib  # noqa: F401 -- lo usan las graficas (reportes.py)
@@ -45,6 +47,8 @@ def entrenar(test_pct=None, modelos=None, tipo=None, features="ambos", fuera=Tru
     rows = DATOS._manifest()
     if not rows:
         raise ValueError("No hay clips en el manifest: primero genera los cortes")
+    if personas is not None and not personas:
+        raise ValueError("Marca al menos una persona para entrenar")
     if tipo in (None, ""):  # sin eleccion explicita: el ejercicio mas frecuente en el manifest
         tipo = Counter(r["type"] for r in rows).most_common(1)[0][0]
     tipo = int(tipo)
@@ -54,9 +58,9 @@ def entrenar(test_pct=None, modelos=None, tipo=None, features="ambos", fuera=Tru
     exercise = SQL.tipos_conocidos().get(tipo, "?")
     feats0 = FEAT.medibles(EJ.puntos_de_ejercicio(exercise) or [], EJ.features_de_ejercicio(exercise))
     tipos = [f["type"] for f in feats0] or None
-    spec = TABLA.spec_de(exercise, features, tipo)   # puntos, normalizacion (params.yaml) y angulos ACTIVADOS en Kpoints
-    desde_sql = leer_ajustes().get("fuente_entrenamiento") == "sql"   # datos/config.json; por defecto el disco
-    ds = DATOS.armar(rows, tipo, features, tipos, None if desde_sql else TABLA.vectores(exercise, spec))
+    spec = TABLA.spec_de(exercise, features, tipo)   # puntos, normalizacion (parameters/config.json) y angulos ACTIVADOS en Kpoints
+    desde_sql = leer_ajustes().get("fuente_entrenamiento") == "sql"   # parameters/config.json; por defecto el disco
+    ds = DATOS.armar(rows, tipo, features, tipos, None if desde_sql else TABLA.vectores(exercise, spec), personas)
     spec["n_features"] = len(ds["X"][0])
     kpoints, cfg_usada, feats = spec["kpoints"], spec["cfg"], spec["features_def"]
     nombres_pts = spec["point_names"]
@@ -84,8 +88,10 @@ def entrenar(test_pct=None, modelos=None, tipo=None, features="ambos", fuera=Tru
 
     # 2. modelos y validacion
     grupos = [DATOS.grupo_de(c) for c in clips]   # una grabacion nunca queda a la vez en entrenar y en probar
+    personas_de = {r["clip"]: r.get("persona") or "sin_persona" for r in rows}
+    estratos = [f"{yy}|{personas_de.get(c, 'sin_persona')}" for yy, c in zip(ds["y"], clips)]   # clase + persona
     k = VALID.elegir_k(test_pct, ds["conteo"], clases, len(X), VALID.grupos_por_clase(ds["y"], grupos))
-    skf = VALID.PorGrabacion(k, grupos, params("entrenamiento")["semilla"])
+    skf = VALID.PorGrabacion(k, grupos, params("entrenamiento")["semilla"], estratos)
     catalogo = MODELOS.catalogo()
     if modelos:
         catalogo = [(n, e) for n, e in catalogo if n in modelos]
@@ -102,7 +108,8 @@ def entrenar(test_pct=None, modelos=None, tipo=None, features="ambos", fuera=Tru
     anidado = VALID.cv_anidada(catalogo, X, y, skf)
 
     # 3. reportes
-    numero, out = REPORTES.nueva_corrida()
+    ej_id = INP.asegurar_ejercicio(exercise)
+    numero, out = REPORTES.nueva_corrida(ej_id)
     y_pred, y_proba = mejor["_y_pred"], mejor["_y_proba"]
     REPORTES.grafico_comparacion(out, numero, resultados, linea_base, mejor)
     REPORTES.grafico_confusion(out, numero, y, y_pred, clases, mejor["nombre"])
@@ -128,11 +135,17 @@ def entrenar(test_pct=None, modelos=None, tipo=None, features="ambos", fuera=Tru
     f1_folds = [round(float(f1_score(y[te], y_pred[te], average="macro", zero_division=0)), 4) for _, te in skf.split(X, y)]
     reporte = classification_report(y, y_pred, labels=range(len(clases)), target_names=clases, output_dict=True, zero_division=0)
     predicciones = [{"clip": clips[i], "real": clases[y[i]], "prediccion": clases[y_pred[i]], "ok": bool(y[i] == y_pred[i])} for i in range(len(clips))]
-    meta = {"numero": numero, "fecha": datetime.now().isoformat(timespec="seconds"),
+    por_persona = VALID.por_persona(y, y_pred, [personas_de.get(c, "sin_persona") for c in clips], clases)
+    personas_usadas = sorted({personas_de.get(c, "sin_persona") for c in clips})
+    comp_folds = VALID.composicion_folds(skf, X, y, [personas_de.get(c, "sin_persona") for c in clips])
+    ids_usados = [{"clip": c, "id": int(c.split("/")[-1].split(".")[0]) if c[:1].isdigit() else None,
+                   "etiqueta": y_c, "persona": personas_de.get(c, "sin_persona")}
+                  for c, y_c in zip(clips, ds["y"]) if c[:1].isdigit()]
+    meta = {"numero": numero, "ejercicio_id": ej_id, "dir": REPORTES.dir_de(ej_id, numero), "fecha": datetime.now().isoformat(timespec="seconds"),
             "test_pct": test_pct, "k": k, "n_muestras": len(X), "clases": clases,
             "excluidas": ds["excluidas"], "no_entrenables": len(ds["no_entrenables"]), "criterio": "f1_macro",
             "mejor_modelo": mejor["nombre"], "accuracy": mejor["accuracy"], "f1_macro": mejor["f1_macro"],
-            "linea_base": linea_base, "anidado": anidado, "reporte": reporte,
+            "linea_base": linea_base, "anidado": anidado, "reporte": reporte, "por_persona": por_persona,
             "errores": sum(1 for pr in predicciones if not pr["ok"]), "predicciones": predicciones,
             "modelos": [VALID.sin_privados(r) for r in resultados],
             "tipo": tipo, "exercise": exercise, "config": cfg_usada,
@@ -148,16 +161,22 @@ def entrenar(test_pct=None, modelos=None, tipo=None, features="ambos", fuera=Tru
             "iteraciones_mejor": {"tope": MODELOS.tope(mejor["nombre"]), "usadas": it_final} if it_final is not None else None,
             "f1_folds": f1_folds, "f1_std": round(float(np.std(f1_folds)), 4), "n_features": int(X.shape[1]),
             "conteo_clases": {c: int(n) for c, n in Counter(ds["y"]).items()}, "fuera": fuera_info,
-            "validacion": "StratifiedGroupKFold por grabacion", "grabaciones": len(set(grupos)),
-            "fuente": "sql" if desde_sql else "disco", "respaldo_sql": respaldo}
+            "validacion": "StratifiedGroupKFold por grabacion y persona", "estratos": "clase+persona",
+            "grabaciones": len(set(grupos)),
+            "fuente": "sql" if desde_sql else "disco", "respaldo_sql": respaldo,
+            "personas": personas_usadas, "excluidos_persona": len(ds["excluidos_persona"]),
+            "composicion_folds": comp_folds,
+            # de donde salio cada dato: los clips usados (id de bronze/plate/gold) con su etiqueta y persona de ESE dia, y la
+            # huella de la normalizacion (si cambia parameters/config.json, otro hash)
+            "origen": {"tabla": "parameters/inputs.json", "clips": ids_usados, "hash_gold": TABLA.hash_gold(spec)}}
     REPORTES.guardar_meta(out, meta)
     log.info(REPORTES.matriz_iteraciones(numero, meta["modelos"]))
-    log.info(f"entrenar run_{numero}: tipo={exercise} (type {tipo}), mejor={mejor['nombre']} "
+    log.info(f"entrenar {meta['dir']}: tipo={exercise} (type {tipo}), mejor={mejor['nombre']} "
              f"f1={mejor['f1_macro']} acc={mejor['accuracy']} (linea base f1={linea_base.get('f1_macro')}), "
              f"anidado={anidado}, n_muestras={len(X)}, features={features}")
-    meta = REPORTES.entrenamientos()[-1]  # la misma corrida, ya con 'vs_anterior'
+    meta = next(m for m in REPORTES.entrenamientos() if m["dir"] == REPORTES.dir_de(ej_id, numero))  # la misma corrida, ya con 'vs_anterior'
     if meta["vs_anterior"]:
         v = meta["vs_anterior"]
-        log.info(f"entrenar run_{numero} vs run_{v['contra']}: {v['veredicto']} (dF1={v['delta_f1']:+.3f}, "
+        log.info(f"entrenar {meta['dir']} vs run_{v['contra']}: {v['veredicto']} (dF1={v['delta_f1']:+.3f}, "
                  f"dAcc={v['delta_accuracy']:+.3f}); cambios: {', '.join(v['cambios']) or 'ninguno'}")
     return meta
