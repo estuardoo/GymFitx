@@ -1,4 +1,4 @@
-"""Log del proyecto: un archivo por sesion en datos/logs/ (antes habia uno solo,
+"""Log del proyecto: un archivo por sesion en sistema/logs/ (antes habia uno solo,
 gymfitx.log, que rotaba y se perdia el rastro de en que arranque paso cada error).
 
     from gymfitx.log import logger

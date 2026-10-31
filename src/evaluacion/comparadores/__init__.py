@@ -14,7 +14,7 @@ el tiempo:
   el DTW.
 
 - clasificador: el modelo entrenado en la pestana Entrenamiento
-  (datos/entrenamientos/run_N/modelo.joblib). Convierte los kpoints de la
+  (output/models/<n>/run_NNN/modelo.joblib). Convierte los kpoints de la
   repeticion en el MISMO vector que vio al entrenar (src/procesamiento/puntos/vectorizar.py) y
   el puntaje es la probabilidad de "bien" (0-100). Es lo que cierra el
   ciclo captura -> etiqueta -> entrena -> puntua en vivo. Solo aparece si
