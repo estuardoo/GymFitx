@@ -22,7 +22,7 @@ el t_ms de 'values'. recorta_npz() en src/etiquetado/cortes.py los recorta cada 
 su propia mascara de tiempo.
 
 Dos modos, segun si el ejercicio ya tiene un catalogo de 'kpoints' (ver
-src/etiquetado/editor_puntos.py) en su .yaml:
+src/etiquetado/editor_puntos.py) en su definicion:
 
 - CON catalogo: se guardan los kpoints del ejercicio en UN array de puntos nombrados como el
   usuario los llamo, calculando tambien los derivados (punto medio de otros dos). Si el catalogo
@@ -38,8 +38,11 @@ from pathlib import Path
 
 import numpy as np
 
+from src.nucleo.log import logger
 from src.procesamiento.puntos import kpoints as KP
 from src.procesamiento.puntos.kpoints import VERSION_DETECCION
+
+log = logger("procesamiento")
 
 
 class DeteccionNoDisponible(RuntimeError):
@@ -58,11 +61,11 @@ def _cargar_motor():
 
 
 def _kpoints_de(exercise):
-    """(kpoints, source) del .yaml de ese ejercicio. kpoints es [] si el
-    ejercicio no existe, no tiene .yaml, o no tiene catalogo definido todavia
+    """(kpoints, source) de la definicion de ese ejercicio. kpoints es [] si el
+    ejercicio no existe, no tiene definicion, o no tiene catalogo definido todavia
     -- en cualquiera de esos casos quien llama cae al modo viejo."""
-    from src.nucleo.ejercicio import leer_yaml
-    datos = leer_yaml(exercise) if exercise else None
+    from src.nucleo.ejercicio import leer_def
+    datos = leer_def(exercise) if exercise else None
     if datos is None:
         return [], "pose"
     return datos.get("kpoints") or [], datos.get("source", "pose")
@@ -162,13 +165,13 @@ def detectar_puntos_si_faltan(mp4_path: Path, exercise: str | None = None) -> bo
     json_path = mp4_path.with_suffix(".json")
     if not npz_path.exists():
         return False
-    existente = dict(np.load(npz_path, allow_pickle=True))
+    existente = dict(np.load(npz_path, allow_pickle=False))
 
     if exercise is None and json_path.exists():
         try:
             exercise = json.loads(json_path.read_text("utf-8")).get("exercise")
-        except Exception:
-            pass
+        except (OSError, ValueError) as e:
+            log.warning("ejercicio no legible en %s: %s", json_path.name, e)
 
     kpoints, legacy_source = _kpoints_de(exercise)
 

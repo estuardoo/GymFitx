@@ -8,7 +8,6 @@ tau (severidad del puntaje) sale del error DTW contra los demas clips "bien" si 
 
 from __future__ import annotations
 
-import re
 from datetime import datetime
 from pathlib import Path
 
@@ -16,18 +15,15 @@ import numpy as np
 
 from src.evaluacion.comparadores.dtw import pairwise_errors
 from src.evaluacion.plantilla import LN_090, Template, template_path
+from src.nucleo import inputs as INP
 from src.nucleo.config import CLIPS_DIR, TEMPLATES_DIR, params
 from src.nucleo.landmarks import es_landmark, resolve
 from src.procesamiento.medidas.features import FeatureExtractor
 
-_B = params("base_clip")   # params.yaml; FIN: la rep se cuenta al volver al inicio
+_B = params("base_clip")   # parameters/config.json; FIN: la rep se cuenta al volver al inicio
 FRAC_LOW, FRAC_HIGH, FRAC_FIN = _B["frac_low"], _B["frac_high"], _B["frac_fin"]
 TAU_DEFECTO = 0.5 / LN_090   # ponytail: sin otros clips no hay forma de medir la dispersion; se afina al re-hacer la base con mas clips
 MAX_OTROS = 12
-
-
-def _natural(s: str):
-    return [int(t) if t.isdigit() else t for t in re.split(r"(\d+)", s)]
 
 
 def _valores(ex, ext: FeatureExtractor, npz: Path) -> np.ndarray:
@@ -43,14 +39,16 @@ def _valores(ex, ext: FeatureExtractor, npz: Path) -> np.ndarray:
     return np.array([ext.from_points(P) for P in pts], dtype=np.float32)
 
 
-def _originales(d: Path) -> list[Path]:
-    """.npz de la carpeta en orden natural de nombre, sin los duplicados (_2, _3...) si hay originales."""
-    todos = sorted(d.glob("*.npz"), key=lambda p: _natural(p.stem))
-    return [p for p in todos if not re.search(r"_\d+$", p.stem)] or todos
+def _originales(slug: str, clase: str) -> list[Path]:
+    """.npz de los clips de esa clase en orden de id, sin las copias si hay originales."""
+    filas = sorted((r for r in INP.filas() if r["exercise"] == slug and r["clase"] == clase), key=lambda r: r["id"])
+    todos = [CLIPS_DIR / Path(r["clip"]).parent / r["npz"] for r in filas]
+    sin_copias = [CLIPS_DIR / Path(r["clip"]).parent / r["npz"] for r in filas if not r["copia"]]
+    return [p for p in (sin_copias or todos) if p.exists()]
 
 
 def primer_clip(slug: str, clase: str = "bien") -> Path | None:
-    return next(iter(_originales(CLIPS_DIR / slug / clase)), None)
+    return next(iter(_originales(slug, clase)), None)
 
 
 def plantilla_de_clip(ex, npz: Path, otros: list[Path] | None = None) -> Template:
@@ -62,7 +60,7 @@ def plantilla_de_clip(ex, npz: Path, otros: list[Path] | None = None) -> Templat
         raise ValueError("el clip no tiene suficientes cuadros medibles")
     a, b = float(np.percentile(finitos, 10)), float(np.percentile(finitos, 90))
     if b - a < 1e-6:
-        raise ValueError("la señal del clip no varia: revisa signal.features del .yaml")
+        raise ValueError("la señal del clip no varia: revisa signal.features de la definicion")
     low, high, fin = (a + f * (b - a) for f in (FRAC_LOW, FRAC_HIGH, FRAC_FIN))
 
     with np.errstate(invalid="ignore"):
@@ -88,15 +86,16 @@ def plantilla_de_clip(ex, npz: Path, otros: list[Path] | None = None) -> Templat
 
 
 def base_desde_clip(ex, clip: str | None = None, clase: str = "bien") -> dict:
-    """Crea datos/plantillas/<slug>.npz desde `clip` (nombre o ruta; por defecto el primero de la clase)."""
-    d = CLIPS_DIR / ex.slug / clase
-    if clip:
-        npz = Path(clip) if Path(clip).is_file() else d / (Path(clip).stem + ".npz")
+    """Crea parameters/plantillas/<slug>.npz desde `clip` (nombre o ruta; por defecto el primero de la clase)."""
+    if clip:   # ruta a un .npz, '1/000123.mp4' o solo el id '000123'
+        c = Path(clip)
+        npz = c if c.is_file() else (CLIPS_DIR / c.with_suffix(".npz") if c.parent.name else
+                                     CLIPS_DIR / str(INP.asegurar_ejercicio(ex.slug)) / (c.stem + ".npz"))
     else:
         npz = primer_clip(ex.slug, clase)
     if npz is None or not npz.exists():
-        raise ValueError(f"no hay clips '{clase}' en {d}")
-    otros = [p for p in _originales(d) if p != npz]
+        raise ValueError(f"no hay clips '{clase}' del ejercicio '{ex.slug}'")
+    otros = [p for p in _originales(ex.slug, clase) if p != npz]
     otros = otros[::max(1, len(otros) // MAX_OTROS)]   # repartidos, para que tau no dependa de uno solo
     tpl = plantilla_de_clip(ex, npz, otros)
     ruta = template_path(TEMPLATES_DIR, ex.slug)

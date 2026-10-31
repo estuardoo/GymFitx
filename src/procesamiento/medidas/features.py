@@ -8,7 +8,7 @@ Dos reglas que sostienen todo el proyecto:
 2. Los angulos salen de los *world landmarks* (metros, origen en la entidad),
    no de las coordenadas de pantalla: eso elimina la perspectiva.
 
-Optimizacion: el YAML se compila UNA vez a arrays de indices. En caliente no
+Optimizacion: la definicion se compila UNA vez a arrays de indices. En caliente no
 hay lookups de diccionario ni bucles de Python, solo operaciones numpy sobre
 todas las features a la vez.
 """
@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import numpy as np
 
+from src.nucleo.config import params
 from src.nucleo.ejercicio import UNIDAD_POR_TIPO
 from src.nucleo.landmarks import es_landmark, resolve
 from src.nucleo.tipos import FeatureVec, Landmarks
@@ -52,7 +53,7 @@ def _angulos_deg(P: np.ndarray, idx: np.ndarray) -> np.ndarray:
 
 
 class _Banco:
-    """Un grupo de features del YAML compilado a arrays de indices. 'indice' traduce el nombre
+    """Un grupo de features de la definicion compilado a arrays de indices. 'indice' traduce el nombre
     de un punto a su fila en P: los landmarks crudos de una fuente, o los kpoints del catalogo."""
 
     def __init__(self, entradas, indice) -> None:
@@ -157,7 +158,7 @@ class FeatureExtractor:
                            raw=elegido.world, label=elegido.label)
 
     def signal(self, values: np.ndarray) -> float:
-        """Proyeccion 1-D declarada en el YAML. Es lo que cuenta repeticiones."""
+        """Proyeccion 1-D declarada en la definicion. Es lo que cuenta repeticiones."""
         sub = values[..., self.signal_idx]
         fn = np.nanmean if self.signal_reduce == "mean" else (
             np.nanmin if self.signal_reduce == "min" else np.nanmax
@@ -168,11 +169,11 @@ class FeatureExtractor:
 
 # Escala para llevar cada metrica a 0..1 (tabla normalizada): angulo /180, proporcion /100 y razon de
 # distancias recortada a 0..4 y /4. La cruda se guarda tal cual sale en table_frames.
-ESCALA_TIPO = {"angle": 180.0, "proporcion": 100.0, "distance_ratio": 4.0}
+ESCALA_TIPO = {k: float(v) for k, v in params("formato")["escala"].items()}   # parameters/config.json: formato.escala
 
 
 def medibles(nombres, features) -> list[dict]:
-    """Los features (activos) cuyos puntos existen todos en 'nombres', en el orden del yaml."""
+    """Los features (activos) cuyos puntos existen todos en 'nombres', en el orden de la definicion."""
     ok = set(nombres)
     return [f for f in (features or []) if f.get("activo", True) is not False
             and all(p in ok for p in _nombres_de(f))]

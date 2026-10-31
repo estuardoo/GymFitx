@@ -1,6 +1,6 @@
 """Nombres, indices y conexiones de los landmarks de MediaPipe.
 
-Un solo lugar con los nombres permite que los YAML de ejercicio se escriban en
+Un solo lugar con los nombres permite que las definiciones de ejercicio se escriban en
 lenguaje humano ("LEFT_ELBOW") en vez de numeros magicos, y que un nombre mal
 escrito falle al arrancar y no a mitad de la sesion.
 """
@@ -76,7 +76,7 @@ def regiones_de_puntos(nombres: list[str]) -> list[str]:
     """Que regiones de POSE_REGIONES tocan al menos uno de estos landmarks.
 
     Se usa para marcar por defecto, en el selector del panel, las zonas que
-    un ejercicio realmente necesita (segun los puntos que declara su YAML) --
+    un ejercicio realmente necesita (segun los puntos que declara su definicion) --
     el usuario despues puede ajustarlo a mano.
     """
     return sorted({clave for clave, puntos in POSE_REGIONES.items()
