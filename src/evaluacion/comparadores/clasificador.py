@@ -1,4 +1,4 @@
-"""Comparador con el modelo entrenado (datos/entrenamientos/run_N/modelo.joblib).
+"""Comparador con el modelo entrenado (output/models/<n>/run_NNN/modelo.joblib).
 
 Convierte los kpoints de la repeticion en el MISMO vector que vio al entrenar
 (procesamiento/puntos/vectorizar.py); el puntaje es P(bien) 0-100."""
@@ -11,13 +11,14 @@ from pathlib import Path
 
 import numpy as np
 
+from src.nucleo import inputs as INP
 from src.nucleo.config import ENTRENAMIENTOS_DIR
 from src.nucleo.tipos import Score, Segment
 from src.procesamiento.puntos import vectorizar
 
 
 class Clasificador:
-    """Modelo de datos/entrenamientos/run_N cargado para puntuar en vivo."""
+    """Modelo de output/models/<n>/run_NNN cargado para puntuar en vivo."""
 
     def __init__(self, ruta: Path) -> None:
         import joblib
@@ -26,7 +27,7 @@ class Clasificador:
             raise ValueError(f"{ruta.parent.name}: modelo entrenado antes de guardar su 'spec'; "
                              "vuelve a entrenar para usarlo en vivo")
         self.ruta = Path(ruta)
-        self.run = self.ruta.parent.name
+        self.run = f"{self.ruta.parent.parent.name}/{self.ruta.parent.name}"   # '1/run_001'
         self.modelo = datos["modelo"]
         self.clases = list(datos["clases"])
         self.nombre = datos.get("nombre", "?")
@@ -68,6 +69,7 @@ class DetectorCiclos:
         self.i_fuera = clf.clases.index("fuera")
         self.buf: deque = deque()
         self.activo, self.mejor, self._t = False, None, float("-inf")
+        self.en_reposo = False   # un ciclo cuenta solo si arranca desde reposo: un inicio a mitad del movimiento no cuenta
 
     def update(self, t_ms: int, kp) -> dict | None:
         """kp = kpoints (K,3) de este cuadro. Devuelve {"clase","p_bien","p_ciclo"} al cerrar un ciclo, o None."""
@@ -87,14 +89,16 @@ class DetectorCiclos:
             proba = np.eye(len(clf.clases))[int(clf.modelo.predict(vec[None, :])[0])]
         p = 1.0 - float(proba[self.i_fuera])
         if not self.activo:
-            if p >= self.ALTO:
-                self.activo, self.mejor = True, (p, proba)
+            if p < self.BAJO:
+                self.en_reposo = True
+            elif p >= self.ALTO and self.en_reposo:
+                self.activo, self.mejor, self.en_reposo = True, (p, proba), False
             return None
         if p > self.mejor[0]:
             self.mejor = (p, proba)
         if p >= self.BAJO:
             return None
-        self.activo, (pico, proba) = False, self.mejor
+        self.activo, (pico, proba), self.en_reposo = False, self.mejor, True
         otras = [i for i, c in enumerate(clf.clases) if c in ("bien", "mal")] or [i for i in range(len(proba)) if i != self.i_fuera]
         i = max(otras, key=lambda j: proba[j])
         pb = float(proba[clf.clases.index("bien")]) if "bien" in clf.clases else pico
@@ -103,10 +107,11 @@ class DetectorCiclos:
 
 def buscar_clasificador(exercise: str, base_dir: Path = ENTRENAMIENTOS_DIR) -> Path | None:
     """El modelo.joblib mas reciente entrenado con clips de 'exercise' y con
-    spec (los entrenados antes de esta version no la tienen)."""
-    if not base_dir.exists():
+    spec (los entrenados antes de esta version no la tienen). Corridas en output/models/<n del ejercicio>/run_NNN."""
+    ej = INP.id_de(exercise)
+    if ej is None or not (base_dir / str(ej)).exists():
         return None
-    runs = sorted((p for p in base_dir.glob("run_*") if p.name[4:].isdigit()),
+    runs = sorted((p for p in (base_dir / str(ej)).glob("run_*") if p.name[4:].isdigit()),
                   key=lambda p: int(p.name[4:]), reverse=True)
     for run in runs:
         meta, modelo = run / "meta.json", run / "modelo.joblib"

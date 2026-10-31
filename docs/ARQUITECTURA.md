@@ -28,12 +28,13 @@ GYMFIT/
 │  └─ interfaz/          1ª       control · tunel · app
 │     ├─ api/            2ª       sesion · grabaciones · etiquetado · entrenamiento · sistema · publicar
 │     └─ web/            2ª       index.html · estilos.css · js/ (un archivo por pestaña)
-├─ datos/               lo que genera el uso: grabaciones, clips, modelos entrenados (fuera de git)
-├─ ejercicios/          un .yaml por ejercicio
-├─ modelos/             modelos de MediaPipe (se descargan solos)
-├─ herramientas/        cloudflared.exe (botón Publicar)
-├─ scripts/  tests/  docs/
-└─ GYMFITX.bat · UPDATE.bat · requirements*.txt · pyproject.toml · README.md · CHANGELOG.md
+├─ input/               raw → bronze → plate → gold, por número de ejercicio (fuera de git; ver docs/ESTRUCTURA_DATOS.md)
+├─ output/              models/<n>/run_NNN y reportes/
+├─ parameters/          exercise.json · inputs.json (tablas raw y clips) · config.json · server.json · <n>/kpoints.json
+├─ sistema/             estado de ejecución: logs, SQL, previews (fuera de git)
+├─ assets/              modelos de MediaPipe + cloudflared.exe (se descargan solos)
+├─ scripts/ (hpc/ = cluster)  tests/  docs/ (incl. CHANGELOG.md)
+└─ GYMFITX.bat · UPDATE.bat · requirements*.txt · pyproject.toml · README.md
 ```
 
 **Regla del árbol:** cada rama importa solo del tronco o de ramas anteriores, en este orden:
@@ -42,10 +43,11 @@ GYMFIT/
 
 | Rama | Módulo | Qué hace |
 |---|---|---|
-| **nucleo** | `config.py` | Todas las rutas (`datos/`, `ejercicios/`, `modelos/`) y SQL Server en un solo lugar |
+| **nucleo** | `config.py` | Todas las rutas (`input/`, `output/`, `parameters/`, `sistema/`) y SQL Server en un solo lugar |
 | | `tipos.py` | `Frame`, `Landmarks`, `FeatureVec`, `Segment`, `Score`: lo único que viaja entre etapas |
 | | `landmarks.py` | Nombres y conexiones de los 33 puntos de pose (vocabulario común) |
-| | `ejercicio.py` | Carga y valida `ejercicios/*.yaml`; catálogo de kpoints del ejercicio |
+| | `definicion.py` | Única fuente de cada ejercicio: lee y escribe `parameters/<n>/{kpoints,angles,guide}.json` |
+| | `ejercicio.py` | Valida la definición y arma el ejercicio; catálogo de kpoints |
 | | `log.py`, `migrar.py` | Log único rotativo y traída de datos del proyecto viejo |
 | **almacenamiento** | `sqlserver.py` | Conexión única (driver y host automáticos) |
 | | `historial.py` | reps/sesiones/rutina con cola y reintento: el panel no depende de SQL |
@@ -55,7 +57,7 @@ GYMFIT/
 | **procesamiento** | `puntos/kpoints.py` | Catálogo del ejercicio → puntos por cuadro. La misma función en vivo y offline |
 | | `puntos/normalizacion.py` | Caja 100×100 o punto de referencia + remuestreo a N cuadros |
 | | `puntos/vectorizar.py` | Clip → vector fijo. Idéntico para entrenar y para puntuar en vivo |
-| | `medidas/angulos.py`, `features.py`, `filtros.py` | Ángulos (flexión: 0° = recto), features del YAML y One Euro |
+| | `medidas/angulos.py`, `features.py`, `filtros.py` | Ángulos (flexión: 0° = recto), features de la definición y One Euro |
 | | `offline.py` | kpoints en cada cuadro de un video grabado (pose) |
 | **evaluacion** | `segmentador.py`, `plantilla.py` | Repeticiones por histéresis y referencia (μ, σ, umbrales, τ) |
 | | `comparadores/` | `dtw` (banda), `angulos_directo` y `clasificador` (modelo entrenado) |
@@ -68,8 +70,8 @@ GYMFIT/
 | | `cortes.py`, `previews.py` | Etiquetas por segmento y copia H.264 para el navegador |
 | | `exportar.py` | Segmentos → clips `.mp4` + `.npz` y subida a SQL |
 | | `tablas.py` | Lógica de las tablas: crudo, normalizado e indicador contra el base |
-| | `editor_puntos.py` | Editor visual de los `.yaml` (kpoints y features) |
-| **preparacion** | `tabla.py`, `etapas.py`, `documentar.py` | Las 5 tareas de la etapa 3 sobre el **disco**; umbrales en `params.yaml`; diccionario (`docs/diccionario/`) e informe de limpieza (`reportes/`) |
+| | `editor_puntos.py` | Editor visual de la definición (kpoints y features) |
+| **preparacion** | `tabla.py`, `etapas.py`, `documentar.py` | Las 5 tareas de la etapa 3 sobre el **disco**; umbrales en `parameters/config.json`; diccionario (`docs/diccionario/`) e informe de limpieza (`reportes/`) |
 | **entrenamiento** | `datos.py` | Arma X / y desde la tabla del disco (SQL = respaldo) |
 | | `modelos.py`, `validacion.py` | Catálogo de modelos; k-fold, F1 macro, CV anidada |
 | | `reportes.py`, `entrenar.py` | Gráficas y `meta.json` de cada `run_N`; orquesta todo |
@@ -83,18 +85,18 @@ GYMFIT/
 ## 2. Flujo de datos
 
 ```
-cámara ─┬─ hilo captura ── video (todos los cuadros) ── datos/grabaciones/<ej>/<día>/HHMMSS_<modo>.mp4
+cámara ─┬─ hilo captura ── video (todos los cuadros) ── input/raw/<n>/<id>.mp4
         │                  vista previa (MJPEG)
         └─ hilo detección (cuadro más reciente)
              ├─ pose (33 pts) → gesto de la esquina
              ├─ features → filtro → segmentador → rep → comparadores → puntaje
              └─ kpoints (si hay clasificador) ─────────────────────────┘
-datos/grabaciones/*.mp4 ─ Cortar (etiquetas.json) ─ Generar cortes ─ procesamiento/offline.py (kpoints en cada cuadro)
-     ─ datos/clips/<clase>/*.npz ─ SQL: table_frames → table_frames_fix (etiquetado/tablas.py) ─ entrenar ─ run_N/modelo.joblib
+input/raw/*.mp4 ─ Cortar (etiquetas.json) ─ Generar cortes ─ procesamiento/offline.py (kpoints en cada cuadro)
+     ─ input/bronze/<n>/*.npz ─ SQL: table_frames → table_frames_fix (etiquetado/tablas.py) ─ entrenar ─ run_N/modelo.joblib
                                                                                   └─ vuelve al vivo (paso 7)
 ```
 
-**Etiquetas:** la única fuente es `datos/etiquetas.json` (clase por segmento). La pestaña
+**Etiquetas:** la única fuente es `parameters/inputs.json (raw[].segmentos)` (clase por segmento). La pestaña
 "Etiquetado" de antes (bien/mal por video entero, en la tabla SQL `videos`) se quitó porque no
 alimentaba el entrenamiento. La tabla `videos` quedó en la base y se puede borrar a mano.
 
@@ -148,12 +150,14 @@ regenera solo.
 
 ## 5. Puntos y ángulos
 
-- Catálogo de kpoints en `ejercicios/<ejercicio>.yaml`. Se edita en la pestaña Kpoints (tablero del cuerpo de 33 puntos);
-  desde ahí también se **crean** y **eliminan** ejercicios (el `.yaml` eliminado queda en `ejercicios/.respaldos/`).
+- Catálogo de kpoints en `parameters/<n>/kpoints.json`. Se edita en la pestaña Kpoints (tablero del cuerpo de 33 puntos);
+  desde ahí también se **crean** y **eliminan** ejercicios (el eliminado queda inactivo con su número reservado; crearlo de nuevo lo reactiva).
 - **Ángulos y proporciones**: los que armas en el tablero (3 o más kpoints por fila). Convención: flexión = 180° − ángulo interior
   (0° = recto). Se calculan sobre las coordenadas *world*, así que no dependen del encuadre.
-- Normalización (`procesamiento/puntos/normalizacion.py`): caja envolvente del clip completo encajada en un lienzo de
-  100×100 con un solo factor de escala, y remuestreo a `n_frames_fijo` cuadros.
+- Normalización por ejercicio (`procesamiento/puntos/normalizacion.py` + `formula.py`; se define en Kpoints → Normalización,
+  `guide.json → normalizacion`): `x' = (K − origen) / escala`, con origen y escala como fórmulas entre kpoints
+  (puntos con codigo fijo C## igual en todos los ejercicios, ej. `medio(C24,C25)`, `dist(medio(C12,C13), medio(C24,C25))`; la escala es la mediana del clip), y remuestreo a los
+  cuadros configurados allí mismo. Plata queda cruda; gold lo normalizado y se sube a SQL al formatear.
 
 ## 6. Entrenamiento
 
@@ -165,7 +169,7 @@ regenera solo.
 - **CV anidada**: la elección del mejor modelo se repite dentro de cada fold. Es el número honesto
   para reportar; la accuracy del ganador sin anidar es optimista.
 - La clase `base` no entra al clasificador.
-- `datos/entrenamientos/run_N/modelo.joblib` guarda su `spec` (puntos, normalización, features) para que el vivo arme
+- `output/models/<n>/run_NNN/modelo.joblib` guarda su `spec` (puntos, normalización, features) para que el vivo arme
   exactamente el mismo vector. Las corridas anteriores a esta versión no tienen `spec`: hay que
   volver a entrenar una vez para usar el modelo en vivo.
 

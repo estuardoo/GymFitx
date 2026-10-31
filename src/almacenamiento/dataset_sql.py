@@ -11,7 +11,7 @@ ejercicio, con que se normaliza table_frames_fix):
 
   table_file        un video/clip exportado -> id, type, archivo, frames
   table_kpoints     catalogo de puntos por type -> point (indice), descripcion
-                     (nombre del landmark, tal como aparece en el .yaml del
+                     (nombre del landmark, tal como aparece en la definicion del
                      ejercicio)
   table_frames      puntos (x,y,z) crudos por cuadro, uno por fila -- una
                      columna por eje ('VectorX','VectorY','VectorZ'), cada una
@@ -54,7 +54,7 @@ TIPOS_PATH = SQL_TIPOS_PATH
 
 def tipo_de_ejercicio(exercise: str) -> int:
     """'type' en las 4 tablas = un ejercicio (el mismo nombre que su
-    ejercicios/<exercise>.yaml, guardado en el .json de cada video
+    la definicion del ejercicio (parameters/<n>/), guardado en el .json de cada video
     grabado). Se le asigna un numero la primera vez que aparece y se guarda
     en sql_tipos.json, asi el mismo ejercicio siempre cae en el mismo type
     sin tener que numerarlos a mano."""
@@ -195,7 +195,7 @@ CREATE TABLE table_indicator (
 -- catalogo de la columna 'angles' (table_frames/_fix/_base): que angulo va en
 -- cada posicion de "a1|a2|...|aN" (ver src/procesamiento/medidas/angulos.py). Grados.
 -- definicion completa del ejercicio (source, kpoints, features) tal como la edita la pestana Kpoints:
--- es lo que manda; el .yaml local se rehace desde aqui cuando SQL difiere.
+-- es lo que manda; la definicion local se rehace desde aqui cuando SQL difiere.
 IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = 'table_ejercicio')
 CREATE TABLE table_ejercicio (
     type        INT            NOT NULL PRIMARY KEY,
@@ -223,7 +223,7 @@ CREATE TABLE table_angles (
     CONSTRAINT PK_table_angles PRIMARY KEY (type, idx)
 );
 -- si el clip se usa o no para entrenar (se marca con clic en el panel de
--- Entrenamiento; la fuente de verdad es seleccion_entrenamiento.json, esto es espejo).
+-- Entrenamiento; la fuente de verdad es el campo usar de la tabla de clips, esto es espejo).
 IF COL_LENGTH('table_file', 'usar') IS NULL ALTER TABLE table_file ADD usar BIT NOT NULL CONSTRAINT DF_table_file_usar DEFAULT 1;
 -- guias mas largas (la firma de puntos/angulos + la lista de puntos de la caja no cabian en 150/200)
 IF COL_LENGTH('table_file', 'guia_fix') < 800 ALTER TABLE table_file ALTER COLUMN guia_fix NVARCHAR(400) NULL;
@@ -353,15 +353,23 @@ def borrar_frames(cx, type_, file_id):
 
 
 def insertar_frames(cx, tabla, type_, file_id, points, angulos):
-    """Una fila por cuadro en table_frames (crudo) o table_frames_fix (normalizado)."""
+    """Una fila por cuadro en table_frames (crudo) o table_frames_fix (normalizado).
+    Un solo executemany por clip: antes era un INSERT por cuadro (un viaje al servidor cada uno)."""
     if tabla not in ("table_frames", "table_frames_fix"):
         raise ValueError(tabla)
-    for i, (pts, ang) in enumerate(zip(points, angulos), 1):
-        ex, ey, ez = _ejes_str(pts)
-        cx.execute(
+    filas = [(type_, file_id, i, *_ejes_str(pts), _angulos_str(ang))
+             for i, (pts, ang) in enumerate(zip(points, angulos), 1)]
+    if not filas:
+        return
+    cur = cx.cursor()
+    try:
+        cur.fast_executemany = True   # pyodbc: manda el lote en bloque (tiempo real: medir en el PC)
+        cur.executemany(
             f"INSERT INTO {tabla} (type, file_id, frame, VectorX, VectorY, VectorZ, angles) VALUES (?,?,?,?,?,?,?)",
-            (type_, file_id, i, ex, ey, ez, _angulos_str(ang)),
+            filas,
         )
+    finally:
+        cur.close()
 
 
 def base_del_tipo(cx, type_):
@@ -465,7 +473,7 @@ def frames_fix_por_archivo(type_):
 
 
 def marcar_uso(type_, seleccion):
-    """Espejo en table_file.usar de seleccion_entrenamiento.json ({archivo: bool})."""
+    """Espejo en table_file.usar de el campo usar de la tabla de clips ({archivo: bool})."""
     with _conectar() as cx:
         for archivo, usar in seleccion.items():
             cx.execute("UPDATE table_file SET usar=? WHERE type=? AND archivo=?", (1 if usar else 0, type_, archivo))

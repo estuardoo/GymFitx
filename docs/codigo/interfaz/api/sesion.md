@@ -42,6 +42,10 @@ _sin docstring_
 
 _sin docstring_
 
+## class `PersonaPedido`
+
+_sin docstring_
+
 ## class `OverlayRegiones`
 
 _sin docstring_
@@ -101,6 +105,26 @@ _sin docstring_
 Ruta: **POST /api/session/camera_on**
 
 _sin docstring_
+
+## `session_persona`
+
+`def session_persona(cfg: PersonaPedido) -> dict`
+
+Ruta: **POST /api/session/persona**
+
+```text
+Con quien se graba (P1, P2...): queda en la tabla `raw` de cada grabacion nueva.
+```
+
+## `personas`
+
+`def personas() -> dict`
+
+Ruta: **GET /api/personas**
+
+```text
+Las personas conocidas (de las tablas) mas P1..P5, y la elegida ahora para grabar.
+```
 
 ## `session_overlay`
 

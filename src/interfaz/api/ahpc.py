@@ -1,6 +1,6 @@
 """AHPC: modulo independiente para armar, con los datos ya generados (table_frames_fix en SQL), el paquete
 completo para correr la busqueda de features en un cluster/supercomputador: el .npz autocontenido de cada
-ejercicio elegido + el script standalone scripts/busqueda_features_slurm.py (sin SQL, sin FastAPI, sin el
+ejercicio elegido + el script standalone scripts/hpc/busqueda_features_slurm.py (sin SQL, sin FastAPI, sin el
 resto de GYMFITX) + un .sbatch por ejercicio ya apuntando a su dataset. Se sube el .zip al cluster, se
 descomprime y se corre "sbatch slurm_<ejercicio>.sbatch" ahi mismo. No genera datos nuevos: solo empaqueta
 lo que ya esta en las tablas SQL."""
@@ -13,8 +13,9 @@ from io import BytesIO
 
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse, Response
+from pydantic import BaseModel
 
-from scripts.busqueda_features_slurm import MODELOS_CODIGO
+from scripts.hpc.busqueda_features_slurm import MODELOS_CODIGO
 from src.almacenamiento import dataset_sql as SQL
 from src.entrenamiento.exportar_slurm import exportar
 from src.etiquetado.manifest import _manifest
@@ -23,13 +24,13 @@ from src.nucleo.ejercicio import puntos_de_ejercicio
 
 router = APIRouter()
 
-SCRIPT = ROOT / "scripts" / "busqueda_features_slurm.py"
-RESUMEN_SCRIPT = ROOT / "scripts" / "resumen_busqueda_slurm.py"
-ESTADO_SCRIPT = ROOT / "scripts" / "estado_busqueda_slurm.py"
-DIAGNOSTICO_SCRIPT = ROOT / "scripts" / "diagnostico_hpc.sh"
-SBATCH_PLANTILLA = ROOT / "scripts" / "slurm_busqueda_features.sbatch"
-RESUMEN_SBATCH_PLANTILLA = ROOT / "scripts" / "slurm_resumen_features.sbatch"
-LANZADOR_PLANTILLA = ROOT / "scripts" / "lanzar_busqueda_slurm.sh"
+SCRIPT = ROOT / "scripts" / "hpc" / "busqueda_features_slurm.py"
+RESUMEN_SCRIPT = ROOT / "scripts" / "hpc" / "resumen_busqueda_slurm.py"
+ESTADO_SCRIPT = ROOT / "scripts" / "hpc" / "estado_busqueda_slurm.py"
+DIAGNOSTICO_SCRIPT = ROOT / "scripts" / "hpc" / "diagnostico_hpc.sh"
+SBATCH_PLANTILLA = ROOT / "scripts" / "hpc" / "slurm_busqueda_features.sbatch"
+RESUMEN_SBATCH_PLANTILLA = ROOT / "scripts" / "hpc" / "slurm_resumen_features.sbatch"
+LANZADOR_PLANTILLA = ROOT / "scripts" / "hpc" / "lanzar_busqueda_slurm.sh"
 
 LEEME = """AHPC -- paquete listo para el cluster
 =====================================
@@ -137,7 +138,7 @@ def _resumen_sbatch_para(ejercicio: str) -> str:
 
 def _lanzar_para(ejercicio: str) -> str:
     """La plantilla del lanzador (arma busqueda + resumen en 2 sbatch encadenados con --dependency, ver
-    scripts/lanzar_busqueda_slurm.sh), con el nombre del ejercicio puesto en todos los placeholders."""
+    scripts/hpc/lanzar_busqueda_slurm.sh), con el nombre del ejercicio puesto en todos los placeholders."""
     return LANZADOR_PLANTILLA.read_text(encoding="utf-8").replace("manguito_rotador", ejercicio)
 
 
@@ -178,13 +179,17 @@ def ahpc_ejercicios():
             for ej, n in sorted(conteo.items())]
 
 
+class ExportarPedido(BaseModel):
+    ejercicios: list[str] | None = None
+
+
 @router.post("/api/ahpc/exportar")
-def ahpc_exportar(body: dict):
+def ahpc_exportar(body: ExportarPedido):
     """body: {ejercicios: [nombre, ...]}. Arma un .zip con el .npz de cada ejercicio (rehecho con lo que hay
     ahora mismo en SQL), el script standalone busqueda_features_slurm.py y un .sbatch por ejercicio ya
     apuntando a su dataset -- listo para subir al cluster y correr sbatch ahi. Los ejercicios que fallen
     (sin datos, sin catalogo) van en la cabecera X-Ahpc-Errores y no rompen el zip de los demas."""
-    ejercicios = body.get("ejercicios") or []
+    ejercicios = body.ejercicios or []
     if not ejercicios:
         return JSONResponse({"error": "Elige al menos un ejercicio"}, status_code=400)
 

@@ -1,0 +1,19 @@
+{
+ "schema_version": 1,
+ "ejercicios": {
+  "1": {
+   "nombre": "Zancada",
+   "slug": "zancada",
+   "fuente": "pose",
+   "sql_tipo": 11,
+   "activo": true
+  },
+  "2": {
+   "nombre": "Cuerpo completo (referencia)",
+   "slug": "cuerpo_completo",
+   "fuente": "pose",
+   "sql_tipo": 1,
+   "activo": true
+  }
+ }
+}

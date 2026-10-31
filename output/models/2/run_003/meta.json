@@ -1,0 +1,229 @@
+{
+ "numero": 3,
+ "fecha": "2026-09-15T17:04:09",
+ "test_pct": 20,
+ "k": 5,
+ "n_muestras": 18,
+ "clases": [
+  "bien",
+  "mal"
+ ],
+ "excluidas": [
+  "base"
+ ],
+ "mejor_modelo": "logistic",
+ "accuracy": 0.5556,
+ "reporte": {
+  "bien": {
+   "precision": 0.5,
+   "recall": 0.625,
+   "f1-score": 0.5555555555555556,
+   "support": 8.0
+  },
+  "mal": {
+   "precision": 0.625,
+   "recall": 0.5,
+   "f1-score": 0.5555555555555556,
+   "support": 10.0
+  },
+  "accuracy": 0.5555555555555556,
+  "macro avg": {
+   "precision": 0.5625,
+   "recall": 0.5625,
+   "f1-score": 0.5555555555555556,
+   "support": 18.0
+  },
+  "weighted avg": {
+   "precision": 0.5694444444444444,
+   "recall": 0.5555555555555556,
+   "f1-score": 0.5555555555555556,
+   "support": 18.0
+  }
+ },
+ "errores": 8,
+ "predicciones": [
+  {
+   "clip": "bien/205453_base_s02_bien_r0.mp4",
+   "real": "bien",
+   "prediccion": "bien",
+   "ok": true
+  },
+  {
+   "clip": "mal/205453_base_s03_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "bien",
+   "ok": false
+  },
+  {
+   "clip": "bien/211230_base_s02_bien_r0.mp4",
+   "real": "bien",
+   "prediccion": "bien",
+   "ok": true
+  },
+  {
+   "clip": "bien/211230_base_s04_bien_r0.mp4",
+   "real": "bien",
+   "prediccion": "bien",
+   "ok": true
+  },
+  {
+   "clip": "mal/211230_base_s06_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "mal/211230_base_s07_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "bien",
+   "ok": false
+  },
+  {
+   "clip": "bien/211230_base_s08_bien_r0.mp4",
+   "real": "bien",
+   "prediccion": "mal",
+   "ok": false
+  },
+  {
+   "clip": "mal/211856_base_s01_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "bien",
+   "ok": false
+  },
+  {
+   "clip": "mal/211856_base_s02_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "bien",
+   "ok": false
+  },
+  {
+   "clip": "bien/211856_base_s04_bien_r0.mp4",
+   "real": "bien",
+   "prediccion": "bien",
+   "ok": true
+  },
+  {
+   "clip": "bien/211856_base_s05_bien_r0.mp4",
+   "real": "bien",
+   "prediccion": "mal",
+   "ok": false
+  },
+  {
+   "clip": "mal/211856_base_s06_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "mal/211856_base_s07_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "bien/211856_base_s08_bien_r0.mp4",
+   "real": "bien",
+   "prediccion": "bien",
+   "ok": true
+  },
+  {
+   "clip": "mal/211856_base_s09_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "mal/211856_base_s10_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "bien/211856_base_s11_bien_r0.mp4",
+   "real": "bien",
+   "prediccion": "mal",
+   "ok": false
+  },
+  {
+   "clip": "mal/211856_base_s12_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "bien",
+   "ok": false
+  }
+ ],
+ "modelos": [
+  {
+   "nombre": "random_forest",
+   "accuracy": 0.3889,
+   "f1_macro": 0.387,
+   "tiempo_seg": 1.67
+  },
+  {
+   "nombre": "extra_trees",
+   "accuracy": 0.3889,
+   "f1_macro": 0.387,
+   "tiempo_seg": 1.41
+  },
+  {
+   "nombre": "gradient_boosting",
+   "accuracy": 0.3333,
+   "f1_macro": 0.325,
+   "tiempo_seg": 2.81
+  },
+  {
+   "nombre": "logistic",
+   "accuracy": 0.5556,
+   "f1_macro": 0.5556,
+   "tiempo_seg": 0.57
+  },
+  {
+   "nombre": "svm",
+   "accuracy": 0.5556,
+   "f1_macro": 0.3571,
+   "tiempo_seg": 0.02
+  },
+  {
+   "nombre": "knn",
+   "accuracy": 0.5,
+   "f1_macro": 0.4985,
+   "tiempo_seg": 2.77
+  },
+  {
+   "nombre": "decision_tree",
+   "accuracy": 0.3889,
+   "f1_macro": 0.3714,
+   "tiempo_seg": 0.03
+  },
+  {
+   "nombre": "mlp",
+   "accuracy": 0.5,
+   "f1_macro": 0.4857,
+   "tiempo_seg": 0.49
+  },
+  {
+   "nombre": "naive_bayes",
+   "accuracy": 0.5,
+   "f1_macro": 0.4857,
+   "tiempo_seg": 0.01
+  }
+ ],
+ "tipo": 1,
+ "exercise": "cuerpo_completo",
+ "config": {
+  "modo": "rectangulo",
+  "n_frames_fijo": 50,
+  "punto_centro": "LEFT_SHOULDER",
+  "punto_escala_a": "LEFT_SHOULDER",
+  "punto_escala_b": "LEFT_FOOT_INDEX",
+  "ancho": 200,
+  "alto": 200
+ },
+ "numero_viejo": 6,
+ "ejercicio_id": 2,
+ "dir": "2/run_003",
+ "origen_run": {
+  "numero": 6,
+  "ruta": "datos/entrenamientos/run_6",
+  "nota": "corrida anterior a las tablas numeradas: sin lista de clips"
+ }
+}

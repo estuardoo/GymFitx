@@ -1,4 +1,4 @@
-"""Copia H.264 liviana de cada grabacion para el <video> del navegador (datos/previews/)."""
+"""Copia H.264 liviana de cada grabacion para el <video> del navegador (sistema/previews/)."""
 
 from __future__ import annotations
 
@@ -40,7 +40,7 @@ def preview_de(src):
 
 
 def limpiar_preview_huerfanos() -> int:
-    """Borra de datos/previews las copias H.264 que ya no corresponden a
+    """Borra de sistema/previews las copias H.264 que ya no corresponden a
     ninguna grabacion (p.ej. las de nombre viejo '205448_base.mp4', de antes
     de _slug). Se regeneran solas al abrir el video. Devuelve cuantas borro."""
     if not PREVIEW.exists():

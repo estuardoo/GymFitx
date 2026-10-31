@@ -13,7 +13,7 @@ Si cambia algo aqui, cambia en los dos lados a la vez: no pueden divergir.
 Pasos:
   1. filtrar los puntos al catalogo del ejercicio y descartar cuadros sin dato
   2. angulos de la mano (src/procesamiento/medidas/angulos.py, convencion flexion)
-  3. normalizar el espacio ("rectangulo" o "punto") y remuestrear a
+  3. normalizar el espacio (formula entre kpoints del ejercicio; antes "rectangulo"/"punto") y remuestrear a
      n_frames_fijo cuadros (interpolacion lineal)
   4. por cuadro: [x1,y1,z1, x2,y2,z2, ..., angulos...], concatenado; NaN -> 0
 ```

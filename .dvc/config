@@ -1,0 +1,5 @@
+[core]
+    remote = almacen
+['remote "almacen"']
+    url = gdrive://1YXv5yP8nFHSeF4XjDtRTDb6tpM14XDSx
+    gdrive_use_service_account = true

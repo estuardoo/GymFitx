@@ -15,7 +15,7 @@ from src.evaluacion import comparadores as scorers
 from src.evaluacion.base_clip import base_desde_clip
 from src.evaluacion.plantilla import Template, template_path
 from src.nucleo import config as CFG
-from src.nucleo.config import DB_PATH, ENTRENAMIENTOS_DIR, EXERCISES_DIR, RECORDINGS_DIR, TEMPLATES_DIR
+from src.nucleo.config import DB_PATH, ENTRENAMIENTOS_DIR, RECORDINGS_DIR, TEMPLATES_DIR
 from src.nucleo.ejercicio import load_all
 from src.nucleo.log import logger
 from src.procesamiento.medidas.features import FeatureExtractor
@@ -25,7 +25,7 @@ from src.sesion.pipeline import Contador, ContadorModelo, Evaluator, EventBus, M
 
 def plantilla_valida(ex, ruta):
     """(Template | None, motivo). La base grabada solo sirve si sus features son las del ejercicio, en el mismo
-    orden: si se editaron las filas del .yaml (Kpoints), medir contra ella daria puntajes sin sentido."""
+    orden: si se editaron las filas de la definicion (Kpoints), medir contra ella daria puntajes sin sentido."""
     if not ruta.exists():
         return None, None
     plantilla = Template.load(ruta)
@@ -69,6 +69,7 @@ class Session:
         self._cfg: dict[str, Any] | None = None
         self.modelo = scorers.DEFAULT_MODEL
         self.clasificador: scorers.Clasificador | None = None
+        self.persona: str | None = None   # P1, P2...: quien graba (se guarda en la tabla `raw`; lo usa tambien el gesto de grabar)
         self.conteo: str | None = None   # quien cuenta en vista previa: "modelo" | "base" | None
 
     def _preparar_clasificador(self, ex) -> None:
@@ -102,13 +103,13 @@ class Session:
             pipe.segmenter.reps = 0
 
     def set_clasificador(self, run: str) -> dict:
-        """Cambia el entrenamiento (run_N) que clasifica en vivo, sin apagar la camara."""
+        """Cambia el entrenamiento (output/models/<n>/run_NNN, p.ej. '1/run_001') que clasifica en vivo, sin apagar la camara."""
         import re
         if not self.activa or self.pipeline is None:
             raise HTTPException(409, "Prende la camara primero.")
         if self.pipeline.grabando:
             raise HTTPException(409, "Deten la grabacion antes de cambiar de entrenamiento.")
-        if not re.fullmatch(r"run_\d+", run or ""):
+        if not re.fullmatch(r"\d+/run_\d+", run or ""):
             raise HTTPException(400, f"Entrenamiento invalido: {run}")
         ruta = ENTRENAMIENTOS_DIR / run / "modelo.joblib"
         if not ruta.exists():
@@ -143,7 +144,7 @@ class Session:
             if self.activa:
                 raise HTTPException(409, "Ya hay una sesion en curso. Apaga la camara primero.")
 
-            ejercicios = load_all(EXERCISES_DIR)
+            ejercicios = load_all()
             if slug not in ejercicios:
                 raise HTTPException(404, f"Ejercicio desconocido: {slug}")
             ex = ejercicios[slug]
@@ -151,7 +152,7 @@ class Session:
             ruta_base = template_path(TEMPLATES_DIR, slug)
             viejo = ruta_base.exists() and ex.base_clip and Template.load(ruta_base).origen == "clip" \
                 and Template.load(ruta_base).fin is None   # base automatica de antes de `fin`: se rehace
-            if ex.base_clip and (viejo or not ruta_base.exists()):   # sin base grabada: primer clip de esa clase (yaml: base_clip)
+            if ex.base_clip and (viejo or not ruta_base.exists()):   # sin base grabada: primer clip de esa clase (definicion: base_clip)
                 try:
                     log.info("%s: base desde el primer clip: %s", slug, base_desde_clip(ex, clase=ex.base_clip))
                 except Exception as e:   # noqa: BLE001 - la base automatica nunca debe impedir prender la camara
@@ -192,6 +193,15 @@ class Session:
             self.thread.start()
             return self.info
 
+    def set_persona(self, persona: str | None) -> dict:
+        """Con quien se graba. 'P1'..'Pn' o vacio (sin persona). Vale para las proximas grabaciones, incluso con el gesto."""
+        import re
+        persona = (persona or "").strip() or None
+        if persona is not None and not re.fullmatch(r"P\d{1,3}", persona):
+            raise HTTPException(400, "Persona invalida: usa P1, P2, P3...")
+        self.persona = persona
+        return {"persona": self.persona}
+
     def grabar_iniciar(self) -> dict:
         with self._lock:
             if not self.activa or self.pipeline is None or self._cfg is None:
@@ -211,7 +221,7 @@ class Session:
                 self.session_id = store.open_session(cfg["slug"], "referencia")
                 principal = Recorder(template_path(TEMPLATES_DIR, cfg["slug"]))
 
-            sink = (MultiSink(principal, VideoLogger(RECORDINGS_DIR, guardar_video=cfg["video"]))
+            sink = (MultiSink(principal, VideoLogger(RECORDINGS_DIR, guardar_video=cfg["video"], persona=self.persona))
                     if cfg["archivar"] else principal)
             if self.pipeline.segmenter is not None:
                 self.pipeline.segmenter.reps = 0  # no contar las reps de la previsualizacion
@@ -321,7 +331,7 @@ class Session:
                 raise HTTPException(409, "No hay ninguna sesion en curso.")
             if self.pipeline.grabando:
                 raise HTTPException(409, "Detén la grabación antes de cambiar de ejercicio.")
-            ejercicios = load_all(EXERCISES_DIR)
+            ejercicios = load_all()
             if slug not in ejercicios:
                 raise HTTPException(404, f"Ejercicio desconocido: {slug}")
             ex = ejercicios[slug]

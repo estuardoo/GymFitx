@@ -11,11 +11,12 @@ readme = "README.md"
 testpaths = ["tests"]
 pythonpath = [".", "tests"]
 addopts = "-q"
+markers = ["lento: tarda minutos (camino SLURM, tests/test_slurm.py)"]
 
 [tool.ruff]
 line-length = 120
 target-version = "py311"
-extend-exclude = [".venv", "datos"]
+extend-exclude = [".venv", "input", "output", "sistema"]
 
 [tool.ruff.lint]
 # E/F: errores y nombres; I: imports ordenados; B: bugs comunes; UP: sintaxis moderna

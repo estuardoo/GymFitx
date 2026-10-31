@@ -49,9 +49,17 @@ Ruta: **POST /api/modelos/matriz**
 
 _sin docstring_
 
+## class `EntrenarPedido`
+
+_sin docstring_
+
+## class `SeleccionPedido`
+
+_sin docstring_
+
 ## `dataset_entrenar`
 
-`def dataset_entrenar(body: dict)`
+`def dataset_entrenar(body: EntrenarPedido)`
 
 Ruta: **POST /api/entrenar**
 
@@ -59,7 +67,7 @@ _sin docstring_
 
 ## `dataset_entrenar_seleccion`
 
-`def dataset_entrenar_seleccion(body: dict)`
+`def dataset_entrenar_seleccion(body: SeleccionPedido)`
 
 Ruta: **POST /api/entrenar/seleccion**
 

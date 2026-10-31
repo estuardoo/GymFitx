@@ -2,7 +2,7 @@
 
     python scripts/evaluar.py --exercise mano_apertura
 
-Cada sesion queda archivada en datos/grabaciones/ (video crudo + features + metadatos).
+Cada sesion queda archivada en input/raw/ (video crudo + features + metadatos).
 """
 
 from __future__ import annotations

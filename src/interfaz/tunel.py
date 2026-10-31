@@ -5,11 +5,11 @@ pestana Sistema -> "Publicar en internet" se prende/apaga el tunel.
 
 - Tunel: Cloudflare "quick tunnel" (gratis, sin cuenta). Da un enlace
   https://<algo>.trycloudflare.com que cambia cada vez que se prende.
-  cloudflared se busca en el PATH o en herramientas/; si no esta se descarga
-  solo a herramientas/ (Windows).
+  cloudflared se busca en el PATH o en assets/; si no esta se descarga
+  solo a assets/ (Windows).
 - Login (HTTP Basic): se exige SOLO a lo que llega por el tunel (Cloudflare
   agrega la cabecera cf-connecting-ip). Desde esta PC se entra sin clave.
-  Credenciales en datos/acceso.json (solo el hash, nunca la clave en texto).
+  Credenciales en sistema/acceso.json (solo el hash, nunca la clave en texto).
 - Por el tunel NUNCA se permiten /api/system/* ni /api/publicar/* (apagar,
   reinstalar librerias, cambiar Python, apagar el tunel): solo desde la PC.
 
@@ -30,7 +30,7 @@ import threading
 import urllib.request
 from pathlib import Path
 
-from src.nucleo.config import ACCESO_PATH, HERRAMIENTAS_DIR
+from src.nucleo.config import ACCESO_PATH, MODELS_DIR
 
 ACCESO = ACCESO_PATH
 CLOUDFLARED_URL = ("https://github.com/cloudflare/cloudflared/releases/latest/download/"
@@ -151,13 +151,13 @@ def cloudflared() -> str:
     if exe:
         return exe
     nombre = "cloudflared.exe" if os.name == "nt" else "cloudflared"
-    local = HERRAMIENTAS_DIR / nombre
+    local = MODELS_DIR / nombre
     if local.exists() and local.stat().st_size > 0:
         return str(local)
     if os.name != "nt":
         raise RuntimeError("Instala cloudflared (https://developers.cloudflare.com/cloudflare-one/"
                            "connections/connect-networks/downloads/)")
-    HERRAMIENTAS_DIR.mkdir(exist_ok=True)
+    MODELS_DIR.mkdir(parents=True, exist_ok=True)
     tmp = local.with_suffix(".part")
     urllib.request.urlretrieve(CLOUDFLARED_URL, tmp)
     tmp.replace(local)

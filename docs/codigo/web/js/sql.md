@@ -1,12 +1,9 @@
 # `src/interfaz/web/js/sql.js`
 
-> Sistema → Tablas del dataset: normalizacion por ejercicio y generar tablas. API: /api/sql/*
+> Sistema → Tablas del dataset: ver la normalizacion de cada ejercicio (se define en Kpoints) y generar tablas. API: /api/sql/*
 
 ## Funciones
 
-- `cambiarModoSql`
 - `cargarSql`
-- `configSqlActual`
 - `depurarArchivados`
 - `generarSql`
-- `guardarConfigSql`

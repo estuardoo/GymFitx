@@ -1,14 +1,22 @@
 # `src/procesamiento/puntos/normalizacion.py`
 
 ```text
-Normalizacion de un clip de puntos: caja 100x100 (o punto de referencia) y remuestreo a N cuadros.
+Normalizacion de un clip de puntos y remuestreo a N cuadros. Modo "formula" (el de cada ejercicio, se define en Kpoints ->
+Normalizacion): x' = (K - origen) / escala, con origen y escala como formulas entre kpoints (ver formula.py).
+Modos antiguos "rectangulo" (caja 100x100) y "punto": solo para modelos ya entrenados y ejercicios sin kpoints de referencia.
 
 La usan igual el dataset (SQL) y el clasificador en vivo.
 ```
 
 ## Constantes
 
-`DEFAULT_CFG`, `LADO_LIENZO`
+`EPS_ESCALA`, `DEFAULT_CFG`, `LADO_LIENZO`
+
+## class `NormalizacionInvalida`
+
+```text
+El clip no se puede normalizar con esta formula (escala 0 o sin datos, kpoint ausente): se marca y no entra.
+```
 
 ## `cfg_para`
 
@@ -48,6 +56,56 @@ Firma corta de QUE puntos/angulos trae el clip.
 
 _sin docstring_
 
+## `codigos_de`
+
+`def codigos_de(kpoints) -> dict[int, str]`
+
+```text
+{codigo C: nombre del kpoint} de los puntos del cuerpo marcados en el ejercicio. C = landmark de MediaPipe + 1: fijo en todos los
+ejercicios (C24 = cadera izquierda siempre). Los derivados no tienen codigo C: se arman en la formula con medio().
+```
+
+## `formulas_defecto`
+
+`def formulas_defecto(kpoints) -> tuple[str, str] | None`
+
+```text
+(origen, escala) por defecto si el ejercicio trae hombros y caderas: origen = medio de caderas,
+escala = largo del tronco (medio de hombros -> medio de caderas). None si faltan.
+```
+
+## `k_a_c`
+
+`def k_a_c(texto, kpoints) -> str`
+
+```text
+Formulas guardadas con K<n> (posicion en la lista, formato viejo) -> C<nn> fijo, segun el catalogo actual del ejercicio.
+```
+
+## `escala_del_clip`
+
+`def escala_del_clip(valores) -> float`
+
+```text
+Mediana de la escala sobre los cuadros validos (finitos y > 0): una escala por clip, estable ante un cuadro malo.
+```
+
+## `valores_formula`
+
+`def valores_formula(points, point_names, cfg) -> tuple[np.ndarray, np.ndarray]`
+
+```text
+(origen (T,2) por cuadro, escala (T,) por cuadro) de la formula de cfg sobre los puntos del clip.
+```
+
+## `_normalizar_formula`
+
+`def _normalizar_formula(points, point_names, cfg)`
+
+```text
+(K - origen) / escala en x e y; z solo se divide por la escala (el origen es 2D). origen por cuadro, escala una por clip.
+```
+
 ## `_normalizar_punto`
 
 `def _normalizar_punto(points, point_names, cfg)`
@@ -70,5 +128,39 @@ de esos puntos pero la transformacion se aplica a todos.
 
 ```text
 (T,N,3) crudo -> (n_frames_fijo,N,3) segun cfg (ya resuelta con cfg_para).
+```
+
+## `normalizacion_de`
+
+`def normalizacion_de(exercise)`
+
+```text
+Normalizacion del ejercicio (guide.json -> normalizacion): {origen, escala, n_frames, propia}. Lo que falte sale del
+defecto (hombros/caderas del catalogo; n_frames de config.json formato.n_frames_defecto). propia=False: la formula es la propuesta, nunca se guardo.
+```
+
+## `validar_normalizacion`
+
+`def validar_normalizacion(norm, kpoints)`
+
+```text
+Valida {origen, escala, n_frames} contra el catalogo; ValueError con mensaje para el panel. -> dict limpio.
+```
+
+## `cfg_de_normalizacion`
+
+`def cfg_de_normalizacion(origen, escala, n_frames, kpoints)`
+
+```text
+cfg de modo 'formula' para estas formulas; ValueError si nombran un punto que el ejercicio no tiene marcado.
+```
+
+## `cfg_normalizacion`
+
+`def cfg_normalizacion(exercise)`
+
+```text
+La cfg de normalizacion lista para procesamiento/puntos (la misma para gold, SQL, entrenamiento y modelo en vivo).
+Sin formula posible (ejercicio sin hombros/caderas y sin configurar) cae al modo antiguo 'rectangulo'.
 ```
 

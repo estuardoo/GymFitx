@@ -8,7 +8,7 @@ caderas), medidos sobre los 33 puntos del cuadro (no hace falta tenerlos en el c
 = ese punto de la pierna DELANTERA / TRASERA (## = codigo de la pierna izquierda: D26 = rodilla delantera); la delantera es
 la de la rodilla mas alta en la imagen. El angulo se mide en pixeles (corrige el aspecto del cuadro).
 `lado`: ambos (|ang - angulo| <= tol), min (ang >= angulo - tol), max (ang <= angulo + tol). `fase: abajo` = solo se
-evalua en la parte baja de la repeticion; `bajando` = durante el descenso y abajo (repeticion en curso). En el .yaml: `reglas:` [{nombre, a, b, c?, angulo, tolerancia, unidad, lado,
+evalua en la parte baja de la repeticion; `bajando` = durante el descenso y abajo (repeticion en curso). En la definicion: `reglas:` [{nombre, a, b, c?, angulo, tolerancia, unidad, lado,
 fase, mensaje, activo}]."""
 
 from __future__ import annotations

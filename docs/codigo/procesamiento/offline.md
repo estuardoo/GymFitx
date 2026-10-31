@@ -25,7 +25,7 @@ el t_ms de 'values'. recorta_npz() en src/etiquetado/cortes.py los recorta cada 
 su propia mascara de tiempo.
 
 Dos modos, segun si el ejercicio ya tiene un catalogo de 'kpoints' (ver
-src/etiquetado/editor_puntos.py) en su .yaml:
+src/etiquetado/editor_puntos.py) en su definicion:
 
 - CON catalogo: se guardan los kpoints del ejercicio en UN array de puntos nombrados como el
   usuario los llamo, calculando tambien los derivados (punto medio de otros dos). Si el catalogo
@@ -51,8 +51,8 @@ _sin docstring_
 `def _kpoints_de(exercise)`
 
 ```text
-(kpoints, source) del .yaml de ese ejercicio. kpoints es [] si el
-ejercicio no existe, no tiene .yaml, o no tiene catalogo definido todavia
+(kpoints, source) de la definicion de ese ejercicio. kpoints es [] si el
+ejercicio no existe, no tiene definicion, o no tiene catalogo definido todavia
 -- en cualquiera de esos casos quien llama cae al modo viejo.
 ```
 

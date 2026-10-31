@@ -12,20 +12,19 @@ import numpy as np
 from src.almacenamiento import dataset_sql as SQL
 from src.etiquetado.manifest import OUT, _manifest, _tipo_o_primero
 from src.evaluacion.similitud import DTW_VERSION, indicador
-from src.nucleo.config import formato_de
 from src.nucleo.ejercicio import features_de_ejercicio, kpoints_de_ejercicio, puntos_de_ejercicio
 from src.procesamiento.medidas import angulos as ANG
 from src.procesamiento.puntos import normalizacion as NORM
 from src.procesamiento.puntos import vectorizar as VEC
 
 RESUMEN_VACIO = {"archivos_nuevos": 0, "archivos_actualizados": 0, "archivos_sin_cambios": 0,
-                 "frames": 0, "frames_fix": 0, "omitidos_sin_puntos": 0}
+                 "frames": 0, "frames_fix": 0, "omitidos_sin_puntos": 0, "omitidos_sin_escala": 0}
 
 
 def cfg_de_tipo(type_, point_names):
-    """Normalizacion efectiva del type: la de params.yaml (formato) + defaults (procesamiento/puntos/normalizacion.py).
+    """Normalizacion efectiva del type: la del ejercicio (Kpoints -> Normalizacion, parameters/<n>/guide.json).
     Es la MISMA con la que entrena el modelo, asi la copia en SQL no diverge del disco."""
-    return NORM.cfg_para(point_names, formato_de(SQL.tipos_conocidos().get(type_)))
+    return NORM.cfg_para(point_names, NORM.cfg_normalizacion(SQL.tipos_conocidos().get(type_)))
 
 
 def poblar_desde_manifest(manifest_rows, dataset_dir, type_=1):
@@ -42,7 +41,7 @@ def poblar_desde_manifest(manifest_rows, dataset_dir, type_=1):
             npz_path = Path(dataset_dir) / Path(row["clip"]).parent / (row.get("npz") or "")
             if not row.get("npz") or not npz_path.exists():
                 continue
-            d = np.load(npz_path, allow_pickle=True)
+            d = np.load(npz_path, allow_pickle=False)
             if "points" not in d.files or d["points"].shape[0] == 0:
                 resumen["omitidos_sin_puntos"] += 1
                 continue
@@ -57,6 +56,12 @@ def poblar_desde_manifest(manifest_rows, dataset_dir, type_=1):
             points, nombres, angulos, nombres_ang = prep
             cfg = cfg_de_tipo(type_, nombres)
             guia = f"{NORM.guia(cfg)}|sig:{NORM.firma(nombres, nombres_ang)}|ang:v{ANG.VERSION}|met:{NORM.firma([json.dumps(f, sort_keys=True) for f in feats], [])}"
+
+            try:
+                fijo, angulos_fijo = VEC.fijo(points, nombres, angulos, cfg, feats)
+            except NORM.NormalizacionInvalida:   # escala 0 / kpoint ausente: no se sube normalizado (queda sin cambios en SQL)
+                resumen["omitidos_sin_escala"] += 1
+                continue
 
             if not catalogo_creado:
                 SQL.guardar_catalogo(cx, type_, nombres, nombres_ang)
@@ -79,7 +84,6 @@ def poblar_desde_manifest(manifest_rows, dataset_dir, type_=1):
             SQL.borrar_frames(cx, type_, file_id)
             SQL.insertar_frames(cx, "table_frames", type_, file_id, points, angulos)
             resumen["frames"] += len(points)
-            fijo, angulos_fijo = VEC.fijo(points, nombres, angulos, cfg, feats)
             SQL.insertar_frames(cx, "table_frames_fix", type_, file_id, fijo, angulos_fijo)
             resumen["frames_fix"] += len(fijo)
             resumen["archivos_nuevos" if es_nuevo else "archivos_actualizados"] += 1
@@ -103,7 +107,7 @@ def respaldar_sql(rows):
             for k, v in poblar_desde_manifest(rows_tipo, OUT, type_=tipo).items():
                 resumen[k] += v
         return {"resumen": resumen, "error": None}
-    except SQL.SQLServerNoDisponible as e:
+    except (SQL.SQLServerNoDisponible, ValueError) as e:   # ValueError: normalizacion del ejercicio mal definida (se ve en Kpoints)
         return {"resumen": None, "error": str(e)}
 
 
@@ -133,11 +137,11 @@ def _actualizar_indicadores(cx, type_):
 
 def catalogo_puntos_disponible(manifest_rows, dataset_dir):
     """Nombres de puntos del primer clip que ya tenga 'points', filtrados por
-    el .yaml de su ejercicio -- para los <select> del panel sin conectarse a SQL."""
+    la definicion de su ejercicio -- para los <select> del panel sin conectarse a SQL."""
     for row in manifest_rows:
         npz_path = Path(dataset_dir) / Path(row["clip"]).parent / (row.get("npz") or "")
         if row.get("npz") and npz_path.exists():
-            d = np.load(npz_path, allow_pickle=True)
+            d = np.load(npz_path, allow_pickle=False)
             if "point_names" in d.files:
                 todos = [str(n) for n in d["point_names"]]
                 deseados = puntos_de_ejercicio(row.get("exercise"))
@@ -155,7 +159,7 @@ def sql_estado(tipo=None):
 
     def _sin_puntos(r):
         p = OUT / Path(r["clip"]).parent / (r.get("npz") or "")
-        return r.get("npz") and p.exists() and "points" not in np.load(p, allow_pickle=True).files
+        return r.get("npz") and p.exists() and "points" not in np.load(p, allow_pickle=False).files
 
     sin_puntos = sum(1 for r in rows if _sin_puntos(r))
     return {**SQL.estado(), "tipo": tipo, "tipos": SQL.tipos_conocidos(), "puntos_disponibles": puntos,
@@ -166,11 +170,3 @@ def sql_estado(tipo=None):
 def tipos_disponibles():
     _manifest()  # registra en sql_tipos.json cualquier ejercicio nuevo
     return SQL.tipos_conocidos()
-
-
-def sql_guardar_config(body, tipo=None):
-    tipo = _tipo_o_primero(tipo)
-    cfg = SQL.config()
-    cfg[str(tipo)] = body
-    SQL.guardar_config(cfg)
-    return {"ok": True, "tipo": tipo, "aviso": "Guardado, pero la normalizacion que usan las tablas y el entrenamiento sale de params.yaml (formato): cambiala ahi para que cuente."}

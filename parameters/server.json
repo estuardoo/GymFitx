@@ -1,0 +1,14 @@
+{
+ "schema_version": 1,
+ "motor": "sqlserver",
+ "host": "PROGRAM\\HYPER",
+ "base": "GymFitX",
+ "autenticacion": "windows",
+ "timeout_s": 3,
+ "driver": "auto",
+ "servidores_por_pc": {
+  "HYPERCUBE": "HYPERCUBE\\SERVER",
+  "PROGRAM": "PROGRAM\\HYPER"
+ },
+ "nota": "Windows Auth: no hay usuario ni clave. Si algun dia usas SQL login, la clave va en variable de entorno, no aqui."
+}

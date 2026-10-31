@@ -1,33 +1,34 @@
-# Motor de vision
-mediapipe>=0.10.18,<0.11
-opencv-python>=4.9
-numpy>=1.26
-PyYAML>=6.0
+# UN SOLO archivo de dependencias: lo usan UPDATE.bat (tu PC), GitHub Actions y el panel (Sistema > Librerias).
+# Versiones exactas de lo que usa el codigo; las dependencias de estas las resuelve pip. Python 3.11.
+# Cambiar una version = editar aqui, correr `pytest` y abrir un PR (queda en el historial).
+# Las lineas "; sys_platform" son solo para Windows (camara y SQL Server); en Linux/CI los tests usan un mediapipe de mentira.
 
-# Panel de control
-fastapi>=0.110
-uvicorn[standard]>=0.27
-pydantic>=2.5
-python-multipart>=0.0.9   # subida de clips por ejercicio (UploadFile)
+# --- vision y camara ---
+mediapipe==0.10.35; sys_platform == "win32"
+opencv-contrib-python==5.0.0.93; sys_platform == "win32"   # mediapipe pide el contrib; no instales tambien opencv-python
+opencv-python-headless==5.0.0.93; sys_platform != "win32"
+numpy==2.4.6
+PyYAML==6.0.3
+pygrabber==0.2; sys_platform == "win32"   # nombres reales de camara en el selector
+imageio-ffmpeg==0.6.0
 
-# Nombres reales de camara en el selector (en vez de "Camara 0/1/2");
-# solo aplica en Windows, se ignora en cualquier otro sistema.
-pygrabber>=0.1; sys_platform == "win32"
+# --- panel web ---
+fastapi==0.141.1
+uvicorn[standard]==0.54.0
+pydantic==2.13.5
+python-multipart==0.0.32   # subida de clips
 
-# SQL Server (src/almacenamiento/sqlserver.py): historial y dataset -- opcional:
-# si falta, el panel arranca igual y avisa en Sistema. Requiere ademas el "ODBC Driver
-# 17 for SQL Server" instalado en Windows (no es un paquete de pip).
-pyodbc>=5.0
+# --- dataset y entrenamiento ---
+scikit-learn==1.9.1
+matplotlib==3.11.2
+joblib==1.6.0
 
-# Nota: no se fija numpy<2 a proposito. mediapipe y opencv tienen requisitos
-# cruzados sobre numpy que cambian con cada version; dejar que pip resuelva
-# evita el conflicto "opencv exige numpy>=2 pero tienes 1.26".
+# --- SQL Server (opcional; en Windows pide ademas el "ODBC Driver 17 for SQL Server", que no es de pip) ---
+pyodbc==5.3.0; sys_platform == "win32"
 
-# --- dataset y entrenamiento (src/etiquetado/, src/entrenamiento/) ---
-scikit-learn>=1.4
-matplotlib>=3.8
-joblib>=1.3
-imageio-ffmpeg>=0.4
-# xgboost queda OPCIONAL a proposito (src/entrenamiento/modelos.py lo importa
-# en un try/except ImportError): instalalo aparte solo si lo queres en la
-# comparacion de modelos, no es un requisito duro.
+# --- desarrollo, pruebas y datos (DVC) ---
+pytest==9.1.1
+httpx==0.28.1
+ruff==0.17.1
+dvc==3.67.1
+dvc-gdrive==3.0.1

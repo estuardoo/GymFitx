@@ -11,7 +11,7 @@ Dos reglas que sostienen todo el proyecto:
 2. Los angulos salen de los *world landmarks* (metros, origen en la entidad),
    no de las coordenadas de pantalla: eso elimina la perspectiva.
 
-Optimizacion: el YAML se compila UNA vez a arrays de indices. En caliente no
+Optimizacion: la definicion se compila UNA vez a arrays de indices. En caliente no
 hay lookups de diccionario ni bucles de Python, solo operaciones numpy sobre
 todas las features a la vez.
 ```
@@ -51,7 +51,7 @@ _sin docstring_
 ## class `_Banco`
 
 ```text
-Un grupo de features del YAML compilado a arrays de indices. 'indice' traduce el nombre
+Un grupo de features de la definicion compilado a arrays de indices. 'indice' traduce el nombre
 de un punto a su fila en P: los landmarks crudos de una fuente, o los kpoints del catalogo.
 ```
 
@@ -114,7 +114,7 @@ _sin docstring_
 `def signal(self, values: np.ndarray) -> float`
 
 ```text
-Proyeccion 1-D declarada en el YAML. Es lo que cuenta repeticiones.
+Proyeccion 1-D declarada en la definicion. Es lo que cuenta repeticiones.
 ```
 
 ## `medibles`
@@ -122,7 +122,7 @@ Proyeccion 1-D declarada en el YAML. Es lo que cuenta repeticiones.
 `def medibles(nombres, features) -> list[dict]`
 
 ```text
-Los features (activos) cuyos puntos existen todos en 'nombres', en el orden del yaml.
+Los features (activos) cuyos puntos existen todos en 'nombres', en el orden de la definicion.
 ```
 
 ## `medir_clip`

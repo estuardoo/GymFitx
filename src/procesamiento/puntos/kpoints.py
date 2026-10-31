@@ -6,7 +6,7 @@ UNA sola implementacion para los dos caminos:
   - en vivo: src/sesion/pipeline.py arma los mismos puntos por cuadro para que el
     clasificador entrenado (src/evaluacion/comparadores/) puntue cada repeticion.
 
-Cada kpoint del .yaml: {"numero", "nombre", "origen"} con
+Cada kpoint de la definicion: {"numero", "nombre", "origen"} con
   origen = {"tipo": "landmark", "fuente": "pose", "landmark": NOMBRE}
          o {"tipo": "derivado", "de": [numero_a, numero_b]}  (punto medio de dos kpoints previos)
 """

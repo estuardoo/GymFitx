@@ -1,7 +1,7 @@
 # `src/etiquetado/previews.py`
 
 ```text
-Copia H.264 liviana de cada grabacion para el <video> del navegador (datos/previews/).
+Copia H.264 liviana de cada grabacion para el <video> del navegador (sistema/previews/).
 ```
 
 ## Constantes
@@ -30,7 +30,7 @@ El navegador no decodifica mp4v (fourcc de OpenCV); cachea una copia H.264 para 
 `def limpiar_preview_huerfanos() -> int`
 
 ```text
-Borra de datos/previews las copias H.264 que ya no corresponden a
+Borra de sistema/previews las copias H.264 que ya no corresponden a
 ninguna grabacion (p.ej. las de nombre viejo '205448_base.mp4', de antes
 de _slug). Se regeneran solas al abrir el video. Devuelve cuantas borro.
 ```

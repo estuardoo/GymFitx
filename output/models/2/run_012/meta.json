@@ -1,0 +1,588 @@
+{
+ "numero": 12,
+ "fecha": "2026-09-26T23:48:49",
+ "test_pct": 20,
+ "k": 5,
+ "n_muestras": 47,
+ "clases": [
+  "bien",
+  "mal"
+ ],
+ "excluidas": [],
+ "no_entrenables": 2,
+ "criterio": "f1_macro",
+ "mejor_modelo": "hist_gradient_boosting",
+ "accuracy": 0.5957,
+ "f1_macro": 0.5428,
+ "linea_base": {
+  "nombre": "linea_base",
+  "accuracy": 0.6596,
+  "f1_macro": 0.3974,
+  "tiempo_seg": 0.0
+ },
+ "anidado": {
+  "accuracy": 0.4255,
+  "f1_macro": 0.3983,
+  "elegidos": {
+   "knn": 2,
+   "mlp": 1,
+   "decision_tree": 1,
+   "naive_bayes": 1
+  }
+ },
+ "reporte": {
+  "bien": {
+   "precision": 0.4,
+   "recall": 0.375,
+   "f1-score": 0.3870967741935484,
+   "support": 16.0
+  },
+  "mal": {
+   "precision": 0.6875,
+   "recall": 0.7096774193548387,
+   "f1-score": 0.6984126984126984,
+   "support": 31.0
+  },
+  "accuracy": 0.5957446808510638,
+  "macro avg": {
+   "precision": 0.54375,
+   "recall": 0.5423387096774194,
+   "f1-score": 0.5427547363031233,
+   "support": 47.0
+  },
+  "weighted avg": {
+   "precision": 0.589627659574468,
+   "recall": 0.5957446808510638,
+   "f1-score": 0.5924328093168174,
+   "support": 47.0
+  }
+ },
+ "errores": 19,
+ "predicciones": [
+  {
+   "clip": "bien/211230_base_s02_bien_r0.mp4",
+   "real": "bien",
+   "prediccion": "mal",
+   "ok": false
+  },
+  {
+   "clip": "bien/211230_base_s04_bien_r0.mp4",
+   "real": "bien",
+   "prediccion": "mal",
+   "ok": false
+  },
+  {
+   "clip": "mal/211230_base_s06_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "mal/211230_base_s07_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "bien",
+   "ok": false
+  },
+  {
+   "clip": "bien/211230_base_s08_bien_r0.mp4",
+   "real": "bien",
+   "prediccion": "mal",
+   "ok": false
+  },
+  {
+   "clip": "mal/211856_base_s01_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "bien",
+   "ok": false
+  },
+  {
+   "clip": "mal/211856_base_s02_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "bien/211856_base_s04_bien_r0.mp4",
+   "real": "bien",
+   "prediccion": "bien",
+   "ok": true
+  },
+  {
+   "clip": "bien/211856_base_s05_bien_r0.mp4",
+   "real": "bien",
+   "prediccion": "mal",
+   "ok": false
+  },
+  {
+   "clip": "mal/211856_base_s06_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "bien",
+   "ok": false
+  },
+  {
+   "clip": "mal/211856_base_s07_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "bien",
+   "ok": false
+  },
+  {
+   "clip": "bien/211856_base_s08_bien_r0.mp4",
+   "real": "bien",
+   "prediccion": "bien",
+   "ok": true
+  },
+  {
+   "clip": "mal/211856_base_s09_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "mal/211856_base_s10_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "bien",
+   "ok": false
+  },
+  {
+   "clip": "bien/211856_base_s11_bien_r0.mp4",
+   "real": "bien",
+   "prediccion": "bien",
+   "ok": true
+  },
+  {
+   "clip": "mal/211856_base_s12_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "bien/215207_base_s01_bien_r0.mp4",
+   "real": "bien",
+   "prediccion": "mal",
+   "ok": false
+  },
+  {
+   "clip": "mal/215207_base_s02_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "bien",
+   "ok": false
+  },
+  {
+   "clip": "mal/215207_base_s03_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "mal/230526_base_s01_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "bien/230526_base_s02_bien_r0.mp4",
+   "real": "bien",
+   "prediccion": "bien",
+   "ok": true
+  },
+  {
+   "clip": "mal/230526_base_s03_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "mal/230551_base_s02_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "bien",
+   "ok": false
+  },
+  {
+   "clip": "bien/230551_base_s03_bien_r0.mp4",
+   "real": "bien",
+   "prediccion": "bien",
+   "ok": true
+  },
+  {
+   "clip": "mal/230620_base_s01_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "bien",
+   "ok": false
+  },
+  {
+   "clip": "mal/230620_base_s02_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "bien",
+   "ok": false
+  },
+  {
+   "clip": "mal/230620_base_s03_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "bien/230620_base_s04_bien_r0.mp4",
+   "real": "bien",
+   "prediccion": "mal",
+   "ok": false
+  },
+  {
+   "clip": "mal/230620_base_s05_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "mal/230640_base_s01_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "mal/230640_base_s02_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "mal/230640_base_s03_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "bien/230640_base_s04_bien_r0.mp4",
+   "real": "bien",
+   "prediccion": "mal",
+   "ok": false
+  },
+  {
+   "clip": "bien/231020_base_s02_bien_r0.mp4",
+   "real": "bien",
+   "prediccion": "bien",
+   "ok": true
+  },
+  {
+   "clip": "bien/231020_base_s03_bien_r0.mp4",
+   "real": "bien",
+   "prediccion": "mal",
+   "ok": false
+  },
+  {
+   "clip": "mal/231020_base_s04_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "bien/231020_base_s05_bien_r0.mp4",
+   "real": "bien",
+   "prediccion": "mal",
+   "ok": false
+  },
+  {
+   "clip": "mal/231020_base_s06_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "mal/231036_base_s01_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "bien/231036_base_s02_bien_r0.mp4",
+   "real": "bien",
+   "prediccion": "mal",
+   "ok": false
+  },
+  {
+   "clip": "mal/231036_base_s03_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "mal/231200_base_s02_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "mal/231200_base_s03_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "mal/231200_base_s04_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "mal/231200_base_s05_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "mal/231200_base_s06_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "mal/231200_base_s07_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  }
+ ],
+ "modelos": [
+  {
+   "nombre": "random_forest",
+   "accuracy": 0.5319,
+   "f1_macro": 0.4788,
+   "tiempo_seg": 0.99
+  },
+  {
+   "nombre": "extra_trees",
+   "accuracy": 0.5106,
+   "f1_macro": 0.4465,
+   "tiempo_seg": 0.77
+  },
+  {
+   "nombre": "gradient_boosting",
+   "accuracy": 0.4894,
+   "f1_macro": 0.4471,
+   "tiempo_seg": 3.78
+  },
+  {
+   "nombre": "hist_gradient_boosting",
+   "accuracy": 0.5957,
+   "f1_macro": 0.5428,
+   "tiempo_seg": 7.44
+  },
+  {
+   "nombre": "adaboost",
+   "accuracy": 0.5319,
+   "f1_macro": 0.4615,
+   "tiempo_seg": 3.3
+  },
+  {
+   "nombre": "logistic",
+   "accuracy": 0.5319,
+   "f1_macro": 0.4788,
+   "tiempo_seg": 0.08
+  },
+  {
+   "nombre": "sgd_logistico",
+   "accuracy": 0.5319,
+   "f1_macro": 0.4788,
+   "tiempo_seg": 0.07
+  },
+  {
+   "nombre": "ridge",
+   "accuracy": 0.5745,
+   "f1_macro": 0.5262,
+   "tiempo_seg": 0.03
+  },
+  {
+   "nombre": "lda",
+   "accuracy": 0.5745,
+   "f1_macro": 0.5104,
+   "tiempo_seg": 6.59
+  },
+  {
+   "nombre": "svm",
+   "accuracy": 0.6596,
+   "f1_macro": 0.5253,
+   "tiempo_seg": 0.05
+  },
+  {
+   "nombre": "knn",
+   "accuracy": 0.5319,
+   "f1_macro": 0.5048,
+   "tiempo_seg": 0.3
+  },
+  {
+   "nombre": "decision_tree",
+   "accuracy": 0.4468,
+   "f1_macro": 0.4148,
+   "tiempo_seg": 0.04
+  },
+  {
+   "nombre": "mlp",
+   "accuracy": 0.5106,
+   "f1_macro": 0.4765,
+   "tiempo_seg": 0.87
+  },
+  {
+   "nombre": "naive_bayes",
+   "accuracy": 0.4681,
+   "f1_macro": 0.4642,
+   "tiempo_seg": 0.01
+  }
+ ],
+ "tipo": 1,
+ "exercise": "cuerpo_completo",
+ "config": {
+  "modo": "rectangulo",
+  "n_frames_fijo": 50,
+  "punto_centro": "wrist_der_1",
+  "punto_escala_a": "wrist_der_1",
+  "punto_escala_b": "pinky_tip_der_21",
+  "puntos_caja": null
+ },
+ "features": "xyzap",
+ "excluidos_manual": [
+  "bien/205453_base_s02_bien_r0.mp4",
+  "mal/205453_base_s03_mal_r0.mp4",
+  "mal/214947_base_s01_mal_r0.mp4",
+  "mal/214947_base_s02_mal_r0.mp4",
+  "bien/215106_base_s02_bien_r0.mp4",
+  "mal/215119_base_s01_mal_r0.mp4",
+  "bien/215119_base_s03_bien_r0.mp4",
+  "mal/215132_base_s02_mal_r0.mp4",
+  "bien/215132_base_s03_bien_r0.mp4",
+  "bien/215155_base_s02_bien_r0.mp4",
+  "mal/230605_base_s01_mal_r0.mp4",
+  "bien/230605_base_s02_bien_r0.mp4",
+  "bien/230655_base_s02_bien_r0.mp4",
+  "mal/230655_base_s03_mal_r0.mp4",
+  "mal/231046_base_s01_mal_r0.mp4",
+  "mal/231046_base_s02_mal_r0.mp4",
+  "mal/231046_base_s03_mal_r0.mp4",
+  "mal/231055_base_s01_mal_r0.mp4",
+  "mal/231055_base_s02_mal_r0.mp4",
+  "bien/231055_base_s03_bien_r0.mp4",
+  "mal/231104_base_s01_mal_r0.mp4",
+  "mal/231113_base_s02_mal_r0.mp4",
+  "mal/231123_base_s02_mal_r0.mp4",
+  "mal/231132_base_s02_mal_r0.mp4",
+  "mal/231142_base_s02_mal_r0.mp4",
+  "mal/231151_base_s02_mal_r0.mp4",
+  "mal/231151_base_s03_mal_r0.mp4",
+  "mal/231151_base_s04_mal_r0.mp4"
+ ],
+ "manos": [
+  "hand_right"
+ ],
+ "desincronizados": [],
+ "kpoints_usados": [
+  "wrist_der_25",
+  "thumb_mcp_der_38",
+  "thumb_tip_der_40",
+  "index_finger_mcp_der_41",
+  "index_finger_tip_der_44",
+  "middle_finger_mcp_der_45",
+  "middle_finger_tip_der_36",
+  "ring_finger_mcp_der_49",
+  "ring_finger_tip_der_36",
+  "pinky_mcp_der_53",
+  "pinky_tip_der_56"
+ ],
+ "ejes": "xyz",
+ "angulos": [
+  [
+   "fila_5",
+   "M26>M24>M22",
+   "angle"
+  ],
+  [
+   "fila_5_p1",
+   "M26>M24>M22",
+   "proporcion"
+  ],
+  [
+   "fila_5_p2",
+   "M26>M24>M22",
+   "proporcion"
+  ],
+  [
+   "fila_4",
+   "M30>M27>M22",
+   "angle"
+  ],
+  [
+   "fila_4_p1",
+   "M30>M27>M22",
+   "proporcion"
+  ],
+  [
+   "fila_4_p2",
+   "M30>M27>M22",
+   "proporcion"
+  ],
+  [
+   "fila_3",
+   "M34>M31>M22",
+   "angle"
+  ],
+  [
+   "fila_3_p1",
+   "M34>M31>M22",
+   "proporcion"
+  ],
+  [
+   "fila_3_p2",
+   "M34>M31>M22",
+   "proporcion"
+  ],
+  [
+   "fila_2",
+   "M38>M35>M22",
+   "angle"
+  ],
+  [
+   "fila_2_p1",
+   "M38>M35>M22",
+   "proporcion"
+  ],
+  [
+   "fila_2_p2",
+   "M38>M35>M22",
+   "proporcion"
+  ],
+  [
+   "fila_1",
+   "M42>M39>M22",
+   "angle"
+  ],
+  [
+   "fila_1_p1",
+   "M42>M39>M22",
+   "proporcion"
+  ],
+  [
+   "fila_1_p2",
+   "M42>M39>M22",
+   "proporcion"
+  ]
+ ],
+ "f1_folds": [
+  0.5238,
+  0.2857,
+  0.5,
+  0.75,
+  0.6494
+ ],
+ "f1_std": 0.1566,
+ "n_features": 1650,
+ "conteo_clases": {
+  "bien": 16,
+  "mal": 31
+ },
+ "numero_viejo": 15,
+ "ejercicio_id": 2,
+ "dir": "2/run_012",
+ "origen_run": {
+  "numero": 15,
+  "ruta": "datos/entrenamientos/run_15",
+  "nota": "corrida anterior a las tablas numeradas: sin lista de clips"
+ }
+}

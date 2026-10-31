@@ -1,5 +1,6 @@
 """Criterio 'cobertura de decisiones' de CRISP-DM: decision -> parametro -> etapa -> doc, sin eslabones sueltos."""
 
+import json
 import re
 import sys
 from pathlib import Path
@@ -8,6 +9,7 @@ import yaml
 
 RAIZ = Path(__file__).resolve().parent.parent
 DECISIONES = RAIZ / "docs" / "decisiones"
+AJUSTES = {"schema_version", "modelos", "camaras_droidcam", "respaldo_sql", "normalizacion_por_sql_tipo", "cortes"}
 EN_EJECUCION = {"entrenamiento", "base_clip", "ejercicios"}   # params que no entran a una etapa de dvc.yaml (se leen al entrenar/en vivo)
 
 
@@ -28,14 +30,16 @@ def test_cada_etapa_cita_una_decision_que_existe():
 
 
 def test_los_params_de_las_etapas_existen():
-    params = yaml.safe_load((RAIZ / "params.yaml").read_text("utf-8"))
+    params = json.loads((RAIZ / "parameters" / "config.json").read_text("utf-8"))
     for nombre, e in _etapas():
         for p in e.get("params", []):
-            assert p in params, f"{nombre}: params.yaml no tiene la seccion '{p}'"
+            for k in (p["parameters/config.json"] if isinstance(p, dict) else [p]):
+                assert k in params, f"{nombre}: parameters/config.json no tiene la seccion '{k}'"
 
 
 def test_cada_seccion_de_params_esta_justificada_en_una_decision():
-    params = yaml.safe_load((RAIZ / "params.yaml").read_text("utf-8"))
+    todo = json.loads((RAIZ / "parameters" / "config.json").read_text("utf-8"))
+    params = {k: v for k, v in todo.items() if k not in AJUSTES}   # los ajustes de uso (camaras, modelos, SQL) no son umbrales de decision
     texto = " ".join(p.read_text("utf-8") for p in DECISIONES.glob("0*.md"))
     sin = [s for s in params if s not in EN_EJECUCION and f"`{s}" not in texto] + \
           [s for s in params if s in EN_EJECUCION and s != "ejercicios" and f"`{s}" not in texto]

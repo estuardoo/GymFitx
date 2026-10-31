@@ -4,7 +4,9 @@
 Etapa 4: exportar cada segmento etiquetado como clip (.mp4 + .npz con sus kpoints) al disco y, si Sistema lo pide
 (respaldo_sql.al_cortar), copiarlo a SQL.
 
-Salta los videos cuyos cortes no cambiaron (hash por video en export_estado.json).
+Cada clip es una fila de la tabla `clips` (parameters/inputs.json) y vive en input/bronze/<ej>/<id>.{mp4,npz}. Un corte que ya
+tenia clip (mismo video y numero de corte) conserva su id al volver a exportar. Salta los videos cuyos cortes no cambiaron
+(hash por video en sistema/export_estado.json).
 ```
 
 ## Constantes
@@ -23,13 +25,11 @@ clip: sin esto, table_frames/table_frames_fix en SQL quedaban siempre
 vacias aunque el video fuente si tuviera los puntos.
 ```
 
-## `limpiar_previos`
+## `_quitar_archivos`
 
-`def limpiar_previos(labels)`
+`def _quitar_archivos(ej, cid)`
 
-```text
-Borra los clips ya exportados de estos videos antes de recortar de nuevo (evita huerfanos si cambiaste la cantidad o clase de los cortes).
-```
+_sin docstring_
 
 ## `_hash`
 
@@ -69,6 +69,15 @@ tablas') corrian en paralelo e insertaban el mismo clip dos veces en SQL
 (UNIQUE KEY UQ_table_file_type_archivo, visto en cortador.log).
 ```
 
+## `_planear`
+
+`def _planear(vid, segs, exercise)`
+
+```text
+Dentro de la tabla: un clip por corte bien/mal (reusa el id del corte que ya tenia) y fuera los que sobran.
+-> (ej, [(seg, clip_row)], ids_sobrantes) o None si el video no esta en la tabla `raw`.
+```
+
 ## `_exportar`
 
 `def _exportar(labels, todo, subir_sql)`
@@ -86,7 +95,7 @@ _sin docstring_
 `def sql_generar()`
 
 ```text
-Boton manual de Sistema → Tablas del dataset. No lee manifest.json y ya -- eso solo
+Boton manual de Sistema → Tablas del dataset. No lee la tabla de clips y ya -- eso solo
 veria los clips como quedaron la ULTIMA vez que se corto, y un clip
 cortado antes de tener deteccion de puntos se quedaria "omitido_sin_puntos"
 para siempre por mas veces que le des click. Por eso reusa exportar():

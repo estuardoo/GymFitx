@@ -1,23 +1,18 @@
 """guardar_ejercicio/leer_ejercicio con el nuevo tipo 'proporcion' y el flag
-'activo': round-trip completo del editor de Puntos, sin tocar ejercicios/ real."""
+'activo': round-trip completo del editor de Puntos, sin tocar parameters/ real (los tests usan una carpeta temporal)."""
 
 import pytest
-import yaml
 
 import src.etiquetado.editor_puntos as EP
+from src.nucleo import definicion as DEF
 from src.nucleo.ejercicio import load_exercise
 
 CADENA = ["LEFT_HIP", "LEFT_KNEE", "LEFT_ANKLE"]
 
 
 @pytest.fixture(autouse=True)
-def _dir_temporal(tmp_path, monkeypatch):
-    monkeypatch.setattr(EP, "EJERCICIOS_DIR", tmp_path)
-    monkeypatch.setattr(EP, "RESPALDOS_DIR", tmp_path / ".respaldos")
-    (tmp_path / "cadera.yaml").write_text(
-        yaml.safe_dump({"name": "cadera", "source": "pose", "features": []}), encoding="utf-8"
-    )
-    return tmp_path
+def _ejercicio():
+    DEF.guardar("cadera", {"name": "cadera", "source": "pose", "features": []})
 
 
 def test_guarda_angulo_y_proporcion_de_una_misma_cadena_y_los_relee():
@@ -36,7 +31,7 @@ def test_guarda_angulo_y_proporcion_de_una_misma_cadena_y_los_relee():
     assert "activo" not in nombres["rodilla_p1"]   # activo:true no se escribe, es el default
 
 
-def test_activo_false_sobrevive_pero_no_entra_al_ejercicio_en_vivo(_dir_temporal):
+def test_activo_false_sobrevive_pero_no_entra_al_ejercicio_en_vivo():
     EP.guardar_ejercicio("cadera", {
         "features": [
             {"name": "rodilla_p1", "type": "proporcion", "points": CADENA[:2], "cadena": CADENA,
@@ -44,7 +39,7 @@ def test_activo_false_sobrevive_pero_no_entra_al_ejercicio_en_vivo(_dir_temporal
             {"name": "rodilla_p2", "type": "proporcion", "points": CADENA[1:], "cadena": CADENA},
         ],
     })
-    ex = load_exercise(_dir_temporal / "cadera.yaml")
+    ex = load_exercise("cadera")
     assert ex.feature_names == ["rodilla_p2"]
 
 

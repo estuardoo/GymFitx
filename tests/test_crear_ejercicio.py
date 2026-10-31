@@ -1,5 +1,5 @@
 """crear_ejercicio (src/etiquetado/editor_puntos.py): antes guardar_ejercicio solo podia EDITAR un
-.yaml que ya existiera -- esto arma uno nuevo desde cero, sus carpetas y lo sube a SQL ya mismo."""
+ejercicio que ya existiera -- esto arma uno nuevo desde cero, sus carpetas y lo sube a SQL ya mismo."""
 import json
 
 import pytest
@@ -27,30 +27,26 @@ class SqlFalso:
 
 @pytest.fixture
 def entorno(tmp_path, monkeypatch):
-    monkeypatch.setattr(EP, "EJERCICIOS_DIR", tmp_path / "ejercicios")
-    monkeypatch.setattr(EP, "RESPALDOS_DIR", tmp_path / "ejercicios" / ".respaldos")
     monkeypatch.setattr(EP, "PENDIENTES_PATH", tmp_path / "pendientes.json")
     monkeypatch.setattr(EP, "_sql_caido_hasta", 0.0)
-    clips, grabaciones = tmp_path / "clips", tmp_path / "grabaciones"
-    import src.nucleo.config as CFGMOD
-    monkeypatch.setattr(CFGMOD, "CLIPS_DIR", clips)
-    monkeypatch.setattr(CFGMOD, "RECORDINGS_DIR", grabaciones)
-    sql = SqlFalso(monkeypatch)
-    return clips, grabaciones, sql
+    return SqlFalso(monkeypatch)
 
 
-def test_crea_yaml_carpetas_y_sube_a_sql(entorno):
-    clips, grabaciones, sql = entorno
+def test_crea_definicion_carpetas_y_sube_a_sql(entorno):
+    sql = entorno
     r = EP.crear_ejercicio("sentadilla_nueva")
 
     assert r["ok"] is True and r["sql"]["ok"] is True and r["sql"]["type"] == 7
     assert EP.leer_ejercicio("sentadilla_nueva") == {
         "name": "sentadilla_nueva", "description": "", "source": "pose",
-        "features": [], "kpoints": [], "reglas": []}
-    for clase in ("bien", "mal", "base"):
-        assert (clips / "sentadilla_nueva" / clase).is_dir()
-    assert not (clips / "sentadilla_nueva" / "descarte").exists()   # esa clase no se exporta
-    assert (grabaciones / "sentadilla_nueva").is_dir()
+        "features": [], "kpoints": [], "reglas": [],
+        "normalizacion": {"origen": None, "escala": None, "n_frames": 30, "propia": False, "error": None}}
+    from src.nucleo import config as C
+    from src.nucleo import inputs as INP
+    n = INP.id_de("sentadilla_nueva")
+    assert r["numero"] == n and n > 0
+    for capa in (C.RECORDINGS_DIR, C.CLIPS_DIR, C.PLATE_DIR, C.GOLD_DIR):   # una carpeta numerada por capa
+        assert (capa / str(n)).is_dir()
     assert 7 in sql.definiciones
 
 
@@ -74,10 +70,11 @@ def test_modificar_basicos_respalda_y_no_toca_el_slug(entorno, tmp_path):
         "min_duration_ms": "500", "max_duration_ms": 4000})
     assert r == {"ok": True, "base_invalida": False}   # sin plantilla grabada
     from src.nucleo.ejercicio import load_exercise
-    ex = load_exercise(tmp_path / "ejercicios" / "sentadilla_nueva.yaml")
+    ex = load_exercise("sentadilla_nueva")
     assert (ex.slug, ex.name, ex.direction, ex.min_duration_ms, ex.max_duration_ms) == \
         ("sentadilla_nueva", "Sentadilla", "up_down", 500, 4000)
-    assert (tmp_path / "ejercicios" / ".respaldos" / "sentadilla_nueva.yaml").exists()
+    from src.nucleo import config as C
+    assert (C.DATOS_DIR / "respaldos" / "sentadilla_nueva.json").exists()   # la definicion anterior queda respaldada
 
 
 def test_modificar_invalido_no_escribe(entorno, tmp_path):

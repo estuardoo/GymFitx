@@ -3,14 +3,16 @@
 Se guarda el video SIN anotaciones a proposito. Las anotaciones se pueden
 regenerar en cualquier momento reproduciendo el archivo con VideoSource por el
 mismo pipeline (scripts/reprocesar.py); los pixeles originales, no. Guardar el video
-limpio deja la puerta abierta a reprocesar con otro modelo, otro YAML o otros
+limpio deja la puerta abierta a reprocesar con otro modelo, otra definicion o otros
 umbrales dentro de un año, que es justamente para lo que sirve archivarlos.
 
-Estructura en disco -- cada ejercicio en su propia carpeta, y dentro por dia:
+Estructura en disco -- cada ejercicio en su carpeta con su NUMERO, y cada grabacion con el suyo (sin nombres largos):
 
-    datos/grabaciones/<ejercicio>/<AAAA-MM-DD>/<HHMMSS>_<modo>.mp4
-    datos/grabaciones/<ejercicio>/<AAAA-MM-DD>/<HHMMSS>_<modo>.npz
-    datos/grabaciones/<ejercicio>/<AAAA-MM-DD>/<HHMMSS>_<modo>.json
+    input/raw/<n del ejercicio>/<id>.mp4
+    input/raw/<n del ejercicio>/<id>.npz
+    input/raw/<n del ejercicio>/<id>.json
+
+La fecha, la persona (P1, P2...) y el ejercicio viven en la tabla `raw` de parameters/inputs.json.
 
 Junto al .mp4 quedan:
   .npz   la serie de features ya extraida  -> reanalisis sin volver a trackear,
@@ -38,6 +40,7 @@ from pathlib import Path
 import cv2
 import numpy as np
 
+from src.nucleo import inputs as INP
 from src.nucleo import landmarks
 
 FPS_SALIDA = 30.0
@@ -57,8 +60,10 @@ class VideoLogger:
     """Sumidero que archiva la sesion. Se combina con Recorder o Evaluator."""
 
     def __init__(self, base_dir: Path | str, guardar_video: bool = True,
-                 max_width: int = 0, codec: str = CODEC_POR_DEFECTO) -> None:
+                 max_width: int = 0, codec: str = CODEC_POR_DEFECTO, persona: str | None = None) -> None:
         self.base_dir = Path(base_dir)
+        self.persona = persona or None    # P1, P2... quien se graba; se guarda en la tabla `raw`
+        self.raw_id: int | None = None
         self.guardar_video = guardar_video
         self.max_width = int(max_width)   # 0 = guardar a resolucion de captura
         self.codec = codec
@@ -86,16 +91,16 @@ class VideoLogger:
         # "referencia" = toma que calibra la plantilla (antes se llamaba "base",
         # igual que la clase "base" del cortador: dos cosas distintas).
         modo = "referencia" if pipe.segmenter is None else "serie"
-        carpeta = self.base_dir / pipe.exercise.slug / ahora.strftime("%Y-%m-%d")
+        # Cada grabacion es una fila nueva de `raw` con su numero (los ids no se reutilizan: dos sesiones en el mismo
+        # segundo no pueden pisarse). Archivos: <base_dir>/<n del ejercicio>/<id>.{mp4,npz,json}
+        with INP.editar() as t:
+            raw = INP.registrar_raw(t, pipe.exercise.slug, fecha=self._inicio, persona=self.persona,
+                                    archivos=("mp4", "npz", "json") if self.guardar_video else ("npz", "json"))
+        self.raw_id = raw["id"]
+        carpeta = self.base_dir / str(raw["ej"])
         carpeta.mkdir(parents=True, exist_ok=True)
-
-        # Dos sesiones en el mismo segundo no pueden pisarse: un archivo
-        # sobrescrito es material perdido para siempre.
-        base = f"{ahora.strftime('%H%M%S')}_{modo}"
-        tallo, n = base, 1
-        while (carpeta / f"{tallo}.json").exists():
-            tallo = f"{base}_{n}"
-            n += 1
+        tallo = f"{raw['id']:06d}"
+        self.modo = modo
         self.video_path = carpeta / f"{tallo}.mp4"
         self.npz_path = carpeta / f"{tallo}.npz"
         self.json_path = carpeta / f"{tallo}.json"
@@ -194,6 +199,7 @@ class VideoLogger:
             "exercise_name": pipe.exercise.name,
             "source": pipe.exercise.source,
             "modo": "referencia" if pipe.segmenter is None else "serie",
+            "raw_id": self.raw_id, "persona": self.persona,
             "started_at": self._inicio,
             "ended_at": datetime.now().isoformat(timespec="seconds"),
             "frames": pipe.frames_vistos,
@@ -230,22 +236,29 @@ def listar_grabaciones(base_dir: Path | str, limite: int = 40,
                        exercise: str | None = None) -> list[dict]:
     """Las sesiones archivadas, mas recientes primero. Lee los .json, no los videos.
 
-    exercise: si se pasa, solo las de ese slug (equivalente a listar esa
-    subcarpeta) -- es lo que usa el panel para el filtro por ejercicio.
+    exercise: si se pasa, solo las de ese slug (su carpeta es el numero del ejercicio) -- es lo que usa el panel para el
+    filtro por ejercicio. Cada una trae su `id`, su `persona` y su fecha (`dia`) de la tabla `raw`.
     """
     base = Path(base_dir)
-    patron = f"{exercise}/*/*.json" if exercise else "*/*/*.json"
+    ej = INP.id_de(exercise) if exercise else None
+    if exercise and ej is None:
+        return []
+    patron = f"{ej}/*.json" if exercise else "*/*.json"
+    raws = {(r["ej"], r["id"]): r for r in INP.tabla()["raw"]}
     salida: list[dict] = []
-    for j in sorted(base.glob(patron), reverse=True)[:limite]:
+    for j in sorted(base.glob(patron), key=lambda j: int(j.stem) if j.stem.isdigit() else 0, reverse=True)[:limite]:
         try:
             m = json.loads(j.read_text(encoding="utf-8"))
         except Exception:
             continue
         video = j.with_suffix(".mp4")
         npz = j.with_suffix(".npz")
-        m["dia"] = j.parent.name
-        m["ruta_relativa"] = f"{j.parent.parent.name}/{j.parent.name}/{video.name}"
-        m["npz_relativo"] = f"{j.parent.parent.name}/{j.parent.name}/{npz.name}"
+        fila = raws.get((int(j.parent.name), int(j.stem))) if j.parent.name.isdigit() and j.stem.isdigit() else None
+        m["id"] = fila["id"] if fila else None
+        m["persona"] = fila.get("persona") if fila else m.get("persona")
+        m["dia"] = (fila["fecha"] if fila else m.get("started_at", ""))[:10]
+        m["ruta_relativa"] = f"{j.parent.name}/{video.name}"
+        m["npz_relativo"] = f"{j.parent.name}/{npz.name}"
         m["bytes"] = video.stat().st_size if video.exists() else 0
         m["existe_video"] = video.exists()
         m["existe_features"] = npz.exists()
@@ -255,7 +268,7 @@ def listar_grabaciones(base_dir: Path | str, limite: int = 40,
 
 def uso_en_disco(base_dir: Path | str) -> dict:
     base = Path(base_dir)
-    archivos = list(base.glob("*/*/*"))
+    archivos = list(base.glob("*/*"))
     total = sum(f.stat().st_size for f in archivos if f.is_file())
     videos = [f for f in archivos if f.suffix == ".mp4"]
     return {
@@ -274,7 +287,7 @@ def features_a_csv(npz_path: Path | str) -> str:
     completo. Esto solo los pasa a un formato que se abre en Excel/Sheets en
     vez del binario de numpy, para el boton "Movimientos (CSV)" del panel.
     """
-    data = np.load(npz_path, allow_pickle=True)
+    data = np.load(npz_path, allow_pickle=False)
     nombres = [str(n) for n in data["names"]]
     buf = io.StringIO()
     w = csv.writer(buf)
@@ -285,11 +298,11 @@ def features_a_csv(npz_path: Path | str) -> str:
 
 
 def resolver_json(base_dir: Path | str, ruta_relativa: str) -> Path:
-    """De la ruta relativa que maneja el panel (ej. 'slug/2026-08-25/073012_serie.mp4')
-    al .json de metadatos correspondiente, validando que no se escape de datos/grabaciones/.
+    """De la ruta relativa que maneja el panel (ej. '1/000007.mp4')
+    al .json de metadatos correspondiente, validando que no se escape de input/raw/.
     """
     base = Path(base_dir).resolve()
     candidato = (base / ruta_relativa).resolve()
     if base not in candidato.parents and candidato != base:
-        raise ValueError("ruta fuera de datos/grabaciones/")
+        raise ValueError("ruta fuera de input/raw/")
     return candidato.with_suffix(".json")

@@ -23,13 +23,15 @@ Folds del k-fold: ~100/test_pct, sin pasar de la clase mas chica, de n/2 ni de l
 ## class `PorGrabacion`
 
 ```text
-Reemplaza al StratifiedKFold: .split(X, y) estratificado por clase pero sin partir una grabacion entre entrenar y
-probar. Las copias (_2, _3) y los ciclos del mismo video van juntos; antes se mezclaban y el F1 salia inflado.
+Reemplaza al StratifiedKFold: .split(X, y) estratificado sin partir una grabacion entre entrenar y probar.
+Las copias (_2, _3) y los ciclos del mismo video van juntos; antes se mezclaban y el F1 salia inflado.
+`estratos` (p.ej. clase+persona) reparte cada estrato entre los folds: el azar queda condicionado a la persona,
+asi cada fold de prueba tiene clips de todas las personas en vez de tocar solo a una.
 ```
 
 ### `PorGrabacion.__init__`
 
-`def __init__(self, k, grupos, semilla)`
+`def __init__(self, k, grupos, semilla, estratos=None)`
 
 _sin docstring_
 
@@ -46,6 +48,24 @@ _sin docstring_
 ```text
 Un modelo con CV: una sola pasada por fold (la prediccion sale del argmax de predict_proba).
 De paso anota cuantas iteraciones uso de verdad en cada fold ('iteraciones': tope y min/media/max).
+```
+
+## `composicion_folds`
+
+`def composicion_folds(skf, X, y, personas)`
+
+```text
+Por fold: cuantos clips de cada persona van a prueba y cuantos a entrenar. Sirve para ver que el azar
+reparte entre todas las personas (y no toma solo de una).
+```
+
+## `por_persona`
+
+`def por_persona(y, y_pred, personas, clases)`
+
+```text
+Lo que acierta el modelo en los clips de cada persona, con las predicciones que ya salieron de los folds
+(no reentrena nada). Sirve para comparar P1 contra P2: con pocos clips una persona puede no decir mucho.
 ```
 
 ## `sin_privados`

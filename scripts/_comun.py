@@ -12,18 +12,17 @@ import cv2
 
 from src.captura.fuentes.camara import CameraSource
 from src.evaluacion.plantilla import Template, template_path
-from src.nucleo.config import EXERCISES_DIR, RECORDINGS_DIR, TEMPLATES_DIR
+from src.nucleo import definicion as DEF
+from src.nucleo.config import RECORDINGS_DIR, TEMPLATES_DIR
 from src.nucleo.ejercicio import load_exercise
 from src.sesion.grabacion import VideoLogger
 from src.sesion.pipeline import MultiSink, Pipeline, Sink
 
 
 def cargar_ejercicio(slug: str):
-    ruta = EXERCISES_DIR / f"{slug}.yaml"
-    if not ruta.exists():
-        disponibles = ", ".join(sorted(p.stem for p in EXERCISES_DIR.glob("*.yaml")))
-        raise SystemExit(f"No existe el ejercicio '{slug}'. Disponibles: {disponibles}")
-    return load_exercise(ruta)
+    if not DEF.existe(slug):
+        raise SystemExit(f"No existe el ejercicio '{slug}'. Disponibles: {', '.join(DEF.slugs())}")
+    return load_exercise(slug)
 
 
 def cargar_plantilla(slug: str) -> Template:

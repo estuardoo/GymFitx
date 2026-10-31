@@ -1,6 +1,6 @@
 """Etapa 3: cortar y etiquetar grabaciones (bien / mal / base / descarte por segmento).
 
-datos/etiquetas.json es la UNICA fuente del etiquetado y se guarda por mezcla."""
+Los cortes de cada video viven en la tabla `raw` de parameters/inputs.json (campo `segmentos`) y se guardan por mezcla."""
 
 from __future__ import annotations
 
@@ -8,31 +8,41 @@ import json
 import threading
 
 from src.etiquetado import editor_puntos as PUNTOS
-from src.etiquetado.manifest import DATA, LABELS, _exercise_de, _ruta_video
-from src.nucleo.config import AJUSTES_PATH
+from src.etiquetado.manifest import _exercise_de, _ruta_video
+from src.nucleo import inputs as INP
+from src.nucleo.config import params
+from src.nucleo.log import logger
 from src.procesamiento import offline as deteccion
 
-CFG ={"clases": ["bien", "mal", "base", "descarte"], "no_exportar": ["descarte"]}
+log = logger("dataset")
+
+CFG = {"clases": ["bien", "mal", "descarte"], "no_exportar": ["descarte"]}
 
 
-try:  # ponytail: yaml opcional; sin PyYAML se usan los defaults de arriba
-    import yaml
-    CFG.update((yaml.safe_load(AJUSTES_PATH.read_text("utf-8")) or {}).get("cortes") or {})
-except Exception:
+try:  # parameters/config.json -> "cortes"; sin esa seccion se usan los defaults de arriba
+    CFG.update(params("cortes"))
+except ValueError:
     pass
 
 
 def videos():
+    """Los videos de `raw` con su metadata (persona, fecha) y la del .json que graba GYMFITX."""
+    tab = INP.tabla()
     out = []
-    for mp4 in sorted(DATA.rglob("*.mp4")):  # datos/grabaciones/<ejercicio>/<fecha>/*.mp4 -- recursivo
+    for r in tab["raw"]:
+        mp4 = INP.ruta_raw(r["ej"], r["id"], "mp4")
+        if not mp4.exists():
+            continue
         meta = {}
         js = mp4.with_suffix(".json")
         if js.exists():
             try:
                 meta = json.loads(js.read_text("utf-8"))
-            except Exception:
-                pass
-        out.append({"file": mp4.relative_to(DATA).as_posix(), "ejercicio": meta.get("exercise_name", ""),
+            except (OSError, ValueError) as e:   # JSON corrupto: el video sigue listado, sin metadatos
+                log.warning("sin metadatos legibles en %s: %s", js.name, e)
+        out.append({"file": INP.vid_de(r), "id": r["id"], "ej": r["ej"],
+                    "ejercicio": meta.get("exercise_name") or INP.ejercicios().get(r["ej"], {}).get("nombre", ""),
+                    "persona": r.get("persona"), "fecha": r.get("fecha"),
                     "dur_ms": meta.get("duration_ms", 0), "frames": meta.get("frames", 0),
                     "npz": meta.get("features", ""), "fps": meta.get("fps_medio", 0)})
     return out
@@ -43,18 +53,13 @@ def estado_config():
 
 
 def leer_labels():
-    return json.loads(LABELS.read_text("utf-8")) if LABELS.exists() else {}
+    return INP.leer_labels()
 
 
 def guardar_labels(body):
-    # merge, no reemplazo: una pestana vieja que nunca cargo TODOS los
-    # videos (dejada abierta de una sesion anterior) solo debe poder
-    # tocar los videos que ella conoce -- sobrescribir el archivo
-    # entero con su copia incompleta borraba el trabajo de otros
-    # videos etiquetados despues, en otra pestana/sesion.
-    actual = json.loads(LABELS.read_text("utf-8")) if LABELS.exists() else {}
-    actual.update(body)
-    LABELS.write_text(json.dumps(actual, indent=1, ensure_ascii=False), "utf-8")
+    # merge, no reemplazo: una pestana vieja que nunca cargo TODOS los videos solo debe poder tocar los que ella conoce --
+    # sobrescribir todo con su copia incompleta borraba el trabajo de otros videos etiquetados despues.
+    INP.guardar_labels(body)
     return {"ok": True}
 
 
@@ -78,7 +83,7 @@ def overlay_de(file):
         except deteccion.DeteccionNoDisponible as e:
             error = str(e)
     npz = src.with_suffix(".npz")
-    d = np.load(npz, allow_pickle=True) if npz.exists() else None
+    d = np.load(npz, allow_pickle=False) if npz.exists() else None
     if d is None or "points_screen" not in d.files:
         return {"t_ms": [], "exercise": exercise,
                 "error": error or "Este video todavia no tiene puntos de pantalla detectados"}

@@ -34,13 +34,13 @@ def test_regla_invalida():
 
 
 def test_base_desde_clip_cuenta_una_vez(tmp_path, monkeypatch):
-    ex = load_exercise("ejercicios/zancada.yaml")
-    npz = next(iter(B._originales(B.CLIPS_DIR / "zancada" / "bien")), None)
+    ex = load_exercise("zancada_reglas")
+    npz = next(iter(B._originales("zancada", "bien")), None)
     if npz is None:
         pytest.skip("sin clips de zancada")
     tpl = B.plantilla_de_clip(ex, npz)
     ext = FeatureExtractor(ex)
-    v, t = B._valores(ex, ext, npz), np.load(npz)["t_ms"]
+    v, t = B._valores(ex, ext, npz), dict(np.load(npz))["t_ms"]
     seg = RepSegmenter(n_features=v.shape[1], signal_idx=ext.signal_idx, reduce=ext.signal_reduce, low=tpl.low,
                        high=tpl.high, direction=ex.direction, min_duration_ms=ex.min_duration_ms,
                        max_duration_ms=ex.max_duration_ms, capacity=len(v) + 2)
@@ -51,7 +51,7 @@ def test_base_desde_clip_cuenta_una_vez(tmp_path, monkeypatch):
 
 def test_clip_con_pocos_puntos(tmp_path):
     """Los clips viejos guardan solo sus kpoints (12, 23...): se miden igual por nombre."""
-    ex = load_exercise("ejercicios/zancada.yaml")
+    ex = load_exercise("zancada_reglas")
     ext = FeatureExtractor(ex)
     nombres = ["LEFT_SHOULDER", "RIGHT_SHOULDER", "LEFT_ELBOW", "RIGHT_ELBOW", "LEFT_WRIST", "RIGHT_WRIST", "LEFT_HIP",
                "RIGHT_HIP", "LEFT_KNEE", "RIGHT_KNEE", "LEFT_ANKLE", "RIGHT_ANKLE"]
@@ -72,8 +72,8 @@ def _lunge(front_left=True):
     return s
 
 
-def test_reglas_de_zancada_del_yaml():
-    ex = load_exercise("ejercicios/zancada.yaml")
+def test_reglas_de_zancada():
+    ex = load_exercise("zancada_reglas")
     activas = {r["nombre"] for r in ex.reglas if r["activo"]}
     assert activas == {"Espalda recta", "Tronco", "Cadera delantera", "Brazo izq", "Brazo der"}
     angs = []
@@ -92,7 +92,7 @@ def test_reglas_de_zancada_del_yaml():
 
 
 def test_brazos_doblados_al_bajar_en_rojo():
-    ex = load_exercise("ejercicios/zancada.yaml")
+    ex = load_exercise("zancada_reglas")
     rectos = _lunge()
     rectos[13] = (0.5, 0.35, 0)   # codo izq
     rectos[15] = (0.5, 0.5, 0)    # muneca izq: brazo recto (hombro-codo-muneca alineados)
