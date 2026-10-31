@@ -1,7 +1,7 @@
 # `src/entrenamiento/reportes.py`
 
 ```text
-Etapa 6c: lo que queda de cada corrida en datos/entrenamientos/run_N/ (graficas, meta.json) y su listado.
+Etapa 6c: lo que queda de cada corrida en output/models/<ejercicio>/run_NNN/ (graficas, meta.json) y su listado.
 ```
 
 ## Constantes
@@ -16,10 +16,18 @@ _sin docstring_
 
 ## `nueva_corrida`
 
-`def nueva_corrida()`
+`def nueva_corrida(ejercicio_id)`
 
 ```text
-(numero, carpeta) de la proxima datos/entrenamientos/run_N/.
+(numero, carpeta) de la proxima output/models/<ejercicio_id>/run_NNN/ (el numero cuenta por ejercicio).
+```
+
+## `dir_de`
+
+`def dir_de(ejercicio_id, numero) -> str`
+
+```text
+Como se nombra una corrida para el panel y las rutas web: '1/run_001'.
 ```
 
 ## `grafico_comparacion`
@@ -95,7 +103,7 @@ Veredicto de la corrida m contra la anterior del mismo ejercicio: mejoro / empeo
 `def entrenamientos()`
 
 ```text
-Todas las corridas, cada una con 'parametros' y 'vs_anterior' (contra la corrida
-anterior del mismo ejercicio; se calcula al leer, asi tambien sirve para corridas viejas).
+Todas las corridas, cada una con 'parametros', 'dir' y 'vs_anterior' (contra la corrida anterior del mismo
+ejercicio; se calcula al leer, asi tambien sirve para corridas viejas). En orden cronologico.
 ```
 

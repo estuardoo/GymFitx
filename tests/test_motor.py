@@ -18,7 +18,7 @@ from src.nucleo.tipos import Segment  # noqa: E402
 from src.procesamiento.medidas.features import FeatureExtractor, angle_deg, compute_features  # noqa: E402
 from src.procesamiento.medidas.filtros import OneEuroFilter  # noqa: E402
 
-EJ = load_exercise(ROOT / "tests" / "data" / "sintetico.yaml")
+EJ = load_exercise("sintetico")
 EXT = FeatureExtractor(EJ)
 
 
@@ -49,7 +49,7 @@ def test_extractor_compilado_igual_al_escalar():
 
 
 def test_todos_los_ejercicios_cargan():
-    todos = load_all(ROOT / "ejercicios")
+    todos = load_all()
     assert "cuerpo_completo" in todos and "manguito_rotador" in todos
     for ex in todos.values():
         FeatureExtractor(ex)          # compila sin error = nombres validos

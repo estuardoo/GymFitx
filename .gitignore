@@ -7,17 +7,18 @@ __pycache__/
 .ruff_cache/
 python_version.txt
 
-# todo lo que genera el uso (videos, clips, modelos entrenados, logs, credenciales). Se deja pasar solo lo que pone DVC:
-# los punteros datos/*.dvc y datos/.gitignore (el contenido va al remoto de DVC, nunca al historial)
-datos/*
-!datos/*.dvc
-!datos/.gitignore
+# datos y estado de ejecucion (videos, clips, intermedios, logs, credenciales). Se deja pasar solo lo que pone DVC:
+# los punteros input/*.dvc y input/.gitignore (el contenido va al remoto de DVC, nunca al historial)
+input/*
+!input/*.dvc
+!input/.gitignore
+sistema/
+# modelos entrenados: se rehacen con el codigo + parameters/config.json + los datos; sus meta.json y graficas si se versionan
+output/**/*.joblib
 # modelos de MediaPipe (se descargan solos) y cloudflared
-modelos/
-herramientas/
+assets/
 
 # respaldos del editor de puntos
-ejercicios/.respaldos/
 *.bak
 
 # laminas exportadas del pitch (el .pptx si se versiona)
@@ -28,3 +29,12 @@ Claude outputs/
 
 # archivos retirados a la espera de borrarse
 _to_delete/
+
+# llaves: nunca al repo (viven en ..\KEYS)
+.env
+*.env
+config.local
+*service-account*.json
+*-key.json
+accessKeys*.csv
+.ipynb_checkpoints/

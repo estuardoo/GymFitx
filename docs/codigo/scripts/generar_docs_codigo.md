@@ -11,7 +11,7 @@ Salida (sin fechas: mismas fuentes, mismos bytes):
     INDICE.md            que hay en cada rama y modulo
     dependencias.md      matriz de quien importa a quien (el arbol de capas)
     api_rutas.md         todas las rutas REST/WebSocket
-    parametros.md        cada clave de params.yaml y los modulos que la usan
+    parametros.md        cada clave de parameters/config.json y los modulos que la usan
     <rama>/<modulo>.md   clases, funciones y constantes con su docstring (src/), scripts/ y la web (js)
 ```
 

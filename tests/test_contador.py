@@ -93,15 +93,14 @@ def test_detector_cuenta_un_ciclo_por_cada_subida_y_bajada(monkeypatch):
     assert len(reps) == 2 and all(e["clasificador"]["clase"] == "bien" for e in reps)
 
 
-def test_ventanas_fuera_solo_toma_tramos_sin_corte(monkeypatch, tmp_path):
+def test_ventanas_fuera_solo_toma_tramos_sin_corte(monkeypatch):
+    from src.nucleo import inputs as INP
     from src.preparacion import tabla as D
     t = np.arange(0, 20000, 100)   # 20 s a 10 fps
-    np.savez(tmp_path / "v.npz", points=np.ones((len(t), 2, 3), np.float32), point_names=np.array(["a", "b"]),
+    with INP.editar() as tab:
+        raw = INP.registrar_raw(tab, "ej", segmentos=[{"ini": 2, "fin": 4, "clase": "bien"}, {"ini": 6, "fin": 8, "clase": "mal"}])
+    np.savez(INP.ruta_raw(raw["ej"], raw["id"], "npz"), points=np.ones((len(t), 2, 3), np.float32), point_names=np.array(["a", "b"]),
              points_t_ms=t, t_ms=t, values=np.zeros((len(t), 1)), names=np.array(["x"]), units=np.array(["deg"]))
-    labels = {"ej/v.mp4": {"segmentos": [{"ini": 2, "fin": 4, "clase": "bien"}, {"ini": 6, "fin": 8, "clase": "mal"}]}}
-    monkeypatch.setattr(D, "_leer_json", lambda *a: labels)
-    monkeypatch.setattr(D, "_ruta_video", lambda v: tmp_path / "v.mp4")
-    monkeypatch.setattr(D, "_exercise_de", lambda p: "ej")
     monkeypatch.setattr(vectorizar, "vector_de_clip", lambda pts, names, spec: np.ones(3, np.float32))
     vecs, nombres, ventana = D.ventanas_fuera("ej", {"n_features": 3}, tope=100)
     assert ventana == 2000 and len(vecs) == len(nombres) > 5
@@ -118,3 +117,22 @@ def test_n_conteo_una_sola_cifra():
     ev = Evaluator.__new__(Evaluator)
     ev.scores = [50.0, 60.0]
     assert ev.n == 2
+
+
+def test_ciclo_que_empieza_a_mitad_del_movimiento_no_cuenta(monkeypatch):
+    """Al prender la camara en pleno movimiento, el primer tramo no es una rep completa: no debe contar."""
+    monkeypatch.setattr(vectorizar, "vector_de_clip",
+                        lambda pts, names, spec: np.array([np.mean(pts)], np.float32))
+    c = ContadorModelo(_ClfVentana())
+    pipe = _Pipe()
+
+    class _Fv:
+        def __init__(self, t, v):
+            self.t_ms, self.kpoints = t, np.full((2, 3), v, np.float32)
+
+    # movimiento 0-1 s (sin inicio), reposo, luego un ciclo completo 2.5-3.5 s
+    for t in range(0, 4500, 30):
+        activo = t < 1000 or 2500 <= t < 3500
+        c.on_frame(pipe, None, _Fv(t, 1.0 if activo else 0.0))
+    reps = [e for e in pipe.eventos if e["type"] == "rep"]
+    assert len(reps) == 1

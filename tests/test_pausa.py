@@ -31,7 +31,7 @@ from src.sesion.pipeline import Pipeline, Sink  # noqa: E402
 # intente descargarlo o toque la carpeta models/ real del proyecto.
 tracker_mod.ensure_model = lambda source: Path("stub.task")
 
-EJ = load_exercise(ROOT / "ejercicios" / "manguito_rotador.yaml")
+EJ = load_exercise("manguito_rotador")
 
 
 class _EspiaSink(Sink):

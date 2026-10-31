@@ -15,7 +15,7 @@ Aqui esta la logica; almacenamiento/dataset_sql.py solo guarda y lee.
 `def cfg_de_tipo(type_, point_names)`
 
 ```text
-Normalizacion efectiva del type: la de params.yaml (formato) + defaults (procesamiento/puntos/normalizacion.py).
+Normalizacion efectiva del type: la del ejercicio (Kpoints -> Normalizacion, parameters/<n>/guide.json).
 Es la MISMA con la que entrena el modelo, asi la copia en SQL no diverge del disco.
 ```
 
@@ -55,7 +55,7 @@ table_indicator de cada clip contra el clip 'base' de su type. La llave
 
 ```text
 Nombres de puntos del primer clip que ya tenga 'points', filtrados por
-el .yaml de su ejercicio -- para los <select> del panel sin conectarse a SQL.
+la definicion de su ejercicio -- para los <select> del panel sin conectarse a SQL.
 ```
 
 ## `sql_estado`
@@ -70,12 +70,6 @@ Para Sistema → Tablas del dataset: conexion + puntos disponibles + config del 
 ## `tipos_disponibles`
 
 `def tipos_disponibles()`
-
-_sin docstring_
-
-## `sql_guardar_config`
-
-`def sql_guardar_config(body, tipo=None)`
 
 _sin docstring_
 

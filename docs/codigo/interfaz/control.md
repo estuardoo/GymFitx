@@ -16,7 +16,7 @@ Las rutas de interfaz/api/ solo llaman a esto.
 
 ```text
 (Template | None, motivo). La base grabada solo sirve si sus features son las del ejercicio, en el mismo
-orden: si se editaron las filas del .yaml (Kpoints), medir contra ella daria puntajes sin sentido.
+orden: si se editaron las filas de la definicion (Kpoints), medir contra ella daria puntajes sin sentido.
 ```
 
 ## `_al_bus_archivo`
@@ -58,7 +58,7 @@ si no, con base + modelo cuenta por segmentacion y clasifica (Contador); si no, 
 `def set_clasificador(self, run: str) -> dict`
 
 ```text
-Cambia el entrenamiento (run_N) que clasifica en vivo, sin apagar la camara.
+Cambia el entrenamiento (output/models/<n>/run_NNN, p.ej. '1/run_001') que clasifica en vivo, sin apagar la camara.
 ```
 
 ### `Session.activa`
@@ -77,6 +77,14 @@ umbral si ya existe una base), nada se guarda todavia. No hace falta
 que el ejercicio ya tenga base -- si no la tiene, 'grabar_iniciar'
 graba la primera toma como base; si ya la tiene, la evalua. La camara
 no se reabre entre un caso y otro.
+```
+
+### `Session.set_persona`
+
+`def set_persona(self, persona: str | None) -> dict`
+
+```text
+Con quien se graba. 'P1'..'Pn' o vacio (sin persona). Vale para las proximas grabaciones, incluso con el gesto.
 ```
 
 ### `Session.grabar_iniciar`

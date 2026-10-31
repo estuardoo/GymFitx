@@ -6,14 +6,16 @@ Registro en disco de cada sesion: video crudo + features + metadatos.
 Se guarda el video SIN anotaciones a proposito. Las anotaciones se pueden
 regenerar en cualquier momento reproduciendo el archivo con VideoSource por el
 mismo pipeline (scripts/reprocesar.py); los pixeles originales, no. Guardar el video
-limpio deja la puerta abierta a reprocesar con otro modelo, otro YAML o otros
+limpio deja la puerta abierta a reprocesar con otro modelo, otra definicion o otros
 umbrales dentro de un año, que es justamente para lo que sirve archivarlos.
 
-Estructura en disco -- cada ejercicio en su propia carpeta, y dentro por dia:
+Estructura en disco -- cada ejercicio en su carpeta con su NUMERO, y cada grabacion con el suyo (sin nombres largos):
 
-    datos/grabaciones/<ejercicio>/<AAAA-MM-DD>/<HHMMSS>_<modo>.mp4
-    datos/grabaciones/<ejercicio>/<AAAA-MM-DD>/<HHMMSS>_<modo>.npz
-    datos/grabaciones/<ejercicio>/<AAAA-MM-DD>/<HHMMSS>_<modo>.json
+    input/raw/<n del ejercicio>/<id>.mp4
+    input/raw/<n del ejercicio>/<id>.npz
+    input/raw/<n del ejercicio>/<id>.json
+
+La fecha, la persona (P1, P2...) y el ejercicio viven en la tabla `raw` de parameters/inputs.json.
 
 Junto al .mp4 quedan:
   .npz   la serie de features ya extraida  -> reanalisis sin volver a trackear,
@@ -42,7 +44,7 @@ Sumidero que archiva la sesion. Se combina con Recorder o Evaluator.
 
 ### `VideoLogger.__init__`
 
-`def __init__(self, base_dir: Path | str, guardar_video: bool=True, max_width: int=0, codec: str=CODEC_POR_DEFECTO) -> None`
+`def __init__(self, base_dir: Path | str, guardar_video: bool=True, max_width: int=0, codec: str=CODEC_POR_DEFECTO, persona: str | None=None) -> None`
 
 _sin docstring_
 
@@ -96,8 +98,8 @@ _sin docstring_
 ```text
 Las sesiones archivadas, mas recientes primero. Lee los .json, no los videos.
 
-exercise: si se pasa, solo las de ese slug (equivalente a listar esa
-subcarpeta) -- es lo que usa el panel para el filtro por ejercicio.
+exercise: si se pasa, solo las de ese slug (su carpeta es el numero del ejercicio) -- es lo que usa el panel para el
+filtro por ejercicio. Cada una trae su `id`, su `persona` y su fecha (`dia`) de la tabla `raw`.
 ```
 
 ## `uso_en_disco`
@@ -124,7 +126,7 @@ vez del binario de numpy, para el boton "Movimientos (CSV)" del panel.
 `def resolver_json(base_dir: Path | str, ruta_relativa: str) -> Path`
 
 ```text
-De la ruta relativa que maneja el panel (ej. 'slug/2026-08-25/073012_serie.mp4')
-al .json de metadatos correspondiente, validando que no se escape de datos/grabaciones/.
+De la ruta relativa que maneja el panel (ej. '1/000007.mp4')
+al .json de metadatos correspondiente, validando que no se escape de input/raw/.
 ```
 

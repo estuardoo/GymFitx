@@ -4,19 +4,19 @@
 Comparar 'esquemas' (que features/regiones del cuerpo se miden) y modelos
 (como se compara) entre si, sobre las MISMAS grabaciones.
 
-Un esquema es, en este proyecto, simplemente OTRO archivo YAML de ejercicio
+Un esquema es, en este proyecto, simplemente OTRA definicion de ejercicio
 que describe el mismo movimiento real con otro conjunto de features/regiones
--- ver ejercicios/*.yaml y src/nucleo/ejercicio.py. No hace falta un concepto nuevo:
-dos YAML que empiezan igual ya son dos variantes del mismo movimiento.
+-- ver parameters/<n>/ y src/nucleo/ejercicio.py. No hace falta un concepto nuevo:
+dos definiciones que empiezan igual ya son dos variantes del mismo movimiento.
 
-Convencion de nombres: 'manguito_rotador.yaml' y 'manguito_rotador__hombro.yaml'
-pertenecen los dos al grupo 'manguito_rotador' (todo antes de '__'). Un YAML
+Convencion de nombres: 'manguito_rotador' y 'manguito_rotador__hombro'
+pertenecen los dos al grupo 'manguito_rotador' (todo antes de '__'). Una definicion
 sin '__' es su propio grupo de un solo esquema.
 
 Por que se pueden compartir los MISMOS videos entre esquemas sin volver a
 grabar: cada sesion ya archiva el video crudo, sin anotar (ver
 src/sesion/grabacion.py). scripts/reprocesar.py ya sabe reprocesar ese video con OTRO
-ejercicio/YAML adjunto -- el pipeline no distingue camara de video. Este
+ejercicio adjunto -- el pipeline no distingue camara de video. Este
 modulo solo automatiza ese reproceso para muchos esquemas x muchos modelos
 a la vez y arma la tabla comparativa.
 

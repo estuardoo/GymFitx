@@ -10,11 +10,15 @@
 - `cargarTipos`
 - `clipsVisibles`
 - `entrenar`
+- `guardarPersonasDesmarcadas`
 - `marcarClips`
 - `mostrarEntrenamiento`
 - `navClipTrain`
+- `personasDesmarcadas`
+- `personasUsadas`
 - `rangos`
 - `renderClipsTrain`
+- `renderPersonas`
 - `renderVideosTrain`
 - `toggleClipActual`
 - `verClipTrain`

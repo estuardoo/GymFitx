@@ -1,11 +1,11 @@
 # `src/etiquetado/depurar.py`
 
 ```text
-Quitar por completo un ejercicio archivado: manifest, cortes, seleccion de entrenamiento y SQL.
+Quitar por completo un ejercicio archivado: sus filas en parameters/inputs.json (raw y clips), sus capas y SQL.
 
-Archivar un ejercicio (Panel -> Rutina -> 🗑) saca su .yaml de ejercicios/; esto limpia el resto para que sus
-clips ya no cuenten (entrenamiento, tablas, totales). Nada se borra en el disco: clips, grabaciones y plantilla
-pasan a datos/archivados/<ejercicio>_<fecha>/ (recuperable). En SQL si se borra todo lo del 'type'; el numero del
+Archivar un ejercicio (Panel -> Rutina -> 🗑) lo deja inactivo en parameters/; esto limpia el resto para que sus
+clips ya no cuenten (entrenamiento, tablas, totales). Nada se borra en el disco: las carpetas input/<capa>/<n>/ y la
+plantilla pasan a sistema/archivados/<ejercicio>_<fecha>/ (recuperable). En SQL si se borra todo lo del 'type'; el numero del
 type queda reservado en sql_tipos.json para no reutilizarlo. Es idempotente: si algo falla (SQL caido, un archivo
 en uso) el ejercicio sigue figurando como pendiente y se reintenta.
 ```
@@ -32,6 +32,14 @@ _sin docstring_
 
 _sin docstring_
 
+## `_capas`
+
+`def _capas(ej)`
+
+```text
+Las carpetas del ejercicio en cada capa: [(nombre de capa, ruta)].
+```
+
 ## `_pendiente`
 
 `def _pendiente(slug, si)`
@@ -49,7 +57,7 @@ _sin docstring_
 `def huerfanos()`
 
 ```text
-Ejercicios que ya no estan en ejercicios/ pero aun dejan algo: clips en el manifest o en carpetas, una limpieza
+Ejercicios que ya no estan en ejercicios/ pero aun dejan algo: clips en la tabla o en carpetas, una limpieza
 pendiente, o datos en SQL (su type en sql_tipos.json, mientras no se haya depurado).
 ```
 
@@ -72,7 +80,7 @@ _sin docstring_
 `def depurar(slug)`
 
 ```text
-Deja el ejercicio 'slug' (ya archivado) fuera del manifest, los cortes, la seleccion y SQL.
+Deja el ejercicio 'slug' (ya archivado) fuera de las tablas, los cortes y SQL.
 ```
 
 ## `depurar_todos`

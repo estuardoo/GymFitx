@@ -19,31 +19,31 @@ GYMFITX.bat     (a diario: no instala nada)
 `UPDATE.bat` crea `.venv`, instala `requirements.txt` y, al terminar bien, abre `GYMFITX.bat`. `GYMFITX.bat` solo ejecuta: copia tus datos
 desde `..\GYMFITX` la primera vez (sin tocar el proyecto viejo) y abre http://127.0.0.1:8000.
 
-Si algo tarda: `GET /api/tiempos` o `datos/logs/tiempos_*.log` muestran la matriz de tiempos por
+Si algo tarda: `GET /api/tiempos` o `sistema/logs/tiempos_*.log` muestran la matriz de tiempos por
 proceso (imports, SQL, `/api/state`, cada ruta); `python scripts/perfil_arranque.py` mide el arranque.
 
 Requisitos: Windows, Python 3.11 o 3.12 y una webcam. SQL Server es opcional para la cámara,
 pero el historial y el dataset lo necesitan (`pyodbc` + *ODBC Driver 17/18*). Si no responde,
-el panel arranca igual y las repeticiones esperan en `datos/pendientes_sql.jsonl`.
+el panel arranca igual y las repeticiones esperan en `sistema/pendientes_sql.jsonl`.
 
 ## El pipeline
 
 ```
  cámara ─► captura ─► procesamiento ─► evaluacion ─► sesion ──► puntaje por repetición
                                                           │
-                                                          └─► datos/grabaciones ─► etiquetado ─► almacenamiento (SQL) ─► entrenamiento
+                                                          └─► input/raw ─► etiquetado ─► almacenamiento (SQL) ─► entrenamiento
                                                                                                                            │
-                                          evaluacion/comparadores/clasificador ◄── datos/entrenamientos/run_N ◄───────────┘
+                                          evaluacion/comparadores/clasificador ◄── output/models/<n>/run_NNN ◄───────────┘
 ```
 
 | # | Etapa | Dónde (panel) | Código | Resultado |
 |---|---|---|---|---|
-| 1 | Grabar la referencia (5 reps) | Panel → Grabar | `sesion/`, `evaluacion/plantilla.py` | `datos/plantillas/` |
-| 2 | Grabar series | Panel → Grabar | `sesion/`, `evaluacion/` | puntaje por rep + `datos/grabaciones/` |
-| 3 | Cortar y etiquetar | ✂️ Cortar videos | `etiquetado/cortes.py` | `datos/etiquetas.json` |
-| 4 | Exportar clips | ⬇ Generar cortes | `etiquetado/exportar.py`, `procesamiento/offline.py` | `datos/clips/<clase>/` |
+| 1 | Grabar la referencia (5 reps) | Panel → Grabar | `sesion/`, `evaluacion/plantilla.py` | `parameters/plantillas/` |
+| 2 | Grabar series | Panel → Grabar | `sesion/`, `evaluacion/` | puntaje por rep + `input/raw/` |
+| 3 | Cortar y etiquetar | ✂️ Cortar videos | `etiquetado/cortes.py` | `parameters/inputs.json (raw[].segmentos)` |
+| 4 | Exportar clips | ⬇ Generar cortes | `etiquetado/exportar.py`, `procesamiento/offline.py` | `input/bronze/<n>/` |
 | 5 | Subir a SQL | ⚙️ Sistema → Tablas del dataset | `etiquetado/tablas.py` → `almacenamiento/dataset_sql.py` | `table_frames_fix` |
-| 6 | Entrenar | 🧠 Entrenamiento | `entrenamiento/entrenar.py` | `datos/entrenamientos/run_N/` |
+| 6 | Entrenar | 🧠 Entrenamiento | `entrenamiento/entrenar.py` | `output/models/<n>/run_NNN/` |
 | 7 | Puntuar en vivo | Panel → modelo "Clasificador entrenado" | `evaluacion/comparadores/clasificador.py` | P(bien) por rep |
 
 El detalle de cada etapa está en [docs/PIPELINE.md](PIPELINE.md) y el diseño en
@@ -71,12 +71,13 @@ GYMFIT/
 │  └─ interfaz/          1ª       control · tunel · app
 │     ├─ api/            2ª       sesion · grabaciones · etiquetado · entrenamiento · sistema · publicar
 │     └─ web/            2ª       index.html · estilos.css · js/ (un archivo por pestaña)
-├─ datos/               lo que genera el uso: grabaciones, clips, modelos entrenados (fuera de git)
-├─ ejercicios/          un .yaml por ejercicio
-├─ modelos/             modelos de MediaPipe (se descargan solos)
-├─ herramientas/        cloudflared.exe (botón Publicar)
-├─ scripts/  tests/  docs/
-└─ GYMFITX.bat · UPDATE.bat · requirements*.txt · pyproject.toml · README.md · CHANGELOG.md
+├─ input/               raw → bronze → plate → gold, por número de ejercicio (fuera de git; ver docs/ESTRUCTURA_DATOS.md)
+├─ output/              models/<n>/run_NNN y reportes/
+├─ parameters/          exercise.json · inputs.json (tablas raw y clips) · config.json · server.json · <n>/kpoints.json
+├─ sistema/             estado de ejecución: logs, SQL, previews (fuera de git)
+├─ assets/              modelos de MediaPipe + cloudflared.exe (se descargan solos)
+├─ scripts/ (hpc/ = cluster)  tests/  docs/ (incl. CHANGELOG.md)
+└─ GYMFITX.bat · UPDATE.bat · requirements*.txt · pyproject.toml · README.md
 ```
 
 **Regla del árbol:** cada rama importa solo del tronco o de ramas anteriores, en este orden:
@@ -84,11 +85,10 @@ GYMFIT/
 `tests/test_capas.py` falla si alguien la rompe (y si aparece un módulo suelto en la raíz).
 
 ```
-ejercicios/        un .yaml por ejercicio
-scripts/           grabar, evaluar, reprocesar, comparar_esquemas, camara (sin panel)
+scripts/           grabar, evaluar, reprocesar, comparar_esquemas, camara (sin panel); scripts/hpc/ = busqueda de features en el cluster
 tests/             pytest (sin cámara, sin SQL Server, MediaPipe simulado) + test_capas
 docs/              ARQUITECTURA.md, PIPELINE.md, pitch/
-datos/  modelos/  herramientas/      generados por el uso (fuera de git)
+input/  output/  sistema/  assets/      generados por el uso (fuera de git)
 ```
 
 ## Documentación
@@ -104,7 +104,7 @@ la configuración.
 ## Desarrollo
 
 ```
-pip install -r requirements-dev.txt
+pip install -r requirements.txt
 pip install -e . --no-deps
 ruff check .        # estilo
 pytest              # incluye la regla del árbol y la trazabilidad de decisiones
@@ -113,11 +113,11 @@ pytest              # incluye la regla del árbol y la trazabilidad de decisione
 GitHub Actions corre los controles en cada push y Pull Request (`.github/workflows/reproducir.yml`).
 
 El servidor y la base de SQL Server se cambian en **⚙️ Sistema → Base de datos** y quedan en
-`datos/config.json`, que manda al arrancar. Si ese archivo no existe se usan las variables:
+`parameters/server.json`, que manda al arrancar. Si ese archivo no existe se usan las variables. Para una PC nueva, sin tocar codigo, agrega en `parameters/server.json` la clave `servidores_por_pc` (ej. `{"NOMBRE_PC": "SERVIDOR\\INSTANCIA"}`). Orden de precedencia del servidor: `parameters/server.json` (Sistema) → variable `GYMFITX_SQLSERVER_HOST` → `servidores_por_pc` (incluido el de fabrica) → `PROGRAM\HYPER`:
 
 | Variable de entorno | Por defecto |
 |---|---|
 | `GYMFITX_SQLSERVER_HOST` | según la PC: `HYPERCUBE\SERVER`, `PROGRAM\HYPER` |
 | `GYMFITX_SQLSERVER_DB` | `GymFitX` |
 | `GYMFITX_PORT` | `8000` |
-| `GYMFITX_DATOS` | `datos/` |
+| `GYMFITX_DATOS` | `sistema/` |

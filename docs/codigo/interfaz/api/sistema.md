@@ -23,7 +23,7 @@ _sin docstring_
 Ruta: **GET /api/system/sql**
 
 ```text
-Servidor y base en uso (de datos/config.json si existe) + estado de la conexion.
+Servidor y base en uso (de parameters/server.json si existe) + estado de la conexion.
 ```
 
 ## `sql_servidor_guardar`
@@ -33,7 +33,7 @@ Servidor y base en uso (de datos/config.json si existe) + estado de la conexion.
 Ruta: **POST /api/system/sql**
 
 ```text
-Guarda servidor/base en datos/config.json, lo aplica sin reiniciar y reconecta.
+Guarda servidor/base en parameters/server.json, lo aplica sin reiniciar y reconecta.
 ```
 
 ## class `RespaldoSql`
@@ -87,7 +87,7 @@ _sin docstring_
 Ruta: **POST /api/system/droidcam**
 
 ```text
-Guarda la lista de DroidCam (IP:puerto) en datos/config.json; aparecen en amarillo en el selector de camaras.
+Guarda la lista de DroidCam (nombre + IP:puerto) en parameters/config.json; aparecen en amarillo en el selector de camaras.
 ```
 
 ## class `CambiarVersionPython`
@@ -223,6 +223,6 @@ Ruta: **POST /api/docs/generar**
 
 ```text
 Corre las 5 etapas (seleccionar → formatear): deja los reportes en reportes/, el diccionario en docs/diccionario/ y
-la tabla final en datos/final/. Sin ejercicio, los de params.yaml (ejercicios).
+la tabla final en input/gold/. Sin ejercicio, los de parameters/config.json (ejercicios).
 ```
 

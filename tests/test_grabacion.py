@@ -26,7 +26,7 @@ from src.sesion.grabacion import (
 )
 from src.sesion.sumideros import EventBus, MultiSink, Sink  # noqa: E402
 
-EJ = load_exercise(ROOT / "ejercicios" / "manguito_rotador.yaml")
+EJ = load_exercise("manguito_rotador")
 EXT = FeatureExtractor(EJ)
 
 
@@ -72,17 +72,18 @@ def test_archiva_video_features_y_metadatos():
         assert vl.npz_path.exists()
         assert vl.json_path.exists()
 
-        z = np.load(vl.npz_path, allow_pickle=False)
+        z = dict(np.load(vl.npz_path, allow_pickle=False))
         assert z["values"].shape == (60, EXT.size)
         assert z["t_ms"].shape == (60,)
         assert list(z["names"]) == EXT.names
 
 
 def test_se_archiva_en_una_carpeta_por_ejercicio():
-    """Cada ejercicio en su propia carpeta: datos/grabaciones/<slug>/<dia>/*.{mp4,npz,json}."""
+    """Cada ejercicio en su carpeta numerada: input/raw/<n>/<id>.{mp4,npz,json}."""
     with tempfile.TemporaryDirectory() as d:
         vl, _ = _sesion(d)
-        assert vl.video_path.parent.parent.name == "manguito_rotador"
+        from src.nucleo import inputs as INP
+        assert vl.video_path.parent.name == str(INP.id_de("manguito_rotador")) and vl.video_path.stem == "000001"
         assert vl.video_path.parent.name == vl.json_path.parent.name
 
 
@@ -144,7 +145,8 @@ def test_listado_y_uso_de_disco():
         lista = listar_grabaciones(d)
         assert len(lista) == 2
         assert all("ruta_relativa" in g and g["existe_video"] for g in lista)
-        assert all(g["ruta_relativa"].startswith("manguito_rotador/") for g in lista)
+        from src.nucleo import inputs as INP
+        assert all(g["ruta_relativa"].startswith(f"{INP.id_de('manguito_rotador')}/") for g in lista)
         uso = uso_en_disco(d)
         assert uso["sesiones"] == 2 and uso["videos"] == 2 and uso["bytes"] > 0
 
@@ -159,7 +161,7 @@ def test_listado_filtra_por_ejercicio():
 def test_resolver_json_desde_ruta_relativa():
     with tempfile.TemporaryDirectory() as d:
         vl, _ = _sesion(d)
-        ruta_rel = f"{vl.video_path.parent.parent.name}/{vl.video_path.parent.name}/{vl.video_path.name}"
+        ruta_rel = f"{vl.video_path.parent.name}/{vl.video_path.name}"
         assert resolver_json(d, ruta_rel) == vl.json_path
 
 

@@ -29,7 +29,7 @@ from src.sesion.gesto import (  # noqa: E402
 from src.sesion.pipeline import Pipeline  # noqa: E402
 from src.sesion.sumideros import Recorder, Sink  # noqa: E402
 
-EJ = load_exercise(ROOT / "ejercicios" / "manguito_rotador.yaml")
+EJ = load_exercise("manguito_rotador")
 
 
 def _pipeline():

@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import csv
 
-from scripts import resumen_busqueda_slurm as RES
+from scripts.hpc import resumen_busqueda_slurm as RES
 
 CAMPOS = ["llave", "type", "modelo", "escenario", "K01", "K02", "A01", "P01", "accuracy", "f1_macro", "error"]
 

@@ -18,8 +18,8 @@ from src.nucleo.landmarks import regiones_de_puntos  # noqa: E402
 from src.sesion.pipeline import Pipeline  # noqa: E402
 from src.sesion.sumideros import Sink  # noqa: E402
 
-EX_OTRO = load_exercise(ROOT / "ejercicios" / "cuerpo_completo.yaml")
-EX_POSE = load_exercise(ROOT / "ejercicios" / "manguito_rotador.yaml")
+EX_OTRO = load_exercise("cuerpo_completo")
+EX_POSE = load_exercise("manguito_rotador")
 
 
 def test_set_exercise_cambia_extractor_y_tracker():

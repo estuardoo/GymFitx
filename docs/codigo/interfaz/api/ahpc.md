@@ -3,7 +3,7 @@
 ```text
 AHPC: modulo independiente para armar, con los datos ya generados (table_frames_fix en SQL), el paquete
 completo para correr la busqueda de features en un cluster/supercomputador: el .npz autocontenido de cada
-ejercicio elegido + el script standalone scripts/busqueda_features_slurm.py (sin SQL, sin FastAPI, sin el
+ejercicio elegido + el script standalone scripts/hpc/busqueda_features_slurm.py (sin SQL, sin FastAPI, sin el
 resto de GYMFITX) + un .sbatch por ejercicio ya apuntando a su dataset. Se sube el .zip al cluster, se
 descomprime y se corre "sbatch slurm_<ejercicio>.sbatch" ahi mismo. No genera datos nuevos: solo empaqueta
 lo que ya esta en las tablas SQL.
@@ -37,7 +37,7 @@ aparte en vez de a mano en el login node -- ver LEEME.txt.
 
 ```text
 La plantilla del lanzador (arma busqueda + resumen en 2 sbatch encadenados con --dependency, ver
-scripts/lanzar_busqueda_slurm.sh), con el nombre del ejercicio puesto en todos los placeholders.
+scripts/hpc/lanzar_busqueda_slurm.sh), con el nombre del ejercicio puesto en todos los placeholders.
 ```
 
 ## `_config_json`
@@ -62,9 +62,13 @@ Un ejercicio por fila: cuantos clips tiene en el manifest (bien/mal, sin 'base')
 catalogo de kpoints (si no, no se puede exportar).
 ```
 
+## class `ExportarPedido`
+
+_sin docstring_
+
 ## `ahpc_exportar`
 
-`def ahpc_exportar(body: dict)`
+`def ahpc_exportar(body: ExportarPedido)`
 
 Ruta: **POST /api/ahpc/exportar**
 

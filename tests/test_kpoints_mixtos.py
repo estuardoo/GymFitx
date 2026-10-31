@@ -2,8 +2,8 @@
 
 import numpy as np
 import pytest
-import yaml
 
+from src.nucleo import definicion as DEF
 from src.nucleo.ejercicio import load_exercise
 from src.nucleo.landmarks import POSE_LANDMARKS
 from src.nucleo.tipos import Landmarks
@@ -34,10 +34,9 @@ def _pose():
 
 
 @pytest.fixture
-def ext(tmp_path):
-    p = tmp_path / "pose.yaml"
-    p.write_text(yaml.safe_dump(YAML), "utf-8")
-    return FeatureExtractor(load_exercise(p))
+def ext():
+    DEF.guardar("pose", YAML)
+    return FeatureExtractor(load_exercise("pose"))
 
 
 def test_extractor_mide_el_angulo_con_nombres_de_kpoints(ext):
@@ -51,26 +50,22 @@ def test_resolver_kpoints_y_derivado():
     assert np.allclose(valores[3], (0.15, 0, 0))              # punto medio codo-muneca
 
 
-def test_feature_con_kpoint_inexistente_no_carga(tmp_path):
+def test_feature_con_kpoint_inexistente_no_carga():
     malo = {**YAML, "features": [{"name": "x", "type": "angle", "points": ["RIGHT_ELBOW", "nada", "RIGHT_WRIST"]}],
             "signal": {"features": ["x"]}}
-    p = tmp_path / "malo.yaml"
-    p.write_text(yaml.safe_dump(malo), "utf-8")
+    DEF.guardar("malo", malo)
     with pytest.raises((ValueError, KeyError)):
-        load_exercise(p)
+        load_exercise("malo")
 
 
-def test_el_editor_no_guarda_un_ejercicio_que_no_carga(tmp_path, monkeypatch):
+def test_el_editor_no_guarda_un_ejercicio_que_no_carga():
     from src.etiquetado import editor_puntos as EP
-    monkeypatch.setattr(EP, "EJERCICIOS_DIR", tmp_path)
-    monkeypatch.setattr(EP, "RESPALDOS_DIR", tmp_path / ".respaldos")
-    p = tmp_path / "pose.yaml"
-    p.write_text(yaml.safe_dump(YAML), "utf-8")
-    antes = p.read_text("utf-8")
-    # un source invalido rompe el yaml: no se guarda nada
+    DEF.guardar("pose", YAML)
+    antes = DEF.leer("pose")
+    # un source invalido rompe la definicion: no se guarda nada
     with pytest.raises(ValueError, match="no se guardo nada"):
         EP.guardar_ejercicio("pose", {"source": "nada", "kpoints": YAML["kpoints"], "features": YAML["features"]})
-    assert p.read_text("utf-8") == antes
+    assert DEF.leer("pose") == antes
     EP.guardar_ejercicio("pose", {"kpoints": YAML["kpoints"], "features": YAML["features"]})   # y uno valido si
 
 
@@ -99,21 +94,15 @@ def test_vista_espejo_su_derecha_queda_a_la_izquierda():
     assert P["LEFT_WRIST"][0] > 0.5 > P["RIGHT_WRIST"][0]
 
 
-def test_guardar_descarta_signal_features_viejas(tmp_path, monkeypatch):
-    import shutil
-
+def test_guardar_descarta_signal_features_viejas():
     from src.etiquetado import editor_puntos as ep
-    ej = tmp_path / "ejercicios"
-    ej.mkdir()
-    shutil.copy(ep.EJERCICIOS_DIR / "cuerpo_completo.yaml", ej / "x.yaml")
-    monkeypatch.setattr(ep, "EJERCICIOS_DIR", ej)
-    monkeypatch.setattr(ep, "RESPALDOS_DIR", ej / ".r")
+    DEF.guardar("x", DEF.leer("cuerpo_completo"))
     kps = [{"numero": i, "nombre": n, "origen": {"tipo": "landmark", "fuente": "pose", "landmark": n}}
            for i, n in enumerate(["RIGHT_SHOULDER", "RIGHT_ELBOW", "RIGHT_WRIST"], 1)]
     a, b, c = (k["nombre"] for k in kps)
     ep.guardar_ejercicio("x", {"source": "pose", "kpoints": kps,
                               "features": [{"name": "a1", "type": "angle", "points": [a, b, c]}]})
-    assert "features" not in (yaml.safe_load((ej / "x.yaml").read_text("utf-8")).get("signal") or {})
+    assert "features" not in (DEF.leer("x").get("signal") or {})
 
 
 def test_exportar_acepta_todo():
@@ -123,14 +112,14 @@ def test_exportar_acepta_todo():
     assert "todo" in inspect.signature(X.exportar).parameters
 
 
-def test_eliminar_ejercicio_lo_archiva_y_ya_no_se_lista(tmp_path, monkeypatch):
+def test_eliminar_ejercicio_lo_archiva_y_ya_no_se_lista():
     from src.etiquetado import editor_puntos as ep
-    monkeypatch.setattr(ep, "EJERCICIOS_DIR", tmp_path)
-    monkeypatch.setattr(ep, "RESPALDOS_DIR", tmp_path / ".respaldos")
-    (tmp_path / "x.yaml").write_text(yaml.safe_dump(YAML), "utf-8")
-    assert ep.listar_ejercicios() == ["x"]
-    r = ep.eliminar_ejercicio("x")
-    assert ep.listar_ejercicios() == []
-    assert (tmp_path / ".respaldos" / r["respaldo"]).exists()
+    DEF.guardar("x", YAML)
+    assert "x" in ep.listar_ejercicios()
+    ep.eliminar_ejercicio("x")
+    assert "x" not in ep.listar_ejercicios()
+    DEF.guardar("x", YAML)                     # crearlo de nuevo lo reactiva con el mismo numero
+    assert "x" in ep.listar_ejercicios()
+    ep.eliminar_ejercicio("x")
     with pytest.raises(ValueError):
         ep.eliminar_ejercicio("x")

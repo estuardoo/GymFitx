@@ -1,0 +1,48 @@
+{
+ "name": "Rotacion externa de hombro (derecho)",
+ "description": "De pie o sentado, codo pegado al costado y flexionado a 90 grados. Gira el antebrazo hacia afuera manteniendo el codo en el costado, y regresa despacio. Colocate de frente a la camara, medio cuerpo visible.\n",
+ "source": "pose",
+ "features": [
+  {
+   "name": "flexion_codo",
+   "type": "angle",
+   "points": [
+    "RIGHT_SHOULDER",
+    "RIGHT_ELBOW",
+    "RIGHT_WRIST"
+   ]
+  },
+  {
+   "name": "codo_al_costado",
+   "type": "angle",
+   "points": [
+    "RIGHT_ELBOW",
+    "RIGHT_SHOULDER",
+    "RIGHT_HIP"
+   ]
+  },
+  {
+   "name": "apertura_antebrazo",
+   "type": "distance_ratio",
+   "points": [
+    "RIGHT_WRIST",
+    "LEFT_SHOULDER"
+   ],
+   "reference": [
+    "RIGHT_SHOULDER",
+    "RIGHT_ELBOW"
+   ]
+  }
+ ],
+ "signal": {
+  "reduce": "mean",
+  "features": [
+   "apertura_antebrazo"
+  ]
+ },
+ "segmentation": {
+  "direction": "up_down",
+  "min_duration_ms": 900,
+  "max_duration_ms": 10000
+ }
+}

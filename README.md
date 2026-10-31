@@ -9,15 +9,15 @@
 
 ## Contenido
 
-[Qué hace](#qué-hace) · [Cómo funciona](#cómo-funciona) · [Recorrido por el panel](#recorrido-por-el-panel) · [Empezar](#empezar) · [Estructura](#estructura) · [Documentación](#documentación) · [Preparación de datos (CRISP-DM etapa 3)](#preparación-de-datos-crisp-dm-etapa-3) · [Desarrollo](#desarrollo) · [Estado del proyecto](#estado-del-proyecto) · [Privacidad](#privacidad)
+[Qué hace](#qué-hace) · [Cómo funciona](#cómo-funciona) · [Recorrido visual](#recorrido-visual) · [Empezar](#empezar) · [Estructura](#estructura) · [Documentación](#documentación) · [Preparación de datos (CRISP-DM etapa 3)](#preparación-de-datos-crisp-dm-etapa-3) · [Desarrollo](#desarrollo) · [Estado del proyecto](#estado-del-proyecto) · [Privacidad](#privacidad)
 
 ## Qué hace
 
 - **En vivo:** detección de pose, conteo de repeticiones y puntaje por repetición, con el overlay de puntos sobre la cámara.
-- **Ejercicios configurables:** cada ejercicio es un `.yaml` (puntos, ángulos y proporciones, reglas de postura). Incluidos: zancada, cuerpo completo, curl de bíceps, manguito rotador y sentadilla; se crean y editan desde el panel.
+- **Ejercicios configurables:** cada ejercicio vive en `parameters/<n>/` (puntos, ángulos y proporciones, reglas de postura). Incluidos: zancada y cuerpo completo; se crean y editan desde el panel.
 - **Dataset propio:** se cortan y etiquetan las grabaciones (*bien / mal / base*), se exportan clips y se preparan las tablas de entrenamiento.
 - **Entrenamiento:** varios modelos de scikit-learn con validación **por grabación** (sin fuga entre clips del mismo video), métricas y gráficas por corrida.
-- **Preparación reproducible (CRISP-DM, etapa 3):** selección, limpieza, construcción, integración y formato como etapas de DVC, con parámetros en `params.yaml`, diccionario de datos e informe de limpieza.
+- **Preparación reproducible (CRISP-DM, etapa 3):** selección, limpieza, construcción, integración y formato como etapas de DVC, con parámetros en `parameters/config.json`, diccionario de datos e informe de limpieza.
 - **Panel web local** (FastAPI + JavaScript sin frameworks) y, opcionalmente, publicación con un túnel de Cloudflare protegido con usuario y clave.
 
 ## Cómo funciona
@@ -31,25 +31,43 @@ flowchart LR
 
 Cada etapa del pipeline vive en su propia rama de `src/` y solo usa las anteriores (lo verifica `tests/test_capas.py`). El detalle está en [docs/PIPELINE.md](docs/PIPELINE.md).
 
-## Recorrido por el panel
+## Recorrido visual
 
-**1. Panel — grabar y puntuar en vivo.** Eliges el ejercicio en la *Rutina*, prendes la cámara y ves el overlay de puntos, el contador de repeticiones y el puntaje de cada una. Abajo queda el puntaje por día y las repeticiones recientes.
+> **[Abrir la guía interactiva](https://estuardoo.github.io/GymFitx/interactivo/)** (pasa el mouse sobre cada paso, el panel y la trazabilidad). También se abre en local: `docs/interactivo/index.html`.
 
-![Panel principal](docs/img/panel_demo.png)
+### Del video al modelo
 
-**2. Kpoints — definir qué se mide.** Marcas sobre el cuerpo los puntos que usa el ejercicio y armas los recorridos de ángulos y proporciones (por ejemplo hombro > codo > muñeca). Todo se guarda en el `.yaml` del ejercicio.
+![Pipeline de GYMFITX en 12 pasos](docs/img/pipeline.svg)
 
-![Tablero de kpoints](docs/img/kpoints.png)
+### El panel
 
-**3. Pipeline — de la cámara al modelo.** Resume los 11 pasos con su entrada y salida: capturar, elegir puntos, detectar, cortar y clasificar, exportar, normalizar, ángulos, elegir clips, entrenar y ver resultados.
+![Panel de GYMFITX](docs/img/panel.svg)
 
-![Pipeline](docs/img/pipeline.svg)
+### Control de versiones y trazabilidad
 
-**4. Entrenamiento — clasificador bien / mal.** Eliges qué clips usar y qué variables (kpoints, ángulos, proporciones); se comparan hasta 17 modelos con validación cruzada por grabación y cada corrida queda en el historial.
+![Control de versiones y trazabilidad](docs/img/trazabilidad.svg)
 
-![Entrenamiento](docs/img/entrenamiento.png)
+Cada cambio se puede seguir de punta a punta: **issue → rama → commit → pull request → main**, los datos pesados con **DVC** (`dvc.lock` guarda la huella exacta) y cada decisión con su parámetro, código y salida en `docs/decisiones/`.
 
-> Capturas con el panel recién instalado (sin cámara ni datos). Con tus grabaciones se llenan los gráficos y tablas.
+| # | Criterio CRISP-DM (etapa 3) | Cómo verificarlo | Dónde está |
+|---|---|---|---|
+| 1 | Reproducibilidad | `dvc repro --force` y `git diff --exit-code dvc.lock` (lo corre el CI) | `dvc.yaml`, `dvc.lock` |
+| 2 | Datos separados del código | `git ls-files input` solo lista punteros `.dvc` | `input/*.dvc` |
+| 3 | Decisiones cubiertas | `pytest tests/test_trazabilidad.py` | `docs/decisiones/` |
+| 4 | Parametrización | ningún umbral en `src/`; todo en `parameters/config.json` | `parameters/config.json` |
+| 5 | Diccionario de datos | la etapa falla si no coincide el nº de columnas | `docs/diccionario/` |
+| 6 | Informe de limpieza | `dvc metrics show` | `reportes/<n>/limpieza.md` |
+| 7 | Traza de colaboración | PR con `Closes #N`, rama protegida, etiquetas `datos-vN` | GitHub |
+
+Pasos para activarlo (remoto DVC, token, protección de `main`): [docs/GUIA_ETAPA3.md](docs/GUIA_ETAPA3.md).
+
+### Más pantallas
+
+| Kpoints: qué se mide | Entrenamiento: clasificador bien / mal |
+|---|---|
+| ![Kpoints](docs/img/kpoints.png) | ![Entrenamiento](docs/img/entrenamiento.png) |
+
+*Capturas ilustrativas del panel recién instalado, sin datos propios.*
 
 ## Empezar
 
@@ -67,13 +85,22 @@ Luego, en el panel: elige un ejercicio → **Grabar** la referencia (5 repeticio
 ```
 src/            el código, una rama por función (nucleo · captura · procesamiento · evaluacion · sesion ·
                 etiquetado · preparacion · entrenamiento · interfaz)
-ejercicios/     un .yaml por ejercicio
-params.yaml     umbrales de la preparación de datos (no viven en el código)
+parameters/     configuración numerada: exercise.json, <n>/ (definición de cada ejercicio), inputs.json (tablas raw y clips), config.json (umbrales), server.json…
+input/          datos: raw (grabación) → bronze (clips) → plate (intermedio) → gold (normalizado); no se versiona (DVC)
+output/         models/<n>/run_NNN (modelos) y reportes/
+sistema/        estado de ejecución: logs, SQL, previews (no se versiona)
+assets/         modelos de MediaPipe
 dvc.yaml        las 5 etapas de preparación como pipeline reproducible
+dvc.lock        huella de cada etapa (se versiona: es la anotación que genera DVC)
+.dvc/           configuración compartida de DVC y su remoto (sin credenciales)
 docs/           arquitectura, pipeline, decisiones, diccionario de datos y documentación del código
-scripts/        utilidades sin panel (grabar, evaluar, búsqueda de features en HPC…)
-tests/          pytest (sin cámara ni SQL Server: MediaPipe simulado)
-datos/          lo que genera el uso (grabaciones, clips, modelos): no se versiona
+scripts/        utilidades sin panel (grabar, evaluar, reprocesar, generar docs; scripts/hpc/ = búsqueda de features en el cluster)
+tests/          pytest (sin cámara ni SQL Server: MediaPipe simulado; usan sus propios ejercicios en tests/data)
+```
+
+Detalle del árbol y de las dos tablas (`raw`, `clips`): [docs/ESTRUCTURA_DATOS.md](docs/ESTRUCTURA_DATOS.md).
+
+```
 ```
 
 ## Documentación
@@ -87,13 +114,14 @@ datos/          lo que genera el uso (grabaciones, clips, modelos): no se versio
 | [docs/decisiones/](docs/decisiones/) | Por qué se decidió cada cosa (parámetro → código → salida) |
 | [docs/diccionario/](docs/diccionario/) | Qué es cada columna del vector de entrada |
 | [docs/codigo/](docs/codigo/) | Referencia del código, generada de los docstrings |
-| [CHANGELOG.md](CHANGELOG.md) | Cambios por versión |
+| [docs/interactivo/](docs/interactivo/index.html) | Guía interactiva: pipeline, panel y trazabilidad |
+| [CHANGELOG.md](docs/CHANGELOG.md) | Cambios por versión |
 
 ## Preparación de datos (CRISP-DM etapa 3)
 
-La preparación está versionada con **DVC**: cada etapa es reproducible y cada umbral vive en `params.yaml`, no en el código.
+La preparación está versionada con **DVC**: cada etapa es reproducible y cada umbral vive en `parameters/config.json`, no en el código.
 
-| Etapa CRISP-DM | Qué hace | Parámetros (`params.yaml`) | Decisión |
+| Etapa CRISP-DM | Qué hace | Parámetros (`parameters/config.json`) | Decisión |
 |---|---|---|---|
 | 3.1 Seleccionar | elige clips y excluye la clase `base` | `seleccion` | [0001](docs/decisiones/0001-datos-en-disco-crudo-y-respaldo-sql.md) |
 | 3.2 Limpiar | saca clips con pocos cuadros o demasiados puntos sin detección | `limpieza` | [0005](docs/decisiones/0005-umbrales-de-limpieza.md) |
@@ -103,24 +131,26 @@ La preparación está versionada con **DVC**: cada etapa es reproducible y cada 
 
 La cadena de trazabilidad es **decisión → justificación → código → parámetro → salida → métrica** (índice en [docs/decisiones/](docs/decisiones/README.md)).
 
-![Trazabilidad](docs/img/trazabilidad.svg)
-
 ```
-pip install -r requirements-dev.txt
+pip install -r requirements.txt
 dvc repro            # rehace solo las etapas cuyo código o parámetros cambiaron
 ```
 
-Salidas: `docs/diccionario/<ejercicio>.md` (qué es cada columna) y `reportes/limpieza_<ejercicio>.md` (qué se sacó y por qué). Los datos pesados (videos y clips) no están en Git: van a un remoto de DVC. Cómo verificar cada criterio y los pasos pendientes: [docs/GUIA_ETAPA3.md](docs/GUIA_ETAPA3.md).
+Salidas: `docs/diccionario/<ejercicio>.md` (qué es cada columna) y `reportes/<n>/limpieza.md` (qué se sacó y por qué). Los datos pesados (videos y clips) no están en Git: van a un remoto de DVC. Cómo verificar cada criterio y los pasos pendientes: [docs/GUIA_ETAPA3.md](docs/GUIA_ETAPA3.md).
 
 ## Desarrollo
 
 ```
-pip install -r requirements-dev.txt
+pip install -r requirements.txt
 ruff check .
 pytest
 ```
 
-Para subir cambios a GitHub hay una herramienta aparte, `subir_github/SUBIR_GITHUB.bat` (usuarios, repositorio, rama y log; ver su `LEEME.md`).
+Un solo archivo de dependencias, `requirements.txt` (versiones exactas): lo usan `UPDATE.bat`, GitHub Actions y el panel.
+
+Los resultados de cada corrida quedan en `output/models/<n>/run_NNN/` (métricas, gráficas y de qué clips salió).
+
+Para subir cambios a GitHub se usa **GITHUB_LOADER2**, un programa aparte que vive fuera de este proyecto (sube por bloques, recuerda lo ya subido, hace `dvc push` antes del `git push`). Las llaves (tokens, clave de Drive) están en la carpeta `KEYS`, también fuera: ni el programa ni las llaves son parte del repositorio.
 
 ## Estado del proyecto
 
@@ -129,14 +159,14 @@ Para subir cambios a GitHub hay una herramienta aparte, `subir_github/SUBIR_GITH
 | Panel en vivo, conteo y puntaje | funcionando |
 | Corte y etiquetado de clips | funcionando |
 | Preparación reproducible con DVC (etapa 3) | implementada |
-| Remoto de datos de DVC | https://drive.google.com/drive/folders/1YXv5yP8nFHSeF4XjDtRTDb6tpM14XDSx |
+| Remoto de datos de DVC | **Google Drive** (carpeta `1YXv5yP8nFHSeF4XjDtRTDb6tpM14XDSx`, cuenta de servicio) ([decisión 0010](docs/decisiones/0010-remoto-de-datos-dvc.md)) |
 | Clasificador bien / mal | prototipo: pocos clips etiquetados, resultados todavía no concluyentes |
 
 Limitaciones conocidas: el volumen de datos es pequeño y está desbalanceado entre ejercicios y personas; por eso la validación se hace por grabación y las métricas deben leerse con cautela.
 
 ## Privacidad
 
-El video y los puntos se procesan y guardan localmente (`datos/`). Publicar en internet viene **apagado** y, activado, exige usuario y clave; desde internet no se puede apagar el panel ni cambiar la configuración.
+El video y los puntos se procesan y guardan localmente (`input/`). Publicar en internet viene **apagado** y, activado, exige usuario y clave; desde internet no se puede apagar el panel ni cambiar la configuración.
 
 ## Licencia
 

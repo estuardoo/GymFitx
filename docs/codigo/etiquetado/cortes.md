@@ -3,7 +3,7 @@
 ```text
 Etapa 3: cortar y etiquetar grabaciones (bien / mal / base / descarte por segmento).
 
-datos/etiquetas.json es la UNICA fuente del etiquetado y se guarda por mezcla.
+Los cortes de cada video viven en la tabla `raw` de parameters/inputs.json (campo `segmentos`) y se guardan por mezcla.
 ```
 
 ## Constantes
@@ -14,7 +14,9 @@ datos/etiquetas.json es la UNICA fuente del etiquetado y se guarda por mezcla.
 
 `def videos()`
 
-_sin docstring_
+```text
+Los videos de `raw` con su metadata (persona, fecha) y la del .json que graba GYMFITX.
+```
 
 ## `estado_config`
 

@@ -14,7 +14,7 @@ ejercicio, con que se normaliza table_frames_fix):
 
   table_file        un video/clip exportado -> id, type, archivo, frames
   table_kpoints     catalogo de puntos por type -> point (indice), descripcion
-                     (nombre del landmark, tal como aparece en el .yaml del
+                     (nombre del landmark, tal como aparece en la definicion del
                      ejercicio)
   table_frames      puntos (x,y,z) crudos por cuadro, uno por fila -- una
                      columna por eje ('VectorX','VectorY','VectorZ'), cada una
@@ -44,7 +44,7 @@ ejercicio, con que se normaliza table_frames_fix):
 
 ```text
 'type' en las 4 tablas = un ejercicio (el mismo nombre que su
-ejercicios/<exercise>.yaml, guardado en el .json de cada video
+la definicion del ejercicio (parameters/<n>/), guardado en el .json de cada video
 grabado). Se le asigna un numero la primera vez que aparece y se guarda
 en sql_tipos.json, asi el mismo ejercicio siempre cae en el mismo type
 sin tener que numerarlos a mano.
@@ -210,6 +210,7 @@ _sin docstring_
 
 ```text
 Una fila por cuadro en table_frames (crudo) o table_frames_fix (normalizado).
+Un solo executemany por clip: antes era un INSERT por cuadro (un viaje al servidor cada uno).
 ```
 
 ## `base_del_tipo`
@@ -280,7 +281,7 @@ para exportar el dataset completo (ver entrenamiento/exportar_slurm.py). T = el 
 `def marcar_uso(type_, seleccion)`
 
 ```text
-Espejo en table_file.usar de seleccion_entrenamiento.json ({archivo: bool}).
+Espejo en table_file.usar de el campo usar de la tabla de clips ({archivo: bool}).
 ```
 
 ## `kpoints_de`

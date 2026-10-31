@@ -59,7 +59,7 @@ Tiempo hasta tener la respuesta de cada ruta (los streams largos se saltan). Ver
 Ruta: **GET /api/tiempos**
 
 ```text
-Matriz de tiempos por proceso de esta sesion (tambien en datos/logs/tiempos_*.log).
+Matriz de tiempos por proceso de esta sesion (tambien en sistema/logs/tiempos_*.log).
 ```
 
 ## `index`

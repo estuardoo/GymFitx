@@ -31,6 +31,20 @@ Ruta: **GET /api/labels**
 
 _sin docstring_
 
+## class `PersonaVideo`
+
+_sin docstring_
+
+## `raw_persona`
+
+`def raw_persona(body: PersonaVideo)`
+
+Ruta: **POST /api/raw/persona**
+
+```text
+Con quien se grabo este video: llega solo a sus clips (la persona vive en `raw`).
+```
+
 ## `dataset_labels_post`
 
 `def dataset_labels_post(body: dict)`
@@ -84,14 +98,6 @@ _sin docstring_
 `def dataset_sql_estado(tipo: str | None=None)`
 
 Ruta: **GET /api/sql/estado**
-
-_sin docstring_
-
-## `dataset_sql_config`
-
-`def dataset_sql_config(body: dict, tipo: str | None=None)`
-
-Ruta: **POST /api/sql/config**
 
 _sin docstring_
 
@@ -151,17 +157,29 @@ Ruta: **GET /api/puntos/catalogo**
 
 _sin docstring_
 
-## `dataset_puntos_yaml_get`
+## `dataset_puntos_definicion_get`
 
-`def dataset_puntos_yaml_get(ejercicio: str='')`
+`def dataset_puntos_definicion_get(ejercicio: str='')`
 
-Ruta: **GET /api/puntos/yaml**
+Ruta: **GET /api/puntos/definicion**
+
+_sin docstring_
+
+## class `NombrePedido`
+
+_sin docstring_
+
+## class `PuntosPedido`
+
+_sin docstring_
+
+## class `SlugsPedido`
 
 _sin docstring_
 
 ## `dataset_puntos_crear`
 
-`def dataset_puntos_crear(body: dict)`
+`def dataset_puntos_crear(body: NombrePedido)`
 
 Ruta: **POST /api/puntos/crear**
 
@@ -177,7 +195,7 @@ _sin docstring_
 
 ## `dataset_puntos_modificar`
 
-`def dataset_puntos_modificar(body: dict)`
+`def dataset_puntos_modificar(body: PuntosPedido)`
 
 Ruta: **POST /api/puntos/modificar**
 
@@ -185,7 +203,7 @@ _sin docstring_
 
 ## `dataset_puntos_eliminar`
 
-`def dataset_puntos_eliminar(body: dict)`
+`def dataset_puntos_eliminar(body: NombrePedido)`
 
 Ruta: **POST /api/puntos/eliminar**
 
@@ -203,7 +221,7 @@ Ejercicios archivados que aun dejan clips o datos en SQL (lo que quitaria el bot
 
 ## `archivados_depurar`
 
-`def archivados_depurar(body: dict)`
+`def archivados_depurar(body: SlugsPedido)`
 
 Ruta: **POST /api/archivados/depurar**
 
@@ -227,11 +245,27 @@ Ruta: **POST /api/puntos/reglas**
 
 _sin docstring_
 
-## `dataset_puntos_yaml_post`
+## `dataset_puntos_normalizacion`
 
-`def dataset_puntos_yaml_post(body: dict)`
+`def dataset_puntos_normalizacion(body: dict)`
 
-Ruta: **POST /api/puntos/yaml**
+Ruta: **POST /api/puntos/normalizacion**
+
+_sin docstring_
+
+## `dataset_puntos_normalizacion_previa`
+
+`def dataset_puntos_normalizacion_previa(body: dict)`
+
+Ruta: **POST /api/puntos/normalizacion/previa**
+
+_sin docstring_
+
+## `dataset_puntos_definicion_post`
+
+`def dataset_puntos_definicion_post(body: dict)`
+
+Ruta: **POST /api/puntos/definicion**
 
 _sin docstring_
 
@@ -242,7 +276,7 @@ _sin docstring_
 Ruta: **GET /api/ejercicio/clips**
 
 ```text
-Cuantos clips bien/mal/base tiene el ejercicio (para el dialogo de subida).
+Cuantos clips bien/mal tiene el ejercicio (para el dialogo de subida).
 ```
 
 ## `ejercicio_importar_carpeta`
@@ -252,7 +286,7 @@ Cuantos clips bien/mal/base tiene el ejercicio (para el dialogo de subida).
 Ruta: **POST /api/ejercicio/clips/carpeta**
 
 ```text
-Importa una carpeta Base/Bien/Mal/P1..Pn del disco del servidor (segundo plano; avance en .../progreso).
+Importa una carpeta Bien/Mal/P1..Pn del disco del servidor (segundo plano; avance en .../progreso).
 ```
 
 ## `ejercicio_importar_progreso`
