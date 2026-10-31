@@ -1,8 +1,8 @@
-"""Carga y validacion del ejercicio declarado en YAML.
+"""Carga y validacion del ejercicio (su definicion vive en parameters/<n>/, ver nucleo/definicion.py).
 
-Un ejercicio NO es codigo: es un archivo de datos que declara que articulaciones
+Un ejercicio NO es codigo: es un dato que declara que articulaciones
 mirar y como reconocer una repeticion. Agregar manguito rotador o flexion de
-tobillo es escribir un YAML, nunca tocar el motor.
+tobillo es crear su definicion, nunca tocar el motor.
 
 Todo lo que se puede validar se valida al cargar. Un error de dedo en un nombre
 de landmark revienta antes de encender la camara, no a mitad de la serie.
@@ -11,14 +11,9 @@ de landmark revienta antes de encender la camara, no a mitad de la serie.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from pathlib import Path
 
-import yaml
-
-from src.nucleo.config import EXERCISES_DIR
+from src.nucleo import definicion as DEF
 from src.nucleo.landmarks import resolve
-
-_Loader = getattr(yaml, "CSafeLoader", yaml.SafeLoader)   # libyaml en C: ~10x mas rapido; cae al de Python si no esta
 
 VALID_SOURCES = {"pose"}
 VALID_TYPES = {"angle", "distance_ratio", "proporcion"}
@@ -42,11 +37,10 @@ class Exercise:
     # catalogo de kpoints (editor de Puntos / cortador): que puntos se usan
     # para el dataset y para el clasificador en vivo
     kpoints: list[dict] | None = None
-    # de que ejercicio se toma el clasificador entrenado (datos/entrenamientos):
+    # de que ejercicio se toma el clasificador entrenado (output/models):
     # por defecto el propio slug. Permite puntuar en vivo con un modelo
     # entrenado con clips de otro ejercicio que usa el MISMO catalogo de puntos.
     clasificador: str | None = None
-    path: Path | None = None
     # reglas de postura (angulo entre dos puntos, color verde/rojo en el video): ver nucleo/reglas.py
     reglas: list[dict] = field(default_factory=list)
     # clase de clips ('bien') de la que se crea la base sola si no hay una grabada: ver evaluacion/base_clip.py
@@ -78,27 +72,33 @@ class Exercise:
         }
 
 
-def _reglas(path, data):
+def _reglas(slug, data):
     from src.nucleo import reglas as REGLAS
     try:
         return REGLAS.validar(data.get("reglas"))
     except ValueError as e:
-        raise ValueError(f"{path.name}: {e}") from None
+        raise ValueError(f"{slug}: {e}") from None
 
 
-def load_exercise(path: str | Path) -> Exercise:
-    path = Path(path)
-    data = yaml.load(path.read_text(encoding="utf-8"), Loader=_Loader)
+def load_exercise(slug: str) -> Exercise:
+    data = DEF.leer(slug)
+    if data is None:
+        raise FileNotFoundError(f"No existe el ejercicio '{slug}'")
+    return construir(slug, data)
+
+
+def construir(slug: str, data: dict) -> Exercise:
+    """Valida una definicion (leida o por guardar) y arma el Exercise."""
 
     for key in ("name", "source", "features"):
         if key not in data:
-            raise ValueError(f"{path.name}: falta la clave obligatoria '{key}'")
+            raise ValueError(f"{slug}: falta la clave obligatoria '{key}'")
 
     source = data["source"]
     if source not in VALID_SOURCES:
-        raise ValueError(f"{path.name}: source debe ser uno de {sorted(VALID_SOURCES)}")
+        raise ValueError(f"{slug}: source debe ser uno de {sorted(VALID_SOURCES)}")
 
-    # las features con activo:false se guardan en el .yaml (el editor de Puntos
+    # las features con activo:false se guardan en la definicion (el editor de Puntos
     # las sigue mostrando para poder reactivarlas) pero no entran a Exercise.features
     # -- ni el pipeline en vivo ni el entrenamiento offline las calculan.
     features_activas = [f for f in data["features"] if f.get("activo", True)]
@@ -108,28 +108,28 @@ def load_exercise(path: str | Path) -> Exercise:
     for spec in features_activas:
         for key in ("name", "type", "points"):
             if key not in spec:
-                raise ValueError(f"{path.name}: feature sin '{key}': {spec}")
+                raise ValueError(f"{slug}: feature sin '{key}': {spec}")
         if spec["type"] not in VALID_TYPES:
-            raise ValueError(f"{path.name}: tipo invalido {spec['type']!r}")
+            raise ValueError(f"{slug}: tipo invalido {spec['type']!r}")
         if spec["name"] in nombres:
-            raise ValueError(f"{path.name}: feature duplicada {spec['name']!r}")
+            raise ValueError(f"{slug}: feature duplicada {spec['name']!r}")
         nombres.append(spec["name"])
 
         n_esperado = {"angle": 3, "distance_ratio": 2, "proporcion": 2}[spec["type"]]
         if len(spec["points"]) != n_esperado:
             raise ValueError(
-                f"{path.name}: '{spec['name']}' de tipo {spec['type']} "
+                f"{slug}: '{spec['name']}' de tipo {spec['type']} "
                 f"necesita exactamente {n_esperado} puntos"
             )
         if spec["type"] == "distance_ratio" and len(spec.get("reference", [])) != 2:
-            raise ValueError(f"{path.name}: '{spec['name']}' necesita 'reference' con 2 puntos")
+            raise ValueError(f"{slug}: '{spec['name']}' necesita 'reference' con 2 puntos")
         if spec["type"] == "proporcion":
             cadena = spec.get("cadena") or []
             if len(cadena) < 3:
-                raise ValueError(f"{path.name}: '{spec['name']}' necesita 'cadena' con 3+ puntos")
+                raise ValueError(f"{slug}: '{spec['name']}' necesita 'cadena' con 3+ puntos")
             if list(spec["points"]) not in [[a, b] for a, b in zip(cadena, cadena[1:])]:
                 raise ValueError(
-                    f"{path.name}: '{spec['name']}': 'points' debe ser un tramo consecutivo de 'cadena'"
+                    f"{slug}: '{spec['name']}': 'points' debe ser un tramo consecutivo de 'cadena'"
                 )
 
         for p in list(spec["points"]) + list(spec.get("reference", [])) + list(spec.get("cadena", [])):
@@ -140,21 +140,21 @@ def load_exercise(path: str | Path) -> Exercise:
     signal_features = signal.get("features") or nombres
     faltantes = [n for n in signal_features if n not in nombres]
     if faltantes:
-        raise ValueError(f"{path.name}: signal.features desconocidas: {faltantes}")
+        raise ValueError(f"{slug}: signal.features desconocidas: {faltantes}")
 
     reduce = signal.get("reduce", "mean")
     if reduce not in VALID_REDUCE:
-        raise ValueError(f"{path.name}: signal.reduce debe ser uno de {sorted(VALID_REDUCE)}")
+        raise ValueError(f"{slug}: signal.reduce debe ser uno de {sorted(VALID_REDUCE)}")
 
     seg = data.get("segmentation", {})
     direction = seg.get("direction", "down_up")
     if direction not in VALID_DIRECTION:
         raise ValueError(
-            f"{path.name}: segmentation.direction debe ser uno de {sorted(VALID_DIRECTION)}"
+            f"{slug}: segmentation.direction debe ser uno de {sorted(VALID_DIRECTION)}"
         )
 
     return Exercise(
-        slug=path.stem,
+        slug=slug,
         name=data["name"],
         source=source,
         features=features_activas,
@@ -164,42 +164,35 @@ def load_exercise(path: str | Path) -> Exercise:
         min_duration_ms=int(seg.get("min_duration_ms", 600)),
         max_duration_ms=int(seg.get("max_duration_ms", 8000)),
         description=data.get("description", ""),
-        path=path,
         kpoints=data.get("kpoints") or [],
         clasificador=data.get("clasificador"),
-        reglas=_reglas(path, data),
+        reglas=_reglas(slug, data),
         base_clip=str(data.get("base_clip") or ""),
     )
 
 
-def load_all(directory: str | Path) -> dict[str, Exercise]:
-    """Todos los ejercicios de la carpeta, indexados por slug."""
-    directory = Path(directory)
-    out: dict[str, Exercise] = {}
-    for p in sorted(directory.glob("*.yaml")):   # solo *.yaml: los respaldos van en .respaldos/
-        out[p.stem] = load_exercise(p)
-    return out
+def load_all() -> dict[str, Exercise]:
+    """Todos los ejercicios activos, indexados por slug."""
+    return {slug: load_exercise(slug) for slug in DEF.slugs()}
 
 
 # --- catalogo de puntos del ejercicio (lo leen deteccion offline y el dataset) ---
 
-def leer_yaml(exercise):
-    path = Path(EXERCISES_DIR) / f"{exercise}.yaml"
-    if not exercise or not path.exists():
-        return None
+def leer_def(exercise):
+    """La definicion del ejercicio (dict) o None."""
     try:
-        return yaml.load(path.read_text("utf-8"), Loader=_Loader) or {}
+        return DEF.leer(exercise)
     except Exception:
         return None
 
 
 def kpoints_de_ejercicio(exercise):
-    """El catalogo 'kpoints' del .yaml (lista vacia si no tiene)."""
-    return (leer_yaml(exercise) or {}).get("kpoints") or []
+    """El catalogo 'kpoints' de la definicion (lista vacia si no tiene)."""
+    return (leer_def(exercise) or {}).get("kpoints") or []
 
 
 def resolver_features(features, kpoints):
-    """Un feature del .yaml puede nombrar un landmark crudo (LEFT_ELBOW) aunque el ejercicio tenga catalogo de
+    """Un feature de la definicion puede nombrar un landmark crudo (LEFT_ELBOW) aunque el ejercicio tenga catalogo de
     kpoints con otro nombre: se traduce al nombre del kpoint que lo representa.
     Sin esto, esos angulos no se encuentran en los datos."""
     if not kpoints:
@@ -227,20 +220,20 @@ def resolver_features(features, kpoints):
 
 
 def features_de_ejercicio(exercise):
-    """Los angulos y proporciones ACTIVADOS del .yaml, con sus puntos ya traducidos a kpoints (lista vacia si no tiene)."""
-    data = leer_yaml(exercise) or {}
+    """Los angulos y proporciones ACTIVADOS de la definicion, con sus puntos ya traducidos a kpoints (lista vacia si no tiene)."""
+    data = leer_def(exercise) or {}
     activos = [f for f in data.get("features") or [] if f.get("activo", True) is not False]
     return resolver_features(activos, data.get("kpoints") or [])
 
 
 def puntos_de_ejercicio(exercise: str) -> list[str] | None:
-    """Los puntos que le importan a este ejercicio, en orden. Si el .yaml ya
+    """Los puntos que le importan a este ejercicio, en orden. Si la definicion ya
     tiene catalogo de 'kpoints' (editor de Puntos), son ESOS nombres -- es lo
     que src/procesamiento/offline.py guarda en el .npz. Si no, los landmarks que aparecen en
     'points'/'reference' de sus features, en orden de aparicion.
-    None si no se pudo leer el yaml -- quien llama debe caer entonces a la
+    None si no se pudo leer la definicion -- quien llama debe caer entonces a la
     lista completa que trae el .npz (mejor eso que perder datos)."""
-    data = leer_yaml(exercise)
+    data = leer_def(exercise)
     if data is None:
         return None
     if data.get("kpoints"):

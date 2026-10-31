@@ -50,7 +50,7 @@ def _abrir(index: int):
 def _abrir_url(url: str):
     """Abre un flujo de video por red (DroidCam); None si no responde con un cuadro real a tiempo."""
     try:   # tiempos de espera propios (si no, una IP equivocada cuelga varios segundos); OpenCV viejo: sin ellos
-        cap = cv2.VideoCapture(url, cv2.CAP_FFMPEG, [cv2.CAP_PROP_OPEN_TIMEOUT_MSEC, 5000,
+        cap = cv2.VideoCapture(url, cv2.CAP_FFMPEG, [cv2.CAP_PROP_OPEN_TIMEOUT_MSEC, 8000,   # 8 s: Tailscale por relay tarda mas en abrir
                                                      cv2.CAP_PROP_READ_TIMEOUT_MSEC, 5000])
     except TypeError:
         cap = cv2.VideoCapture(url)
@@ -144,7 +144,7 @@ class CameraSource(BaseSource):
             if self._cap is None:
                 raise RuntimeError(
                     f"No se pudo abrir DroidCam en {url}. En el celular abre la app DroidCam, "
-                    "revisa IP y puerto, y que el celular y la PC esten en la misma red WiFi."
+                    "revisa IP y puerto, y que el celular y la PC esten en la misma red WiFi o ambos conectados a Tailscale."
                 )
             self.mirror, self.index = mirror, url
             return

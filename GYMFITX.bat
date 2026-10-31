@@ -45,11 +45,8 @@ start "" cmd /c "timeout /t 3 /nobreak >nul && start http://127.0.0.1:8000"
 echo   Panel GYMFITX en http://127.0.0.1:8000
 echo   Deja esta ventana abierta mientras entrenas.
 echo   Para cerrar: Ctrl+C, o simplemente cierra esta ventana.
-echo   Tiempos por proceso: http://127.0.0.1:8000/api/tiempos  (y datos\logs\tiempos_*.log)
+echo   Tiempos por proceso: http://127.0.0.1:8000/api/tiempos  (y sistema\logs\tiempos_*.log)
 echo.
-
-rem Primera vez: copia los datos del proyecto viejo (..\GYMFITX) sin tocarlo.
-python -m src.nucleo.migrar
 
 python -m src.interfaz
 

@@ -1,6 +1,6 @@
-"""Tiempos por proceso, en matriz. Complementa el log de sesion (datos/logs/gymfitx_*.log):
+"""Tiempos por proceso, en matriz. Complementa el log de sesion (sistema/logs/gymfitx_*.log):
    - cada proceso medido con medir("nombre") queda en una fila (n, ultima, media, p95, max, inicio, hilo)
-   - la matriz se guarda en datos/logs/tiempos_<sesion>.log y se ve en  GET /api/tiempos
+   - la matriz se guarda en sistema/logs/tiempos_<sesion>.log y se ve en  GET /api/tiempos
    - lo que pasa de LENTO_S tambien deja una linea [tiempos] en el log de sesion
 """
 

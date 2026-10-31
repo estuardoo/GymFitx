@@ -146,7 +146,7 @@ def build_template(
     if high - low < 1e-6:
         raise ValueError(
             "La señal no varia: el movimiento no se distingue del reposo. "
-            "Revisa que signal.features del YAML describan el movimiento."
+            "Revisa que signal.features de la definicion describan el movimiento."
         )
 
     seg = RepSegmenter(
