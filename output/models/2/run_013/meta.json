@@ -1,0 +1,865 @@
+{
+ "numero": 13,
+ "fecha": "2026-09-27T00:14:54",
+ "test_pct": 20,
+ "k": 5,
+ "n_muestras": 98,
+ "clases": [
+  "bien",
+  "mal"
+ ],
+ "excluidas": [],
+ "no_entrenables": 2,
+ "criterio": "f1_macro",
+ "mejor_modelo": "svm",
+ "accuracy": 0.7653,
+ "f1_macro": 0.7653,
+ "linea_base": {
+  "nombre": "linea_base",
+  "accuracy": 0.5102,
+  "f1_macro": 0.3378,
+  "tiempo_seg": 0.0
+ },
+ "anidado": {
+  "accuracy": 0.7653,
+  "f1_macro": 0.7647,
+  "elegidos": {
+   "knn": 2,
+   "random_forest": 1,
+   "ridge": 1,
+   "svm": 1
+  }
+ },
+ "reporte": {
+  "bien": {
+   "precision": 0.7551020408163265,
+   "recall": 0.7708333333333334,
+   "f1-score": 0.7628865979381443,
+   "support": 48.0
+  },
+  "mal": {
+   "precision": 0.7755102040816326,
+   "recall": 0.76,
+   "f1-score": 0.7676767676767676,
+   "support": 50.0
+  },
+  "accuracy": 0.7653061224489796,
+  "macro avg": {
+   "precision": 0.7653061224489796,
+   "recall": 0.7654166666666666,
+   "f1-score": 0.765281682807456,
+   "support": 98.0
+  },
+  "weighted avg": {
+   "precision": 0.7655143690129113,
+   "recall": 0.7653061224489796,
+   "f1-score": 0.7653305620905031,
+   "support": 98.0
+  }
+ },
+ "errores": 23,
+ "predicciones": [
+  {
+   "clip": "bien/cuerpo_completo__2026-08-25__205453_base_s02_bien_r0.mp4",
+   "real": "bien",
+   "prediccion": "bien",
+   "ok": true
+  },
+  {
+   "clip": "mal/cuerpo_completo__2026-08-25__205453_base_s03_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "bien/cuerpo_completo__2026-08-25__211230_base_s02_bien_r0.mp4",
+   "real": "bien",
+   "prediccion": "bien",
+   "ok": true
+  },
+  {
+   "clip": "bien/cuerpo_completo__2026-08-25__211230_base_s04_bien_r0.mp4",
+   "real": "bien",
+   "prediccion": "bien",
+   "ok": true
+  },
+  {
+   "clip": "mal/cuerpo_completo__2026-08-25__211230_base_s06_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "mal/cuerpo_completo__2026-08-25__211230_base_s07_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "bien/cuerpo_completo__2026-08-25__211230_base_s08_bien_r0.mp4",
+   "real": "bien",
+   "prediccion": "bien",
+   "ok": true
+  },
+  {
+   "clip": "mal/cuerpo_completo__2026-08-25__211856_base_s01_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "bien",
+   "ok": false
+  },
+  {
+   "clip": "bien/cuerpo_completo__2026-08-25__211856_base_s04_bien_r0.mp4",
+   "real": "bien",
+   "prediccion": "bien",
+   "ok": true
+  },
+  {
+   "clip": "bien/cuerpo_completo__2026-08-25__211856_base_s05_bien_r0.mp4",
+   "real": "bien",
+   "prediccion": "bien",
+   "ok": true
+  },
+  {
+   "clip": "mal/cuerpo_completo__2026-08-25__211856_base_s06_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "mal/cuerpo_completo__2026-08-25__211856_base_s07_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "bien/cuerpo_completo__2026-08-25__211856_base_s08_bien_r0.mp4",
+   "real": "bien",
+   "prediccion": "bien",
+   "ok": true
+  },
+  {
+   "clip": "mal/cuerpo_completo__2026-08-25__211856_base_s09_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "mal/cuerpo_completo__2026-08-25__211856_base_s10_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "bien/cuerpo_completo__2026-08-25__211856_base_s11_bien_r0.mp4",
+   "real": "bien",
+   "prediccion": "mal",
+   "ok": false
+  },
+  {
+   "clip": "mal/cuerpo_completo__2026-08-25__211856_base_s12_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "mal/cuerpo_completo__2026-08-25__214947_base_s01_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "mal/cuerpo_completo__2026-08-25__214947_base_s02_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "mal/cuerpo_completo__2026-08-25__215049_base_s01_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "bien/cuerpo_completo__2026-08-25__215049_base_s02_bien_r0.mp4",
+   "real": "bien",
+   "prediccion": "bien",
+   "ok": true
+  },
+  {
+   "clip": "bien/cuerpo_completo__2026-08-25__215049_base_s03_bien_r0.mp4",
+   "real": "bien",
+   "prediccion": "bien",
+   "ok": true
+  },
+  {
+   "clip": "bien/cuerpo_completo__2026-08-25__215049_base_s04_bien_r0.mp4",
+   "real": "bien",
+   "prediccion": "mal",
+   "ok": false
+  },
+  {
+   "clip": "bien/cuerpo_completo__2026-08-25__215049_base_s05_bien_r0.mp4",
+   "real": "bien",
+   "prediccion": "bien",
+   "ok": true
+  },
+  {
+   "clip": "bien/cuerpo_completo__2026-08-25__215049_base_s06_bien_r0.mp4",
+   "real": "bien",
+   "prediccion": "bien",
+   "ok": true
+  },
+  {
+   "clip": "bien/cuerpo_completo__2026-08-25__215049_base_s07_bien_r0.mp4",
+   "real": "bien",
+   "prediccion": "bien",
+   "ok": true
+  },
+  {
+   "clip": "bien/cuerpo_completo__2026-08-25__215049_base_s08_bien_r0.mp4",
+   "real": "bien",
+   "prediccion": "bien",
+   "ok": true
+  },
+  {
+   "clip": "bien/cuerpo_completo__2026-08-25__215049_base_s09_bien_r0.mp4",
+   "real": "bien",
+   "prediccion": "bien",
+   "ok": true
+  },
+  {
+   "clip": "bien/cuerpo_completo__2026-08-25__215049_base_s10_bien_r0.mp4",
+   "real": "bien",
+   "prediccion": "mal",
+   "ok": false
+  },
+  {
+   "clip": "mal/cuerpo_completo__2026-08-25__215049_base_s11_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "bien",
+   "ok": false
+  },
+  {
+   "clip": "bien/cuerpo_completo__2026-08-25__215145_base_s02_bien_r0.mp4",
+   "real": "bien",
+   "prediccion": "bien",
+   "ok": true
+  },
+  {
+   "clip": "bien/cuerpo_completo__2026-08-25__215145_base_s03_bien_r0.mp4",
+   "real": "bien",
+   "prediccion": "bien",
+   "ok": true
+  },
+  {
+   "clip": "bien/cuerpo_completo__2026-08-25__215145_base_s04_bien_r0.mp4",
+   "real": "bien",
+   "prediccion": "bien",
+   "ok": true
+  },
+  {
+   "clip": "bien/cuerpo_completo__2026-08-25__215145_base_s05_bien_r0.mp4",
+   "real": "bien",
+   "prediccion": "bien",
+   "ok": true
+  },
+  {
+   "clip": "bien/cuerpo_completo__2026-08-25__215145_base_s06_bien_r0.mp4",
+   "real": "bien",
+   "prediccion": "mal",
+   "ok": false
+  },
+  {
+   "clip": "bien/cuerpo_completo__2026-08-25__215145_base_s07_bien_r0.mp4",
+   "real": "bien",
+   "prediccion": "bien",
+   "ok": true
+  },
+  {
+   "clip": "mal/cuerpo_completo__2026-08-25__215145_base_s08_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "bien/cuerpo_completo__2026-08-25__215106_base_s02_bien_r0.mp4",
+   "real": "bien",
+   "prediccion": "bien",
+   "ok": true
+  },
+  {
+   "clip": "mal/cuerpo_completo__2026-08-25__215119_base_s01_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "bien/cuerpo_completo__2026-08-25__215119_base_s03_bien_r0.mp4",
+   "real": "bien",
+   "prediccion": "bien",
+   "ok": true
+  },
+  {
+   "clip": "mal/cuerpo_completo__2026-08-25__215132_base_s02_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "bien",
+   "ok": false
+  },
+  {
+   "clip": "bien/cuerpo_completo__2026-08-25__215132_base_s03_bien_r0.mp4",
+   "real": "bien",
+   "prediccion": "mal",
+   "ok": false
+  },
+  {
+   "clip": "bien/cuerpo_completo__2026-08-25__215155_base_s02_bien_r0.mp4",
+   "real": "bien",
+   "prediccion": "bien",
+   "ok": true
+  },
+  {
+   "clip": "mal/cuerpo_completo__2026-08-25__230526_base_s01_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "bien/cuerpo_completo__2026-08-25__230526_base_s02_bien_r0.mp4",
+   "real": "bien",
+   "prediccion": "bien",
+   "ok": true
+  },
+  {
+   "clip": "mal/cuerpo_completo__2026-08-25__230526_base_s03_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "bien",
+   "ok": false
+  },
+  {
+   "clip": "mal/cuerpo_completo__2026-08-25__230551_base_s02_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "bien",
+   "ok": false
+  },
+  {
+   "clip": "bien/cuerpo_completo__2026-08-25__230551_base_s03_bien_r0.mp4",
+   "real": "bien",
+   "prediccion": "mal",
+   "ok": false
+  },
+  {
+   "clip": "mal/cuerpo_completo__2026-08-25__230605_base_s01_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "bien/cuerpo_completo__2026-08-25__230605_base_s02_bien_r0.mp4",
+   "real": "bien",
+   "prediccion": "bien",
+   "ok": true
+  },
+  {
+   "clip": "mal/cuerpo_completo__2026-08-25__230620_base_s01_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "mal/cuerpo_completo__2026-08-25__230620_base_s02_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "mal/cuerpo_completo__2026-08-25__230620_base_s03_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "bien/cuerpo_completo__2026-08-25__230620_base_s04_bien_r0.mp4",
+   "real": "bien",
+   "prediccion": "bien",
+   "ok": true
+  },
+  {
+   "clip": "mal/cuerpo_completo__2026-08-25__230620_base_s05_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "mal/cuerpo_completo__2026-08-25__230640_base_s01_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "mal/cuerpo_completo__2026-08-25__230640_base_s02_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "bien",
+   "ok": false
+  },
+  {
+   "clip": "mal/cuerpo_completo__2026-08-25__230640_base_s03_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "bien/cuerpo_completo__2026-08-25__230640_base_s04_bien_r0.mp4",
+   "real": "bien",
+   "prediccion": "bien",
+   "ok": true
+  },
+  {
+   "clip": "bien/cuerpo_completo__2026-08-25__230655_base_s02_bien_r0.mp4",
+   "real": "bien",
+   "prediccion": "bien",
+   "ok": true
+  },
+  {
+   "clip": "mal/cuerpo_completo__2026-08-25__230655_base_s03_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "bien/cuerpo_completo__2026-08-25__231020_base_s02_bien_r0.mp4",
+   "real": "bien",
+   "prediccion": "bien",
+   "ok": true
+  },
+  {
+   "clip": "bien/cuerpo_completo__2026-08-25__231020_base_s03_bien_r0.mp4",
+   "real": "bien",
+   "prediccion": "mal",
+   "ok": false
+  },
+  {
+   "clip": "mal/cuerpo_completo__2026-08-25__231020_base_s04_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "bien",
+   "ok": false
+  },
+  {
+   "clip": "bien/cuerpo_completo__2026-08-25__231020_base_s05_bien_r0.mp4",
+   "real": "bien",
+   "prediccion": "bien",
+   "ok": true
+  },
+  {
+   "clip": "mal/cuerpo_completo__2026-08-25__231020_base_s06_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "bien",
+   "ok": false
+  },
+  {
+   "clip": "mal/cuerpo_completo__2026-08-25__231036_base_s01_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "bien/cuerpo_completo__2026-08-25__231036_base_s02_bien_r0.mp4",
+   "real": "bien",
+   "prediccion": "mal",
+   "ok": false
+  },
+  {
+   "clip": "bien/cuerpo_completo__2026-08-25__231036_base_s03_bien_r0.mp4",
+   "real": "bien",
+   "prediccion": "bien",
+   "ok": true
+  },
+  {
+   "clip": "bien/cuerpo_completo__2026-08-25__231036_base_s04_bien_r0.mp4",
+   "real": "bien",
+   "prediccion": "bien",
+   "ok": true
+  },
+  {
+   "clip": "bien/cuerpo_completo__2026-08-25__231036_base_s05_bien_r0.mp4",
+   "real": "bien",
+   "prediccion": "bien",
+   "ok": true
+  },
+  {
+   "clip": "mal/cuerpo_completo__2026-08-25__231036_base_s06_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "mal/cuerpo_completo__2026-08-25__231036_base_s07_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "bien/cuerpo_completo__2026-08-25__231046_base_s01_bien_r0.mp4",
+   "real": "bien",
+   "prediccion": "bien",
+   "ok": true
+  },
+  {
+   "clip": "bien/cuerpo_completo__2026-08-25__231046_base_s02_bien_r0.mp4",
+   "real": "bien",
+   "prediccion": "bien",
+   "ok": true
+  },
+  {
+   "clip": "bien/cuerpo_completo__2026-08-25__231046_base_s03_bien_r0.mp4",
+   "real": "bien",
+   "prediccion": "mal",
+   "ok": false
+  },
+  {
+   "clip": "bien/cuerpo_completo__2026-08-25__231046_base_s04_bien_r0.mp4",
+   "real": "bien",
+   "prediccion": "bien",
+   "ok": true
+  },
+  {
+   "clip": "mal/cuerpo_completo__2026-08-25__231046_base_s05_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "mal/cuerpo_completo__2026-08-25__231046_base_s06_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "bien/cuerpo_completo__2026-08-25__231055_base_s01_bien_r0.mp4",
+   "real": "bien",
+   "prediccion": "mal",
+   "ok": false
+  },
+  {
+   "clip": "bien/cuerpo_completo__2026-08-25__231055_base_s03_bien_r0.mp4",
+   "real": "bien",
+   "prediccion": "mal",
+   "ok": false
+  },
+  {
+   "clip": "bien/cuerpo_completo__2026-08-25__231055_base_s04_bien_r0.mp4",
+   "real": "bien",
+   "prediccion": "bien",
+   "ok": true
+  },
+  {
+   "clip": "bien/cuerpo_completo__2026-08-25__231055_base_s05_bien_r0.mp4",
+   "real": "bien",
+   "prediccion": "bien",
+   "ok": true
+  },
+  {
+   "clip": "mal/cuerpo_completo__2026-08-25__231055_base_s06_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "mal/cuerpo_completo__2026-08-25__231104_base_s01_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "mal/cuerpo_completo__2026-08-25__231113_base_s02_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "bien",
+   "ok": false
+  },
+  {
+   "clip": "mal/cuerpo_completo__2026-08-25__231123_base_s02_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "mal/cuerpo_completo__2026-08-25__231132_base_s02_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "bien",
+   "ok": false
+  },
+  {
+   "clip": "mal/cuerpo_completo__2026-08-25__231142_base_s02_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "mal/cuerpo_completo__2026-08-25__231151_base_s02_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "mal/cuerpo_completo__2026-08-25__231151_base_s03_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "bien",
+   "ok": false
+  },
+  {
+   "clip": "mal/cuerpo_completo__2026-08-25__231151_base_s04_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "mal/cuerpo_completo__2026-08-25__231200_base_s02_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "mal/cuerpo_completo__2026-08-25__231200_base_s03_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "mal/cuerpo_completo__2026-08-25__231200_base_s04_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "mal/cuerpo_completo__2026-08-25__231200_base_s05_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "mal/cuerpo_completo__2026-08-25__231200_base_s06_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "mal/cuerpo_completo__2026-08-25__231200_base_s07_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "bien",
+   "ok": false
+  }
+ ],
+ "modelos": [
+  {
+   "nombre": "random_forest",
+   "accuracy": 0.7143,
+   "f1_macro": 0.7143,
+   "tiempo_seg": 2.71
+  },
+  {
+   "nombre": "extra_trees",
+   "accuracy": 0.7653,
+   "f1_macro": 0.7647,
+   "tiempo_seg": 2.5
+  },
+  {
+   "nombre": "gradient_boosting",
+   "accuracy": 0.602,
+   "f1_macro": 0.6017,
+   "tiempo_seg": 9.48
+  },
+  {
+   "nombre": "hist_gradient_boosting",
+   "accuracy": 0.6224,
+   "f1_macro": 0.6221,
+   "tiempo_seg": 15.83
+  },
+  {
+   "nombre": "adaboost",
+   "accuracy": 0.7143,
+   "f1_macro": 0.7142,
+   "tiempo_seg": 6.62
+  },
+  {
+   "nombre": "logistic",
+   "accuracy": 0.6224,
+   "f1_macro": 0.6215,
+   "tiempo_seg": 0.13
+  },
+  {
+   "nombre": "sgd_logistico",
+   "accuracy": 0.6327,
+   "f1_macro": 0.6288,
+   "tiempo_seg": 0.56
+  },
+  {
+   "nombre": "ridge",
+   "accuracy": 0.6531,
+   "f1_macro": 0.6531,
+   "tiempo_seg": 0.04
+  },
+  {
+   "nombre": "lda",
+   "accuracy": 0.6327,
+   "f1_macro": 0.6325,
+   "tiempo_seg": 4.9
+  },
+  {
+   "nombre": "svm",
+   "accuracy": 0.7653,
+   "f1_macro": 0.7653,
+   "tiempo_seg": 0.07
+  },
+  {
+   "nombre": "knn",
+   "accuracy": 0.7143,
+   "f1_macro": 0.7138,
+   "tiempo_seg": 0.28
+  },
+  {
+   "nombre": "decision_tree",
+   "accuracy": 0.6122,
+   "f1_macro": 0.6116,
+   "tiempo_seg": 0.11
+  },
+  {
+   "nombre": "mlp",
+   "accuracy": 0.7347,
+   "f1_macro": 0.7346,
+   "tiempo_seg": 0.55
+  },
+  {
+   "nombre": "naive_bayes",
+   "accuracy": 0.6429,
+   "f1_macro": 0.6428,
+   "tiempo_seg": 0.01
+  }
+ ],
+ "tipo": 1,
+ "exercise": "cuerpo_completo",
+ "config": {
+  "modo": "rectangulo",
+  "n_frames_fijo": 30,
+  "punto_centro": "wrist_der_25",
+  "punto_escala_a": "wrist_der_25",
+  "punto_escala_b": "pinky_tip_der_56",
+  "puntos_caja": null
+ },
+ "features": "xyzap",
+ "excluidos_manual": [],
+ "manos": [
+  "hand_right"
+ ],
+ "desincronizados": [],
+ "kpoints_usados": [
+  "wrist_der_25",
+  "thumb_mcp_der_38",
+  "thumb_tip_der_40",
+  "index_finger_mcp_der_41",
+  "index_finger_tip_der_44",
+  "middle_finger_mcp_der_45",
+  "middle_finger_tip_der_36",
+  "ring_finger_mcp_der_49",
+  "ring_finger_tip_der_36",
+  "pinky_mcp_der_53",
+  "pinky_tip_der_56"
+ ],
+ "ejes": "xyz",
+ "angulos": [
+  [
+   "fila_5",
+   "M26>M24>M22",
+   "angle"
+  ],
+  [
+   "fila_5_p1",
+   "M26>M24>M22",
+   "proporcion"
+  ],
+  [
+   "fila_5_p2",
+   "M26>M24>M22",
+   "proporcion"
+  ],
+  [
+   "fila_4",
+   "M30>M27>M22",
+   "angle"
+  ],
+  [
+   "fila_4_p1",
+   "M30>M27>M22",
+   "proporcion"
+  ],
+  [
+   "fila_4_p2",
+   "M30>M27>M22",
+   "proporcion"
+  ],
+  [
+   "fila_3",
+   "M34>M31>M22",
+   "angle"
+  ],
+  [
+   "fila_3_p1",
+   "M34>M31>M22",
+   "proporcion"
+  ],
+  [
+   "fila_3_p2",
+   "M34>M31>M22",
+   "proporcion"
+  ],
+  [
+   "fila_2",
+   "M38>M35>M22",
+   "angle"
+  ],
+  [
+   "fila_2_p1",
+   "M38>M35>M22",
+   "proporcion"
+  ],
+  [
+   "fila_2_p2",
+   "M38>M35>M22",
+   "proporcion"
+  ],
+  [
+   "fila_1",
+   "M42>M39>M22",
+   "angle"
+  ],
+  [
+   "fila_1_p1",
+   "M42>M39>M22",
+   "proporcion"
+  ],
+  [
+   "fila_1_p2",
+   "M42>M39>M22",
+   "proporcion"
+  ]
+ ],
+ "f1_folds": [
+  0.8496,
+  0.6491,
+  0.7494,
+  0.7889,
+  0.7889
+ ],
+ "f1_std": 0.0663,
+ "n_features": 1440,
+ "conteo_clases": {
+  "bien": 48,
+  "mal": 50
+ },
+ "numero_viejo": 16,
+ "ejercicio_id": 2,
+ "dir": "2/run_013",
+ "origen_run": {
+  "numero": 16,
+  "ruta": "datos/entrenamientos/run_16",
+  "nota": "corrida anterior a las tablas numeradas: sin lista de clips"
+ }
+}

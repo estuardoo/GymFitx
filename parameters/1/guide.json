@@ -1,0 +1,146 @@
+{
+ "schema_version": 1,
+ "ejercicio": 1,
+ "description": "Zancada (lunge).",
+ "segmentation": {
+  "direction": "down_up",
+  "min_duration_ms": 600,
+  "max_duration_ms": 8000
+ },
+ "base_clip": "bien",
+ "signal": {
+  "features": [
+   "rodilla_izq",
+   "rodilla_der"
+  ],
+  "reduce": "mean"
+ },
+ "reglas": [
+  {
+   "nombre": "Espalda recta",
+   "a": [
+    "C01"
+   ],
+   "b": [
+    "C24",
+    "C25"
+   ],
+   "angulo": 90,
+   "tolerancia": 8,
+   "unidad": "pct",
+   "activo": true
+  },
+  {
+   "nombre": "Tronco",
+   "a": [
+    "C12",
+    "C13"
+   ],
+   "b": [
+    "C24",
+    "C25"
+   ],
+   "angulo": 90,
+   "tolerancia": 16,
+   "unidad": "deg",
+   "mensaje": "Mantén el pecho erguido, no te inclines hacia adelante.",
+   "activo": true
+  },
+  {
+   "nombre": "Cadera delantera",
+   "a": [
+    "C12",
+    "C13"
+   ],
+   "b": [
+    "D24"
+   ],
+   "c": [
+    "D26"
+   ],
+   "angulo": 82,
+   "tolerancia": 0,
+   "unidad": "deg",
+   "lado": "min",
+   "fase": "abajo",
+   "mensaje": "Abre la cadera: sube el pecho.",
+   "activo": true
+  },
+  {
+   "nombre": "Rodilla delantera",
+   "a": [
+    "D24"
+   ],
+   "b": [
+    "D26"
+   ],
+   "c": [
+    "D28"
+   ],
+   "angulo": 90,
+   "tolerancia": 15,
+   "unidad": "deg",
+   "fase": "abajo",
+   "mensaje": "Dobla la rodilla de adelante hasta formar un ángulo recto.",
+   "activo": false
+  },
+  {
+   "nombre": "Tibia delantera",
+   "a": [
+    "D26"
+   ],
+   "b": [
+    "D28"
+   ],
+   "angulo": 90,
+   "tolerancia": 28,
+   "unidad": "deg",
+   "fase": "abajo",
+   "mensaje": "Da un paso más largo; la rodilla sobre el tobillo.",
+   "activo": false
+  },
+  {
+   "nombre": "Brazo izq",
+   "a": [
+    "C12"
+   ],
+   "b": [
+    "C14"
+   ],
+   "c": [
+    "C16"
+   ],
+   "angulo": 180,
+   "tolerancia": 20,
+   "unidad": "deg",
+   "lado": "min",
+   "fase": "bajando",
+   "mensaje": "Mantén los brazos rectos al bajar.",
+   "activo": true
+  },
+  {
+   "nombre": "Brazo der",
+   "a": [
+    "C13"
+   ],
+   "b": [
+    "C15"
+   ],
+   "c": [
+    "C17"
+   ],
+   "angulo": 180,
+   "tolerancia": 20,
+   "unidad": "deg",
+   "lado": "min",
+   "fase": "bajando",
+   "mensaje": "Mantén los brazos rectos al bajar.",
+   "activo": true
+  }
+ ],
+ "normalizacion": {
+  "origen": "medio(C24,C25)",
+  "escala": "dist(medio(C12,C13), medio(C24,C25))",
+  "n_frames": 30
+ }
+}

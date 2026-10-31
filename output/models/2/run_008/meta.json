@@ -1,0 +1,457 @@
+{
+ "numero": 8,
+ "fecha": "2026-09-26T22:52:43",
+ "test_pct": 20,
+ "k": 5,
+ "n_muestras": 25,
+ "clases": [
+  "bien",
+  "mal"
+ ],
+ "excluidas": [],
+ "no_entrenables": 2,
+ "criterio": "f1_macro",
+ "mejor_modelo": "knn",
+ "accuracy": 0.6,
+ "f1_macro": 0.5994,
+ "linea_base": {
+  "nombre": "linea_base",
+  "accuracy": 0.56,
+  "f1_macro": 0.359,
+  "tiempo_seg": 0.0
+ },
+ "anidado": {
+  "accuracy": 0.64,
+  "f1_macro": 0.6305,
+  "elegidos": {
+   "knn": 2,
+   "svm": 1,
+   "gradient_boosting": 2
+  }
+ },
+ "reporte": {
+  "bien": {
+   "precision": 0.5384615384615384,
+   "recall": 0.6363636363636364,
+   "f1-score": 0.5833333333333334,
+   "support": 11.0
+  },
+  "mal": {
+   "precision": 0.6666666666666666,
+   "recall": 0.5714285714285714,
+   "f1-score": 0.6153846153846154,
+   "support": 14.0
+  },
+  "accuracy": 0.6,
+  "macro avg": {
+   "precision": 0.6025641025641025,
+   "recall": 0.6038961038961039,
+   "f1-score": 0.5993589743589745,
+   "support": 25.0
+  },
+  "weighted avg": {
+   "precision": 0.6102564102564102,
+   "recall": 0.6,
+   "f1-score": 0.6012820512820514,
+   "support": 25.0
+  }
+ },
+ "errores": 10,
+ "predicciones": [
+  {
+   "clip": "bien/205453_base_s02_bien_r0.mp4",
+   "real": "bien",
+   "prediccion": "bien",
+   "ok": true
+  },
+  {
+   "clip": "mal/205453_base_s03_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "bien/211230_base_s02_bien_r0.mp4",
+   "real": "bien",
+   "prediccion": "bien",
+   "ok": true
+  },
+  {
+   "clip": "bien/211230_base_s04_bien_r0.mp4",
+   "real": "bien",
+   "prediccion": "bien",
+   "ok": true
+  },
+  {
+   "clip": "mal/211230_base_s06_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "bien",
+   "ok": false
+  },
+  {
+   "clip": "mal/211230_base_s07_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "bien",
+   "ok": false
+  },
+  {
+   "clip": "bien/211230_base_s08_bien_r0.mp4",
+   "real": "bien",
+   "prediccion": "bien",
+   "ok": true
+  },
+  {
+   "clip": "mal/211856_base_s01_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "mal/211856_base_s02_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "bien",
+   "ok": false
+  },
+  {
+   "clip": "bien/211856_base_s04_bien_r0.mp4",
+   "real": "bien",
+   "prediccion": "mal",
+   "ok": false
+  },
+  {
+   "clip": "bien/211856_base_s05_bien_r0.mp4",
+   "real": "bien",
+   "prediccion": "mal",
+   "ok": false
+  },
+  {
+   "clip": "mal/211856_base_s06_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "mal/211856_base_s07_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "bien",
+   "ok": false
+  },
+  {
+   "clip": "bien/211856_base_s08_bien_r0.mp4",
+   "real": "bien",
+   "prediccion": "mal",
+   "ok": false
+  },
+  {
+   "clip": "mal/211856_base_s09_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "mal/211856_base_s10_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "bien/211856_base_s11_bien_r0.mp4",
+   "real": "bien",
+   "prediccion": "mal",
+   "ok": false
+  },
+  {
+   "clip": "mal/211856_base_s12_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "mal/214947_base_s01_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "bien",
+   "ok": false
+  },
+  {
+   "clip": "mal/214947_base_s02_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "bien/215106_base_s02_bien_r0.mp4",
+   "real": "bien",
+   "prediccion": "bien",
+   "ok": true
+  },
+  {
+   "clip": "mal/215119_base_s01_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "bien/215119_base_s03_bien_r0.mp4",
+   "real": "bien",
+   "prediccion": "bien",
+   "ok": true
+  },
+  {
+   "clip": "mal/215132_base_s02_mal_r0.mp4",
+   "real": "mal",
+   "prediccion": "bien",
+   "ok": false
+  },
+  {
+   "clip": "bien/215132_base_s03_bien_r0.mp4",
+   "real": "bien",
+   "prediccion": "bien",
+   "ok": true
+  }
+ ],
+ "modelos": [
+  {
+   "nombre": "random_forest",
+   "accuracy": 0.48,
+   "f1_macro": 0.4767,
+   "tiempo_seg": 1.18
+  },
+  {
+   "nombre": "extra_trees",
+   "accuracy": 0.4,
+   "f1_macro": 0.4,
+   "tiempo_seg": 0.89
+  },
+  {
+   "nombre": "gradient_boosting",
+   "accuracy": 0.6,
+   "f1_macro": 0.5942,
+   "tiempo_seg": 2.95
+  },
+  {
+   "nombre": "logistic",
+   "accuracy": 0.48,
+   "f1_macro": 0.4767,
+   "tiempo_seg": 2.54
+  },
+  {
+   "nombre": "svm",
+   "accuracy": 0.36,
+   "f1_macro": 0.3333,
+   "tiempo_seg": 0.81
+  },
+  {
+   "nombre": "knn",
+   "accuracy": 0.6,
+   "f1_macro": 0.5994,
+   "tiempo_seg": 0.31
+  },
+  {
+   "nombre": "decision_tree",
+   "accuracy": 0.44,
+   "f1_macro": 0.4167,
+   "tiempo_seg": 0.04
+  },
+  {
+   "nombre": "mlp",
+   "accuracy": 0.48,
+   "f1_macro": 0.48,
+   "tiempo_seg": 1.36
+  },
+  {
+   "nombre": "naive_bayes",
+   "accuracy": 0.52,
+   "f1_macro": 0.5192,
+   "tiempo_seg": 0.01
+  }
+ ],
+ "tipo": 1,
+ "exercise": "cuerpo_completo",
+ "config": {
+  "modo": "rectangulo",
+  "n_frames_fijo": 50,
+  "punto_centro": "wrist_der_1",
+  "punto_escala_a": "wrist_der_1",
+  "punto_escala_b": "pinky_tip_der_21",
+  "puntos_caja": null
+ },
+ "features": "ambos",
+ "excluidos_manual": [
+  "bien/215155_base_s02_bien_r0.mp4",
+  "bien/215207_base_s01_bien_r0.mp4",
+  "mal/215207_base_s02_mal_r0.mp4",
+  "mal/215207_base_s03_mal_r0.mp4",
+  "mal/230526_base_s01_mal_r0.mp4",
+  "bien/230526_base_s02_bien_r0.mp4",
+  "mal/230526_base_s03_mal_r0.mp4",
+  "mal/230551_base_s02_mal_r0.mp4",
+  "bien/230551_base_s03_bien_r0.mp4",
+  "mal/230605_base_s01_mal_r0.mp4",
+  "bien/230605_base_s02_bien_r0.mp4",
+  "mal/230620_base_s01_mal_r0.mp4",
+  "mal/230620_base_s02_mal_r0.mp4",
+  "mal/230620_base_s03_mal_r0.mp4",
+  "bien/230620_base_s04_bien_r0.mp4",
+  "mal/230620_base_s05_mal_r0.mp4",
+  "mal/230640_base_s01_mal_r0.mp4",
+  "mal/230640_base_s02_mal_r0.mp4",
+  "mal/230640_base_s03_mal_r0.mp4",
+  "bien/230640_base_s04_bien_r0.mp4",
+  "bien/230655_base_s02_bien_r0.mp4",
+  "mal/230655_base_s03_mal_r0.mp4",
+  "bien/231020_base_s02_bien_r0.mp4",
+  "bien/231020_base_s03_bien_r0.mp4",
+  "mal/231020_base_s04_mal_r0.mp4",
+  "bien/231020_base_s05_bien_r0.mp4",
+  "mal/231020_base_s06_mal_r0.mp4",
+  "mal/231036_base_s01_mal_r0.mp4",
+  "bien/231036_base_s02_bien_r0.mp4",
+  "mal/231036_base_s03_mal_r0.mp4",
+  "mal/231046_base_s01_mal_r0.mp4",
+  "mal/231046_base_s02_mal_r0.mp4",
+  "mal/231046_base_s03_mal_r0.mp4",
+  "mal/231055_base_s01_mal_r0.mp4",
+  "mal/231055_base_s02_mal_r0.mp4",
+  "bien/231055_base_s03_bien_r0.mp4",
+  "mal/231104_base_s01_mal_r0.mp4",
+  "mal/231113_base_s02_mal_r0.mp4",
+  "mal/231123_base_s02_mal_r0.mp4",
+  "mal/231132_base_s02_mal_r0.mp4",
+  "mal/231142_base_s02_mal_r0.mp4",
+  "mal/231151_base_s02_mal_r0.mp4",
+  "mal/231151_base_s03_mal_r0.mp4",
+  "mal/231151_base_s04_mal_r0.mp4",
+  "mal/231200_base_s02_mal_r0.mp4",
+  "mal/231200_base_s03_mal_r0.mp4",
+  "mal/231200_base_s04_mal_r0.mp4",
+  "mal/231200_base_s05_mal_r0.mp4",
+  "mal/231200_base_s06_mal_r0.mp4",
+  "mal/231200_base_s07_mal_r0.mp4"
+ ],
+ "manos": [
+  "hand_right"
+ ],
+ "desincronizados": [],
+ "kpoints_usados": [
+  "wrist_der_25",
+  "thumb_cmc_der_37",
+  "thumb_mcp_der_38",
+  "thumb_ip_der_39",
+  "thumb_tip_der_40",
+  "index_finger_mcp_der_41",
+  "index_finger_pip_der_42",
+  "index_finger_dip_der_43",
+  "index_finger_tip_der_44",
+  "middle_finger_mcp_der_45",
+  "middle_finger_pip_der_46",
+  "middle_finger_dip_der_47",
+  "middle_finger_tip_der_36",
+  "ring_finger_mcp_der_49",
+  "ring_finger_pip_der_50",
+  "ring_finger_dip_der_51",
+  "ring_finger_tip_der_36",
+  "pinky_mcp_der_53",
+  "pinky_pip_der_54",
+  "pinky_dip_der_55",
+  "pinky_tip_der_56"
+ ],
+ "angulos": [
+  [
+   "der_pulgar_cmc",
+   "1-2-3"
+  ],
+  [
+   "der_pulgar_mcp",
+   "2-3-4"
+  ],
+  [
+   "der_pulgar_ip",
+   "3-4-5"
+  ],
+  [
+   "der_indice_mcp",
+   "1-6-7"
+  ],
+  [
+   "der_indice_pip",
+   "6-7-8"
+  ],
+  [
+   "der_indice_dip",
+   "7-8-9"
+  ],
+  [
+   "der_medio_mcp",
+   "1-10-11"
+  ],
+  [
+   "der_medio_pip",
+   "10-11-12"
+  ],
+  [
+   "der_medio_dip",
+   "11-12-13"
+  ],
+  [
+   "der_anular_mcp",
+   "1-14-15"
+  ],
+  [
+   "der_anular_pip",
+   "14-15-16"
+  ],
+  [
+   "der_anular_dip",
+   "15-16-17"
+  ],
+  [
+   "der_menique_mcp",
+   "1-18-19"
+  ],
+  [
+   "der_menique_pip",
+   "18-19-20"
+  ],
+  [
+   "der_menique_dip",
+   "19-20-21"
+  ],
+  [
+   "der_abd_pulgar_indice",
+   "3-4/6-7"
+  ],
+  [
+   "der_abd_indice_medio",
+   "6-7/10-11"
+  ],
+  [
+   "der_abd_medio_anular",
+   "10-11/14-15"
+  ],
+  [
+   "der_abd_anular_menique",
+   "14-15/18-19"
+  ]
+ ],
+ "f1_folds": [
+  0.5833,
+  0.7619,
+  0.5833,
+  0.5833,
+  0.2857
+ ],
+ "f1_std": 0.1534,
+ "n_features": 1650,
+ "conteo_clases": {
+  "bien": 11,
+  "mal": 14
+ },
+ "numero_viejo": 11,
+ "ejercicio_id": 2,
+ "dir": "2/run_008",
+ "origen_run": {
+  "numero": 11,
+  "ruta": "datos/entrenamientos/run_11",
+  "nota": "corrida anterior a las tablas numeradas: sin lista de clips"
+ }
+}

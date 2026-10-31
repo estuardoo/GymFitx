@@ -9,7 +9,7 @@ from pydantic import BaseModel
 
 from src.evaluacion.plantilla import build_template, template_path
 from src.interfaz.control import sesion
-from src.nucleo.config import EXERCISES_DIR, RECORDINGS_DIR, TEMPLATES_DIR
+from src.nucleo.config import RECORDINGS_DIR, TEMPLATES_DIR
 from src.nucleo.ejercicio import load_all
 from src.nucleo.tipos import FeatureVec
 from src.procesamiento.medidas.features import FeatureExtractor
@@ -71,7 +71,7 @@ def use_as_base(cfg: UsarComoBase) -> dict:
     import json
     meta = json.loads(json_path.read_text(encoding="utf-8"))
     slug = meta["exercise"]
-    ejercicios = load_all(EXERCISES_DIR)
+    ejercicios = load_all()
     if slug not in ejercicios:
         raise HTTPException(404, f"El ejercicio '{slug}' de esa grabación ya no existe.")
     ex = ejercicios[slug]
@@ -81,7 +81,7 @@ def use_as_base(cfg: UsarComoBase) -> dict:
     valores, tiempos = z["values"], z["t_ms"]
     if list(z["names"]) != extractor.names:
         raise HTTPException(
-            400, "El YAML de este ejercicio cambió desde que se grabó esta sesión "
+            400, "La definicion de este ejercicio cambió desde que se grabó esta sesión "
                  "(las features no coinciden); no se puede recalibrar desde ella.")
 
     frames = [

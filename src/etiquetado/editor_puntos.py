@@ -1,13 +1,12 @@
-"""Editor visual de los .yaml de ejercicio (ejercicios/*.yaml):
+"""Editor visual de la definicion de cada ejercicio (parameters/<n>/, ver src/nucleo/definicion.py):
 elegir con clic, sobre un diagrama del cuerpo, que landmarks
-arma cada 'feature' (angulo o razon de distancia), en vez de escribir el YAML
-a mano. Mismo archivo que ya lee puntos_de_ejercicio() en src/nucleo/ejercicio.py -- este
+arma cada 'feature' (angulo o razon de distancia), en vez de escribir el archivo a mano.
+Es el mismo dato que ya lee puntos_de_ejercicio() en src/nucleo/ejercicio.py -- este
 modulo es el que ahora tambien puede ESCRIBIRLO.
 
 Solo toca 'name'/'description'/'source'/'features'/'kpoints'; cualquier otra
-clave del yaml (signal, segmentation) se deja tal cual estaba. PyYAML no
-conserva comentarios al reescribir -- por eso se guarda una copia del
-contenido anterior en ejercicios/.respaldos/ antes de cada guardado."""
+clave (signal, segmentation...) se deja tal cual estaba. Antes de cada guardado la definicion
+anterior queda en sistema/respaldos/<slug>.json."""
 from __future__ import annotations
 
 import json
@@ -15,13 +14,12 @@ import re
 import time
 from datetime import datetime
 
-from src.nucleo.config import EXERCISES_DIR as EJERCICIOS_DIR
+from src.nucleo import definicion as DEF
 from src.nucleo.config import KPOINTS_PENDIENTES_PATH
-from src.nucleo.ejercicio import resolver_features
+from src.nucleo.ejercicio import construir, resolver_features
 from src.nucleo.landmarks import POSE_CONNECTIONS_NOMBRES
+from src.procesamiento.puntos import normalizacion as NORM
 from src.procesamiento.puntos.kpoints import FUENTES_KPOINT
-
-RESPALDOS_DIR = EJERCICIOS_DIR / ".respaldos"   # copia del .yaml antes de cada guardado
 
 # --- catalogo de puntos: nombre -> (x, y, grupo), 0..1, y hacia arriba -------
 # mismos 33 landmarks de MediaPipe Pose que ya usa dataset (ver poblar_desde_manifest),
@@ -76,7 +74,7 @@ POSE_GRUPOS = {
     "cadera": "Cadera", "piernas": "Piernas", "pies": "Pies",
 }
 
-# tipo de feature -> cuantos 'points' y 'reference' exige (ver los .yaml ya
+# tipo de feature -> cuantos 'points' y 'reference' exige (ver las definiciones ya
 # existentes: angle siempre 3 puntos, distance_ratio 2 + 2 de referencia)
 TIPOS_FEATURE = {
     "angle": {"puntos": 3, "referencia": 0, "etiqueta": "Angulo fijo (3 puntos, vertice el del medio)"},
@@ -105,8 +103,7 @@ ANGULOS_CONOCIDOS = {
     ],
 }
 
-# --- catalogo de kpoints por ejercicio (nuevo, vive en el mismo .yaml bajo la
-# clave 'kpoints') ------------------------------------------------------------
+# --- catalogo de kpoints por ejercicio (vive en la definicion, parameters/<n>/kpoints.json) ------------------------------------------------------------
 # Cada kpoint: {"numero": int, "nombre": str, "origen": {...}}. Es la lista de
 # QUE landmarks le importan a este ejercicio -- de ahi salen (a) que trackers
 # corre src/procesamiento/offline.py y (b) contra que nombres se validan los
@@ -161,20 +158,15 @@ def catalogo(source="pose"):
 
 
 def listar_ejercicios():
-    """Nombres (sin .yaml) de todos los ejercicios en ejercicios/."""
-    if not EJERCICIOS_DIR.exists():
-        return []
-    return sorted(p.stem for p in EJERCICIOS_DIR.glob("*.yaml"))
+    """Slugs de los ejercicios activos."""
+    return DEF.slugs()
 
 
 def leer_ejercicio(nombre):
-    """Los campos editables de un ejercicio, tal cual estan en su .yaml. None
-    si el archivo no existe."""
-    path = EJERCICIOS_DIR / f"{nombre}.yaml"
-    if not path.exists():
+    """Los campos editables de un ejercicio. None si no existe."""
+    data = DEF.leer(nombre)
+    if data is None:
         return None
-    import yaml
-    data = yaml.safe_load(path.read_text("utf-8")) or {}
     return {
         "name": data.get("name", nombre),
         "description": data.get("description", ""),
@@ -182,7 +174,19 @@ def leer_ejercicio(nombre):
         "features": data.get("features") or [],
         "kpoints": data.get("kpoints") or [],
         "reglas": data.get("reglas") or [],
+        "normalizacion": _normalizacion_panel(nombre, data),
     }
+
+
+def _normalizacion_panel(nombre, data):
+    n = NORM.normalizacion_de(nombre)
+    n["error"] = None
+    if n["origen"] or n["escala"]:
+        try:
+            NORM.validar_normalizacion(n, data.get("kpoints"))
+        except ValueError as e:   # p.ej. la formula nombra un kpoint que se quito del catalogo
+            n["error"] = str(e)
+    return n
 
 
 def _validar_features(source, features, kpoints=None):
@@ -190,8 +194,8 @@ def _validar_features(source, features, kpoints=None):
     # referenciar ESOS nombres (lo que el usuario selecciono para ahorrar
     # deteccion). Sin catalogo todavia (ejercicios viejos): se valida contra
     # los 33/21 landmarks crudos, como antes.
-    # Mejora: los 'features' del yaml los mide GYMFITX en vivo con los nombres
-    # CRUDOS de su 'source' (src/procesamiento/medidas/features.py -> resolve), asi que un yaml como
+    # Mejora: los 'features' de la definicion los mide GYMFITX en vivo con los nombres
+    # CRUDOS de su 'source' (src/procesamiento/medidas/features.py -> resolve), asi que una definicion como
     # cuerpo_completo no se podia volver a
     # guardar desde aqui. Se aceptan ambos: nombres del catalogo o crudos.
     valido = {p["nombre"] for p in catalogo(source)["puntos"]}
@@ -221,21 +225,31 @@ def _validar_features(source, features, kpoints=None):
                 raise ValueError(f"'{nombre}': el punto '{n}' no existe en {origen}")
 
 
+def _guardar_valido(nombre, data):
+    """El ejercicio tiene que poder cargarse (si no, se cae /api/state para TODOS): se valida antes de escribir."""
+    try:
+        construir(nombre, data)
+    except (ValueError, KeyError) as e:
+        raise ValueError(f"El ejercicio no quedaria valido, no se guardo nada: {e}") from None
+    DEF.guardar(nombre, data)
+
+
+def _definicion_de(nombre):
+    data = DEF.leer(nombre)
+    if data is None:
+        raise ValueError(f"No existe el ejercicio '{nombre}'")
+    return data
+
+
 def guardar_ejercicio(nombre, cambios):
     """cambios: {name, description, source, features, kpoints}. Valida
     kpoints (numeros/nombres unicos, origenes validos, derivados solo de
     kpoints previos) y luego features (mismo tipo conocido y cantidad de
     puntos/reference de siempre, pero ahora contra los nombres del catalogo
-    de kpoints si ya existe uno) -- antes de tocar el archivo. Todo lo demas
-    del yaml (signal, segmentation, etc) se deja tal cual estaba. Guarda una
-    copia del contenido anterior en ejercicios/.respaldos/ (PyYAML no conserva
-    los comentarios del archivo al reescribir)."""
-    path = EJERCICIOS_DIR / f"{nombre}.yaml"
-    if not path.exists():
-        raise ValueError(f"No existe el ejercicio '{nombre}'")
-    import yaml
-    anterior = path.read_text("utf-8")
-    data = yaml.safe_load(anterior) or {}
+    de kpoints si ya existe uno) -- antes de tocar nada. Todo lo demas
+    (signal, segmentation, etc) se deja tal cual estaba; la definicion anterior queda en
+    sistema/respaldos/."""
+    data = _definicion_de(nombre)
 
     source = cambios.get("source") or data.get("source", "pose")
     kpoints = cambios.get("kpoints") if "kpoints" in cambios else data.get("kpoints") or []
@@ -265,78 +279,57 @@ def guardar_ejercicio(nombre, cambios):
         if not sig["features"]:
             del sig["features"]
 
-    RESPALDOS_DIR.mkdir(exist_ok=True)
-    # el ejercicio tiene que poder cargarse (si no, se cae /api/state para TODOS): se prueba en un archivo aparte
-    from src.nucleo.ejercicio import load_exercise
-    prueba = RESPALDOS_DIR / "_validando.yaml"
-    prueba.write_text(yaml.safe_dump(data, allow_unicode=True, sort_keys=False), "utf-8")
-    try:
-        load_exercise(prueba)
-    except (ValueError, KeyError) as e:
-        raise ValueError(f"El ejercicio no quedaria valido, no se guardo nada: {e}") from None
-    finally:
-        prueba.unlink(missing_ok=True)
-    (RESPALDOS_DIR / f"{nombre}.yaml").write_text(anterior, "utf-8")
-    path.write_text(yaml.safe_dump(data, allow_unicode=True, sort_keys=False), "utf-8")
+    _guardar_valido(nombre, data)
 
 
 def guardar_reglas(nombre, reglas):
-    """Reemplaza `reglas:` del .yaml (validadas por evaluacion/reglas.py) sin tocar el resto; respaldo antes."""
-    import yaml
-
+    """Reemplaza `reglas` de la definicion (validadas por nucleo/reglas.py) sin tocar el resto."""
     from src.nucleo import reglas as REGLAS
-    path = EJERCICIOS_DIR / f"{nombre}.yaml"
-    if not path.exists():
-        raise ValueError(f"No existe el ejercicio '{nombre}'")
+    data = _definicion_de(nombre)
     ok = REGLAS.validar(reglas)
-    anterior = path.read_text("utf-8")
-    data = yaml.safe_load(anterior) or {}
     data["reglas"] = ok
     if not ok:
         del data["reglas"]
-    RESPALDOS_DIR.mkdir(exist_ok=True)
-    (RESPALDOS_DIR / f"{nombre}.yaml").write_text(anterior, "utf-8")
-    path.write_text(yaml.safe_dump(data, allow_unicode=True, sort_keys=False), "utf-8")
+    DEF.guardar(nombre, data)
     return ok
 
 
+def guardar_normalizacion(nombre, norm):
+    """Guarda {origen, escala, n_frames} en la definicion (guide.json -> normalizacion) sin tocar el resto.
+    -> {normalizacion, cambio}: cambio=True si difiere de lo vigente (gold se rehace solo; modelos ya entrenados: reentrenar)."""
+    data = _definicion_de(nombre)
+    limpio = NORM.validar_normalizacion(norm, data.get("kpoints"))
+    antes = NORM.normalizacion_de(nombre)
+    data["normalizacion"] = limpio
+    DEF.guardar(nombre, data)
+    return {"normalizacion": limpio, "cambio": any(antes[k] != limpio[k] for k in limpio)}
+
+
 def crear_ejercicio(nombre):
-    """Ejercicio nuevo desde cero (guardar_ejercicio solo puede EDITAR uno que ya exista): stub de
-    .yaml minimo pero valido, sus carpetas en datos/clips/<nombre>/ y datos/grabaciones/<nombre>/, y
+    """Ejercicio nuevo desde cero (guardar_ejercicio solo puede EDITAR uno que ya exista): definicion
+    minima pero valida, su numero y carpetas en input/<capa>/<numero>/, y
     lo sube ya a SQL (su 'type' + definicion) para que quede conectado desde el primer guardado en
     el editor de Puntos."""
     nombre = (nombre or "").strip()
     if not re.fullmatch(r"[a-z0-9_]+", nombre):
         raise ValueError("Nombre invalido: solo minusculas, numeros y '_' (sin espacios ni acentos)")
-    path = EJERCICIOS_DIR / f"{nombre}.yaml"
-    if path.exists():
+    if DEF.existe(nombre):
         raise ValueError(f"Ya existe un ejercicio '{nombre}'")
-    import yaml
-    EJERCICIOS_DIR.mkdir(parents=True, exist_ok=True)
-    path.write_text(yaml.safe_dump({"name": nombre, "description": "", "source": "pose",
-                                     "features": [], "kpoints": []}, allow_unicode=True, sort_keys=False), "utf-8")
+    ej = DEF.guardar(nombre, {"name": nombre, "description": "", "source": "pose", "features": [], "kpoints": []})
 
-    from src.etiquetado.cortes import CFG
-    from src.nucleo.config import CLIPS_DIR, RECORDINGS_DIR
-    for clase in CFG["clases"]:
-        if clase not in CFG["no_exportar"]:
-            (CLIPS_DIR / nombre / clase).mkdir(parents=True, exist_ok=True)
-    (RECORDINGS_DIR / nombre).mkdir(parents=True, exist_ok=True)
+    from src.nucleo import config as CONF
+    for capa in (CONF.RECORDINGS_DIR, CONF.CLIPS_DIR, CONF.PLATE_DIR, CONF.GOLD_DIR):   # los datos se nombran con el numero
+        (capa / str(ej)).mkdir(parents=True, exist_ok=True)
 
-    return {"ok": True, "sql": subir(nombre)}
+    return {"ok": True, "numero": ej, "sql": subir(nombre)}
 
 
 def modificar_ejercicio(nombre, cambios):
     """Datos basicos de un ejercicio (el slug NO se renombra: ata 'type' en SQL, carpeta de clips y plantilla).
     cambios: {name, description, direction, min_duration_ms, max_duration_ms}; lo que falte se deja igual.
-    Puntos/angulos se editan con guardar_ejercicio. Valida con load_exercise antes de escribir y respalda el
-    .yaml anterior. Devuelve base_invalida=True si cambio la segmentacion y ya hay base grabada."""
-    path = EJERCICIOS_DIR / f"{nombre}.yaml"
-    if not path.exists():
-        raise ValueError(f"No existe el ejercicio '{nombre}'")
-    import yaml
-    anterior = path.read_text("utf-8")
-    data = yaml.safe_load(anterior) or {}
+    Puntos/angulos se editan con guardar_ejercicio. Valida antes de escribir y respalda la definicion
+    anterior. Devuelve base_invalida=True si cambio la segmentacion y ya hay base grabada."""
+    data = _definicion_de(nombre)
     nom = (cambios.get("name") or "").strip()
     if "name" in cambios and not nom:
         raise ValueError("El nombre no puede quedar vacio")
@@ -355,18 +348,7 @@ def modificar_ejercicio(nombre, cambios):
     if seg:
         data["segmentation"] = seg
 
-    from src.nucleo.ejercicio import load_exercise
-    RESPALDOS_DIR.mkdir(exist_ok=True)
-    prueba = RESPALDOS_DIR / "_validando.yaml"
-    prueba.write_text(yaml.safe_dump(data, allow_unicode=True, sort_keys=False), "utf-8")
-    try:
-        load_exercise(prueba)
-    except (ValueError, KeyError) as e:
-        raise ValueError(f"El ejercicio no quedaria valido, no se guardo nada: {e}") from None
-    finally:
-        prueba.unlink(missing_ok=True)
-    (RESPALDOS_DIR / f"{nombre}.yaml").write_text(anterior, "utf-8")
-    path.write_text(yaml.safe_dump(data, allow_unicode=True, sort_keys=False), "utf-8")
+    _guardar_valido(nombre, data)
 
     from src.evaluacion.plantilla import template_path
     from src.nucleo.config import TEMPLATES_DIR
@@ -374,16 +356,12 @@ def modificar_ejercicio(nombre, cambios):
 
 
 def eliminar_ejercicio(nombre):
-    """Archiva un ejercicio: su .yaml pasa a ejercicios/.respaldos/ (recuperable). Solo mueve el .yaml; sus clips,
-    grabaciones, manifest y SQL los limpia etiquetado/depurar.py (lo llama el endpoint; el 'type' queda reservado
-    en sql_tipos.json)."""
-    path = EJERCICIOS_DIR / f"{nombre}.yaml"
-    if not path.exists():
-        raise ValueError(f"No existe el ejercicio '{nombre}'")
-    RESPALDOS_DIR.mkdir(exist_ok=True)
-    destino = RESPALDOS_DIR / f"{nombre}_eliminado_{datetime.now():%Y%m%d_%H%M%S}.yaml"
-    path.replace(destino)
-    return {"ok": True, "respaldo": destino.name}
+    """Archiva un ejercicio: queda inactivo con su numero reservado (recuperable: crearlo de nuevo con el mismo nombre
+    lo reactiva). Sus clips, grabaciones, tablas y SQL los limpia etiquetado/depurar.py (lo llama el endpoint; el 'type'
+    queda reservado en sql_tipos.json)."""
+    _definicion_de(nombre)
+    DEF.archivar(nombre)
+    return {"ok": True}
 
 
 def conexiones_kpoints(kpoints):
@@ -413,7 +391,7 @@ def codigo_kpoint(kp, kpoints):
 
 
 def _definicion(nombre):
-    """Lo que se comparte por SQL: source, kpoints y features (signal/segmentation se quedan en el .yaml)."""
+    """Lo que se comparte por SQL: source, kpoints y features (signal/segmentation se quedan en la definicion local)."""
     datos = leer_ejercicio(nombre)
     return {k: datos.get(k) for k in ("source", "kpoints", "features")}
 
@@ -459,7 +437,7 @@ def sincronizar_sql(nombre):
 
 # --- SQL manda; sin conexion se guarda en local y se sube cuando vuelva --------------------------------------
 # datos/pendientes_kpoints.json = {ejercicio: fecha}: guardado en local y aun no subido. Mientras este ahi, lo LOCAL
-# es lo mas nuevo (se sube en cuanto SQL responda); si no esta, lo que diga SQL pisa al .yaml.
+# es lo mas nuevo (se sube en cuanto SQL responda); si no esta, lo que diga SQL pisa a la definicion local.
 PENDIENTES_PATH = KPOINTS_PENDIENTES_PATH
 ESPERA_SQL_CAIDO_S = 30.0
 _sql_caido_hasta = 0.0
@@ -482,7 +460,7 @@ def _marcar_pendiente(nombre, pendiente):
 
 
 def subir(nombre):
-    """Tras guardar el .yaml: lo sube a SQL. Sin conexion queda pendiente (y se sube solo despues)."""
+    """Tras guardar la definicion: lo sube a SQL. Sin conexion queda pendiente (y se sube solo despues)."""
     global _sql_caido_hasta
     try:
         tipo = sincronizar_sql(nombre)
@@ -495,10 +473,10 @@ def subir(nombre):
 
 
 def sincronizar(nombre):
-    """Deja el .yaml y SQL iguales, con SQL mandando:
+    """Deja la definicion local y SQL iguales, con SQL mandando:
     - con pendiente local (se guardo sin conexion): se sube lo local;
-    - SQL no tiene el ejercicio: se sube el .yaml;
-    - SQL tiene otra cosa: se aplica al .yaml (queda copia en .respaldos);
+    - SQL no tiene el ejercicio: se sube la definicion local;
+    - SQL tiene otra cosa: se aplica a la local (queda copia en sistema/respaldos);
     - sin conexion: no se toca nada."""
     global _sql_caido_hasta
     from src.almacenamiento import dataset_sql as SQL
@@ -515,7 +493,7 @@ def sincronizar(nombre):
         remoto = SQL.leer_definicion(tipo)
         if remoto is None:
             sincronizar_sql(nombre)
-            return {"estado": "enviado", "pendiente": False, "detalle": "SQL no tenia este ejercicio: se subio el .yaml"}
+            return {"estado": "enviado", "pendiente": False, "detalle": "SQL no tenia este ejercicio: se subio la definicion local"}
     except Exception as e:   # sin pyodbc, sin servidor, sin permisos...
         _sql_caido_hasta = time.monotonic() + ESPERA_SQL_CAIDO_S
         return {"estado": "sin_conexion", "pendiente": pendiente, "detalle": str(e)[:200]}
@@ -523,9 +501,9 @@ def sincronizar(nombre):
         return {"estado": "sincronizado", "pendiente": False}
     try:
         guardar_ejercicio(nombre, remoto)      # SQL manda
-    except ValueError as e:                    # p.ej. a lo de SQL le falta una feature que el .yaml usa como señal
+    except ValueError as e:                    # p.ej. a lo de SQL le falta una feature que la definicion usa como señal
         return {"estado": "conflicto", "pendiente": False, "detalle": str(e)[:300]}
-    return {"estado": "traido", "pendiente": False, "detalle": "SQL tenia otra version: se aplico al .yaml local"}
+    return {"estado": "traido", "pendiente": False, "detalle": "SQL tenia otra version: se aplico a la definicion local"}
 
 
 def reintentar(todos=False):

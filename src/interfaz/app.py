@@ -107,7 +107,7 @@ async def _medir_http(request: Request, call_next):
 
 @app.get("/api/tiempos")
 def tiempos_api() -> dict:
-    """Matriz de tiempos por proceso de esta sesion (tambien en datos/logs/tiempos_*.log)."""
+    """Matriz de tiempos por proceso de esta sesion (tambien en sistema/logs/tiempos_*.log)."""
     return {"matriz": tiempos.matriz(), "filas": tiempos.filas(), "archivo": tiempos.RUTA.name}
 
 

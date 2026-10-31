@@ -1,0 +1,141 @@
+{
+ "schema_version": 1,
+ "ejercicio": 1,
+ "kpoints": [
+  {
+   "numero": 1,
+   "nombre": "NOSE",
+   "origen": {
+    "tipo": "landmark",
+    "fuente": "pose",
+    "landmark": "NOSE"
+   }
+  },
+  {
+   "nombre": "LEFT_SHOULDER",
+   "numero": 2,
+   "origen": {
+    "fuente": "pose",
+    "landmark": "LEFT_SHOULDER",
+    "tipo": "landmark"
+   }
+  },
+  {
+   "nombre": "RIGHT_SHOULDER",
+   "numero": 3,
+   "origen": {
+    "fuente": "pose",
+    "landmark": "RIGHT_SHOULDER",
+    "tipo": "landmark"
+   }
+  },
+  {
+   "nombre": "LEFT_ELBOW",
+   "numero": 4,
+   "origen": {
+    "fuente": "pose",
+    "landmark": "LEFT_ELBOW",
+    "tipo": "landmark"
+   }
+  },
+  {
+   "nombre": "RIGHT_ELBOW",
+   "numero": 5,
+   "origen": {
+    "fuente": "pose",
+    "landmark": "RIGHT_ELBOW",
+    "tipo": "landmark"
+   }
+  },
+  {
+   "nombre": "LEFT_WRIST",
+   "numero": 6,
+   "origen": {
+    "fuente": "pose",
+    "landmark": "LEFT_WRIST",
+    "tipo": "landmark"
+   }
+  },
+  {
+   "nombre": "RIGHT_WRIST",
+   "numero": 7,
+   "origen": {
+    "fuente": "pose",
+    "landmark": "RIGHT_WRIST",
+    "tipo": "landmark"
+   }
+  },
+  {
+   "numero": 8,
+   "nombre": "LEFT_INDEX",
+   "origen": {
+    "tipo": "landmark",
+    "fuente": "pose",
+    "landmark": "LEFT_INDEX"
+   }
+  },
+  {
+   "numero": 9,
+   "nombre": "RIGHT_INDEX",
+   "origen": {
+    "tipo": "landmark",
+    "fuente": "pose",
+    "landmark": "RIGHT_INDEX"
+   }
+  },
+  {
+   "nombre": "LEFT_HIP",
+   "numero": 10,
+   "origen": {
+    "fuente": "pose",
+    "landmark": "LEFT_HIP",
+    "tipo": "landmark"
+   }
+  },
+  {
+   "nombre": "RIGHT_HIP",
+   "numero": 11,
+   "origen": {
+    "fuente": "pose",
+    "landmark": "RIGHT_HIP",
+    "tipo": "landmark"
+   }
+  },
+  {
+   "nombre": "LEFT_KNEE",
+   "numero": 12,
+   "origen": {
+    "fuente": "pose",
+    "landmark": "LEFT_KNEE",
+    "tipo": "landmark"
+   }
+  },
+  {
+   "nombre": "RIGHT_KNEE",
+   "numero": 13,
+   "origen": {
+    "fuente": "pose",
+    "landmark": "RIGHT_KNEE",
+    "tipo": "landmark"
+   }
+  },
+  {
+   "nombre": "LEFT_ANKLE",
+   "numero": 14,
+   "origen": {
+    "fuente": "pose",
+    "landmark": "LEFT_ANKLE",
+    "tipo": "landmark"
+   }
+  },
+  {
+   "nombre": "RIGHT_ANKLE",
+   "numero": 15,
+   "origen": {
+    "fuente": "pose",
+    "landmark": "RIGHT_ANKLE",
+    "tipo": "landmark"
+   }
+  }
+ ]
+}

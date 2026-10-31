@@ -1,7 +1,7 @@
 /* Pestana Ranking: corridas ordenadas por F1 macro. API: /api/entrenamientos */
 function configTexto(m){
   const c=m.config; if(!c) return '—';
-  const base=c.modo==='punto' ? `punto: ${c.punto_centro}-${c.punto_escala_a}-${c.punto_escala_b}` : `rect ${c.ancho&&c.alto?`${c.ancho}x${c.alto}`:'100x100'}`;
+  const base=c.modo==='formula' ? `fórmula: (P−${c.origen})/${c.escala}` : c.modo==='punto' ? `punto: ${c.punto_centro}-${c.punto_escala_a}-${c.punto_escala_b}` : `rect ${c.ancho&&c.alto?`${c.ancho}x${c.alto}`:'100x100'}`;
   return `${base} · ${c.n_frames_fijo}f`;
 }
 
@@ -27,7 +27,7 @@ function mostrarRanking(m){
   $F('#ranknum').textContent='#'+m.numero;
   $F('#rankmodelo').textContent=m.mejor_modelo||'—';
   $F('#rankerrores').textContent=m.errores!=null?`${m.errores}/${m.n_muestras} errores (${(100*m.errores/m.n_muestras).toFixed(1)}%)`:'este entrenamiento no guardo el detalle por clip';
-  $F('#rimgConf').src=`/entrenamientos/run_${m.numero}/confusion.png?t=${Date.now()}`;
+  $F('#rimgConf').src=`/entrenamientos/${m.dir}/confusion.png?t=${Date.now()}`;
   $F('#rankclips').innerHTML=(m.predicciones||[]).map(p=>
     `<tr${p.ok?'':' class="errfila"'}><td>${p.clip}</td><td>${p.real}</td><td>${p.prediccion}</td><td>${p.ok?'<span class="okmark">✓</span>':'<span class="errmark">✗</span>'}</td></tr>`).join('');
 }

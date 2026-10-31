@@ -15,16 +15,20 @@ def elegir_k(test_pct, conteo, clases, n, min_grupos=None):
 
 
 class PorGrabacion:
-    """Reemplaza al StratifiedKFold: .split(X, y) estratificado por clase pero sin partir una grabacion entre entrenar y
-    probar. Las copias (_2, _3) y los ciclos del mismo video van juntos; antes se mezclaban y el F1 salia inflado."""
+    """Reemplaza al StratifiedKFold: .split(X, y) estratificado sin partir una grabacion entre entrenar y probar.
+    Las copias (_2, _3) y los ciclos del mismo video van juntos; antes se mezclaban y el F1 salia inflado.
+    `estratos` (p.ej. clase+persona) reparte cada estrato entre los folds: el azar queda condicionado a la persona,
+    asi cada fold de prueba tiene clips de todas las personas en vez de tocar solo a una."""
 
-    def __init__(self, k, grupos, semilla):
+    def __init__(self, k, grupos, semilla, estratos=None):
         import numpy as np
         self.k, self.grupos, self.semilla = k, np.asarray(grupos), semilla
+        self.estratos = None if estratos is None else np.asarray(estratos)
 
     def split(self, X, y):
         from sklearn.model_selection import StratifiedGroupKFold
-        return StratifiedGroupKFold(self.k, shuffle=True, random_state=self.semilla).split(X, y, self.grupos)
+        y_est = y if self.estratos is None else self.estratos
+        return StratifiedGroupKFold(self.k, shuffle=True, random_state=self.semilla).split(X, y_est, self.grupos)
 
 
 def evaluar(nombre, est, X, y, skf):
@@ -65,6 +69,34 @@ def evaluar(nombre, est, X, y, skf):
         r["iteraciones"] = {"tope": int(tope), "min": min(usadas), "media": round(float(np.mean(usadas)), 1),
                             "max": max(usadas), "freno": max(usadas) < tope}
     return r
+
+
+def composicion_folds(skf, X, y, personas):
+    """Por fold: cuantos clips de cada persona van a prueba y cuantos a entrenar. Sirve para ver que el azar
+    reparte entre todas las personas (y no toma solo de una)."""
+    import numpy as np
+    personas = np.asarray(personas)
+    nombres = sorted(set(personas.tolist()))
+    out = []
+    for i, (tr, te) in enumerate(skf.split(X, y)):
+        out.append({"fold": i + 1,
+                    "prueba": {p: int((personas[te] == p).sum()) for p in nombres},
+                    "entreno": {p: int((personas[tr] == p).sum()) for p in nombres}})
+    return out
+
+
+def por_persona(y, y_pred, personas, clases):
+    """Lo que acierta el modelo en los clips de cada persona, con las predicciones que ya salieron de los folds
+    (no reentrena nada). Sirve para comparar P1 contra P2: con pocos clips una persona puede no decir mucho."""
+    import numpy as np
+    personas = np.asarray(personas)
+    out = {}
+    for p in sorted(set(personas.tolist())):
+        m = personas == p
+        reales = {c: int((y[m] == i).sum()) for i, c in enumerate(clases) if (y[m] == i).any()}
+        out[p] = {"clips": int(m.sum()), "reales": reales,
+                  "accuracy": round(float((y_pred[m] == y[m]).mean()), 4)}
+    return out
 
 
 def sin_privados(r):

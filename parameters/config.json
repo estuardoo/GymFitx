@@ -1,0 +1,109 @@
+{
+ "seleccion": {
+  "excluir_clases": [
+   "sin_etiqueta"
+  ]
+ },
+ "limpieza": {
+  "aplicar": true,
+  "min_frames": 10,
+  "max_nan_pct": 20
+ },
+ "construccion": {
+  "fuera": {
+   "incluir": true,
+   "paso": 0.25,
+   "iou_max": 0.3,
+   "min_cuadros": 4
+  }
+ },
+ "formato": {
+  "n_frames_defecto": 30,
+  "componentes": "xyzap",
+  "lienzo": 100,
+  "escala": {
+   "angle": 180,
+   "proporcion": 100,
+   "distance_ratio": 4
+  }
+ },
+ "entrenamiento": {
+  "test_pct": 20,
+  "semilla": 42,
+  "min_muestras": 4
+ },
+ "base_clip": {
+  "frac_low": 0.3,
+  "frac_high": 0.5,
+  "frac_fin": 0.7
+ },
+ "schema_version": 1,
+ "ejercicios": [
+  1,
+  2
+ ],
+ "modelos": {
+  "random_forest": {
+   "epocas": 350
+  },
+  "extra_trees": {
+   "epocas": 350
+  },
+  "gradient_boosting": {
+   "epocas": 200,
+   "parar": true
+  },
+  "hist_gradient_boosting": {
+   "max_iter": 150,
+   "parar": true
+  },
+  "adaboost": {
+   "epocas": 200
+  },
+  "sgd_logistico": {
+   "parar": true
+  },
+  "mlp": {
+   "parar": true
+  },
+  "lightgbm": {
+   "epocas": 300
+  },
+  "catboost": {
+   "epocas": 300
+  },
+  "xgboost": {
+   "epocas": 300
+  }
+ },
+ "camaras_droidcam": [
+  {
+   "nombre": "NOTE20PRO",
+   "ip": "hyperionnote10.tail5fd235.ts.net:4747"
+  },
+  {
+   "nombre": "APPLE",
+   "ip": "100.107.58.96:4747"
+  }
+ ],
+ "normalizacion_por_sql_tipo": {
+  "1": {
+   "modo": "rectangulo",
+   "n_frames_fijo": 30,
+   "punto_centro": "wrist_der_25",
+   "punto_escala_a": "wrist_der_25",
+   "punto_escala_b": "pinky_tip_der_56",
+   "puntos_caja": null
+  }
+ },
+ "cortes": {
+  "clases": [
+   "bien",
+   "mal",
+   "descarte"
+  ],
+  "no_exportar": [
+   "descarte"
+  ]
+ }
+}

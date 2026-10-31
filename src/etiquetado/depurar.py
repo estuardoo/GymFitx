@@ -1,8 +1,8 @@
-"""Quitar por completo un ejercicio archivado: manifest, cortes, seleccion de entrenamiento y SQL.
+"""Quitar por completo un ejercicio archivado: sus filas en parameters/inputs.json (raw y clips), sus capas y SQL.
 
-Archivar un ejercicio (Panel -> Rutina -> 🗑) saca su .yaml de ejercicios/; esto limpia el resto para que sus
-clips ya no cuenten (entrenamiento, tablas, totales). Nada se borra en el disco: clips, grabaciones y plantilla
-pasan a datos/archivados/<ejercicio>_<fecha>/ (recuperable). En SQL si se borra todo lo del 'type'; el numero del
+Archivar un ejercicio (Panel -> Rutina -> 🗑) lo deja inactivo en parameters/; esto limpia el resto para que sus
+clips ya no cuenten (entrenamiento, tablas, totales). Nada se borra en el disco: las carpetas input/<capa>/<n>/ y la
+plantilla pasan a sistema/archivados/<ejercicio>_<fecha>/ (recuperable). En SQL si se borra todo lo del 'type'; el numero del
 type queda reservado en sql_tipos.json para no reutilizarlo. Es idempotente: si algo falla (SQL caido, un archivo
 en uso) el ejercicio sigue figurando como pendiente y se reintenta."""
 
@@ -17,14 +17,11 @@ from src.almacenamiento import dataset_sql as SQL
 from src.etiquetado import editor_puntos as EP
 from src.etiquetado import exportar as EXPORTAR
 from src.etiquetado.manifest import log
+from src.nucleo import config as CONF
+from src.nucleo import inputs as INP
 from src.nucleo.config import (
-    CLIPS_DIR,
     DATOS_DIR,
-    ETIQUETAS_PATH,
     EXPORT_ESTADO_PATH,
-    MANIFEST_PATH,
-    RECORDINGS_DIR,
-    SELECCION_PATH,
     SQL_TIPOS_PATH,
     TEMPLATES_DIR,
 )
@@ -53,6 +50,12 @@ def _contar(carpeta):
     return sum(1 for _ in carpeta.rglob("*.mp4")) if carpeta.is_dir() else 0
 
 
+def _capas(ej):
+    """Las carpetas del ejercicio en cada capa: [(nombre de capa, ruta)]."""
+    return [("raw", CONF.RECORDINGS_DIR / str(ej)), ("bronze", CONF.CLIPS_DIR / str(ej)),
+            ("plate", CONF.PLATE_DIR / str(ej)), ("gold", CONF.GOLD_DIR / str(ej))]
+
+
 def _pendiente(slug, si):
     p = set(_leer(PENDIENTES_PATH, []))
     (p.add if si else p.discard)(slug)
@@ -67,22 +70,24 @@ def _depurado(slug, si):
 
 
 def huerfanos():
-    """Ejercicios que ya no estan en ejercicios/ pero aun dejan algo: clips en el manifest o en carpetas, una limpieza
+    """Ejercicios que ya no estan en ejercicios/ pero aun dejan algo: clips en la tabla o en carpetas, una limpieza
     pendiente, o datos en SQL (su type en sql_tipos.json, mientras no se haya depurado)."""
-    nombres = ({r.get("exercise") for r in _leer(MANIFEST_PATH, [])} | set(_leer(PENDIENTES_PATH, []))
+    ejs = INP.ejercicios()
+    nombres = ({r.get("exercise") for r in INP.filas()} | set(_leer(PENDIENTES_PATH, []))
                | (set(_leer(SQL_TIPOS_PATH, {})) - set(_leer(DEPURADOS_PATH, []))))
-    for base in (CLIPS_DIR, RECORDINGS_DIR):
+    for base in (CONF.CLIPS_DIR, CONF.RECORDINGS_DIR):
         if base.is_dir():
-            nombres |= {p.name for p in base.iterdir() if p.is_dir()}
+            nombres |= {ejs[int(p.name)]["slug"] for p in base.iterdir() if p.is_dir() and p.name.isdigit() and int(p.name) in ejs}
     vivos = set(EP.listar_ejercicios())
     return sorted(n for n in nombres if n and n != SIN_EJERCICIO and not n.startswith("_") and n not in vivos)
 
 
 def plan():
     """Que se quitaria de cada ejercicio archivado (para confirmar antes). sql_archivos=None si SQL no responde."""
-    tipos, manifest = _leer(SQL_TIPOS_PATH, {}), _leer(MANIFEST_PATH, [])
-    out = [{"slug": s, "type": tipos.get(s), "clips_manifest": sum(1 for r in manifest if r.get("exercise") == s),
-            "clips_disco": _contar(CLIPS_DIR / s), "grabaciones": _contar(RECORDINGS_DIR / s), "sql_archivos": None}
+    tipos, filas = _leer(SQL_TIPOS_PATH, {}), INP.filas()
+    out = [{"slug": s, "type": tipos.get(s), "clips_manifest": sum(1 for r in filas if r.get("exercise") == s),
+            "clips_disco": _contar(CONF.CLIPS_DIR / str(INP.id_de(s))), "grabaciones": _contar(CONF.RECORDINGS_DIR / str(INP.id_de(s))),
+            "sql_archivos": None}
            for s in huerfanos()]
     try:
         with SQL.conexion() as cx:
@@ -104,28 +109,27 @@ def _purgar_sql(tipo):
 
 
 def depurar(slug):
-    """Deja el ejercicio 'slug' (ya archivado) fuera del manifest, los cortes, la seleccion y SQL."""
+    """Deja el ejercicio 'slug' (ya archivado) fuera de las tablas, los cortes y SQL."""
     if EP.leer_ejercicio(slug) is not None:
         raise ValueError(f"'{slug}' sigue en ejercicios/: archivalo primero")
     r = {"slug": slug, "clips": 0, "movido_a": None, "errores": [], "sql": None, "sql_error": None}
     destino = ARCHIVO_DIR / f"{slug}_{datetime.now():%Y%m%d_%H%M%S}"
-    with EXPORTAR._EXPORT_LOCK:   # mismo candado que exportar(): manifest.json se reescribe entero
-        manifest = _leer(MANIFEST_PATH, [])
-        quitar = [x for x in manifest if x.get("exercise") == slug]
-        if quitar:
-            _escribir(MANIFEST_PATH, [x for x in manifest if x.get("exercise") != slug])
-            sel = _leer(SELECCION_PATH, {})
-            claves = {"/".join(Path(x["clip"]).parts[1:]) for x in quitar}   # "clase/nombre.mp4"
-            if any(k in sel for k in claves):
-                _escribir(SELECCION_PATH, {k: v for k, v in sel.items() if k not in claves})
-        for path in (ETIQUETAS_PATH, EXPORT_ESTADO_PATH):   # cortes de sus videos: si no, el proximo export los recrearia
-            datos = _leer(path, {})
-            resto = {k: v for k, v in datos.items() if not k.startswith(slug + "/")}
+    ej = INP.id_de(slug)
+    with EXPORTAR._EXPORT_LOCK:   # mismo candado que exportar(): la tabla se reescribe entera
+        if ej is not None:
+            with INP.editar() as t:
+                r["clips"] = sum(1 for c in t["clips"] if c["ej"] == ej)
+                vids = {INP.vid_de(x) for x in t["raw"] if x["ej"] == ej}
+                t["clips"] = [c for c in t["clips"] if c["ej"] != ej]
+                t["raw"] = [x for x in t["raw"] if x["ej"] != ej]
+            datos = _leer(EXPORT_ESTADO_PATH, {})   # el hash de sus videos: si no, el proximo export los daria por hechos
+            resto = {k: v for k, v in datos.items() if k not in vids}
             if len(resto) != len(datos):
-                _escribir(path, resto)
-        r["clips"] = len(quitar)
-        for origen, sub in ((CLIPS_DIR / slug, "clips"), (RECORDINGS_DIR / slug, "grabaciones"),
-                            (TEMPLATES_DIR / f"{slug}.npz", "plantillas")):
+                _escribir(EXPORT_ESTADO_PATH, resto)
+            INP.desactivar_ejercicio(slug)
+        origenes = [(p, capa) for capa, p in _capas(ej)] if ej is not None else []
+        origenes.append((TEMPLATES_DIR / f"{slug}.npz", "plantillas"))
+        for origen, sub in origenes:
             if origen.exists():
                 try:
                     (destino / sub).mkdir(parents=True, exist_ok=True)

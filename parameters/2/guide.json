@@ -1,0 +1,16 @@
+{
+ "schema_version": 1,
+ "ejercicio": 2,
+ "description": "Esqueleto completo de cuerpo (33 puntos de MediaPipe Pose). No cuenta repeticiones: es solo para verte entero en camara.",
+ "signal": {
+  "reduce": "mean"
+ },
+ "segmentation": {
+  "direction": "up_down",
+  "min_duration_ms": 600,
+  "max_duration_ms": 8000
+ },
+ "normalizacion": {
+  "n_frames": 30
+ }
+}

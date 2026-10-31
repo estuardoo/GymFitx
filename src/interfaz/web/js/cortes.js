@@ -12,7 +12,7 @@ const msg=t=>{$F('#msg').textContent=t;$F('#msg').style.display='block';setTimeo
 
 let TIPO='';  // carpeta de ejercicio elegida en el listbox; '' = todas
 fetch('/api/config').then(r=>r.json()).then(async c=>{
-  CFG=c; VID=c.videos; L=await (await fetch('/api/labels')).json();
+  CFG=c; VID=c.videos; await cargarPersonas(); L=await (await fetch('/api/labels')).json();
   const tipos=[...new Set(VID.map(x=>x.file.split('/')[0]))].sort();
   const sel=$F('#tipoVid');
   sel.innerHTML=(tipos.length>1?'<option value="">Todos los ejercicios</option>':'')+
@@ -34,12 +34,12 @@ function listar(){
   const d=$F('#lista'); d.querySelectorAll('.vi').forEach(e=>e.remove());
   const delTipo=VID.filter(x=>!TIPO||x.file.startsWith(TIPO+'/'));
   $F('#prog').textContent=`${delTipo.filter(x=>completo(x.file)).length}/${delTipo.length} completos`;
-  delTipo.filter(x=>!filtro||x.file.includes(filtro)).forEach(x=>{
+  delTipo.filter(x=>!filtro||String(x.id).includes(filtro)).forEach(x=>{
     const n=(L[x.file]?.segmentos||[]).filter(s=>s.clase).length;
-    const nombre=x.file.split('/').pop();
+    const nombre='#'+x.id;
     const e=document.createElement('div');
     e.className='vi'+(x.file===cur?' act':''); e.onclick=()=>abrir(x.file);
-    e.innerHTML=`<span><b>${nombre}</b><br><small>${(x.dur_ms/1000).toFixed(1)}s</small></span>
+    e.innerHTML=`<span><b>${nombre}</b><br><small>${(x.dur_ms/1000).toFixed(1)}s · ${x.persona||'sin persona'}</small></span>
       <span class="fbadge ${n?'ok':''}">${n}</span>`;
     d.appendChild(e);
   });
@@ -52,7 +52,21 @@ function siguienteVideo(){
   otros.sort((a,b)=>cnt(a.file)-cnt(b.file)); // prioriza los que tienen contador 0
   abrir(otros[0].file);
 }
-function abrir(file){ cur=file; sel=0; curFps=(VID.find(x=>x.file===file)||{}).fps||0; v.src='/data/'+file; v.load(); listar(); cargarOverlay(file); }
+let PERSONAS=[];
+async function cargarPersonas(){ try{ PERSONAS=(await (await fetch('/api/personas')).json()).personas; }catch(e){ PERSONAS=['P1','P2','P3','P4','P5']; } }
+function pintarPersonaVid(){
+  const x=VID.find(y=>y.file===cur), s=$F('#personaVid'); if(!s) return;
+  s.innerHTML='<option value="">sin persona</option>'+PERSONAS.map(p=>`<option>${p}</option>`).join('');
+  s.value=(x&&x.persona)||''; s.disabled=!x;
+}
+async function cambiarPersonaVid(){
+  const x=VID.find(y=>y.file===cur); if(!x) return;
+  const persona=$F('#personaVid').value||null;
+  const r=await fetch('/api/raw/persona',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:x.id,persona})});
+  if(!r.ok){ msg('⚠ '+((await r.json()).error||r.statusText)); pintarPersonaVid(); return; }
+  x.persona=persona; msg(`Video ${x.id}: ${persona||'sin persona'}`); listar();
+}
+function abrir(file){ cur=file; sel=0; pintarPersonaVid(); curFps=(VID.find(x=>x.file===file)||{}).fps||0; v.src='/data/'+file; v.load(); listar(); cargarOverlay(file); }
 
 // --- Overlay: esqueleto detectado dibujado en vivo sobre el video -----------
 let OV=null, ovOn=true, ovPedido=0;
@@ -241,7 +255,7 @@ async function rehacerTodo(){
 async function exportar(todo=false, sinConfirmar=false){
   const n=Object.values(L).flatMap(x=>x.segmentos).filter(s=>s.clase&&!CFG.no_exportar.includes(s.clase)).length;
   if(!n) return msg('No hay segmentos clasificados para exportar');
-  if(!sinConfirmar && !confirm(todo ? `Regenerar TODOS los cortes (${n} segmentos), aunque no hayan cambiado?` : `Cortar ${n} segmentos a datos/clips/<clase>/ ?`)) return;
+  if(!sinConfirmar && !confirm(todo ? `Regenerar TODOS los cortes (${n} segmentos), aunque no hayan cambiado?` : `Cortar ${n} segmentos a input/bronze/<clase>/ ?`)) return;
   msg('Cortando con ffmpeg… (si faltan puntos, tambien se detectan: puede tardar mas)');
   const btns=[$F('#bexp'),$F('#bexpTodo')], txt0=btns.map(b=>b.textContent);
   btns.forEach(b=>b.disabled=true);

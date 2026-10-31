@@ -1,0 +1,1247 @@
+{
+ "numero": 8,
+ "fecha": "2026-10-22T18:05:35",
+ "test_pct": 20,
+ "k": 3,
+ "n_muestras": 131,
+ "clases": [
+  "bien",
+  "mal"
+ ],
+ "excluidas": [],
+ "no_entrenables": 1,
+ "criterio": "f1_macro",
+ "mejor_modelo": "gradient_boosting",
+ "accuracy": 0.6794,
+ "f1_macro": 0.6221,
+ "linea_base": {
+  "nombre": "linea_base",
+  "accuracy": 0.6107,
+  "f1_macro": 0.3791,
+  "tiempo_seg": 0.01
+ },
+ "anidado": {
+  "accuracy": 0.5725,
+  "f1_macro": 0.5209,
+  "elegidos": {
+   "random_forest": 1,
+   "mlp": 2
+  }
+ },
+ "reporte": {
+  "bien": {
+   "precision": 0.6551724137931034,
+   "recall": 0.37254901960784315,
+   "f1-score": 0.475,
+   "support": 51.0
+  },
+  "mal": {
+   "precision": 0.6862745098039216,
+   "recall": 0.875,
+   "f1-score": 0.7692307692307693,
+   "support": 80.0
+  },
+  "accuracy": 0.6793893129770993,
+  "macro avg": {
+   "precision": 0.6707234617985125,
+   "recall": 0.6237745098039216,
+   "f1-score": 0.6221153846153846,
+   "support": 131.0
+  },
+  "weighted avg": {
+   "precision": 0.6741660602119238,
+   "recall": 0.6793893129770993,
+   "f1-score": 0.65468291250734,
+   "support": 131.0
+  }
+ },
+ "por_persona": {
+  "sin_persona": {
+   "clips": 131,
+   "reales": {
+    "bien": 51,
+    "mal": 80
+   },
+   "accuracy": 0.6794
+  }
+ },
+ "errores": 42,
+ "predicciones": [
+  {
+   "clip": "zancada/bien/160636_zancada_s04_bien.mp4",
+   "real": "bien",
+   "prediccion": "mal",
+   "ok": false
+  },
+  {
+   "clip": "zancada/bien/160636_zancada_s06_bien.mp4",
+   "real": "bien",
+   "prediccion": "mal",
+   "ok": false
+  },
+  {
+   "clip": "zancada/bien/100747b_zancada_frontal_bien_s01_bien.mp4",
+   "real": "bien",
+   "prediccion": "mal",
+   "ok": false
+  },
+  {
+   "clip": "zancada/bien/100747b_zancada_frontal_bien_s03_bien.mp4",
+   "real": "bien",
+   "prediccion": "mal",
+   "ok": false
+  },
+  {
+   "clip": "zancada/bien/100747b_zancada_frontal_bien_s05_bien.mp4",
+   "real": "bien",
+   "prediccion": "mal",
+   "ok": false
+  },
+  {
+   "clip": "zancada/bien/100747b_zancada_frontal_bien_s07_bien.mp4",
+   "real": "bien",
+   "prediccion": "mal",
+   "ok": false
+  },
+  {
+   "clip": "zancada/bien/100747b_zancada_frontal_bien_s09_bien.mp4",
+   "real": "bien",
+   "prediccion": "mal",
+   "ok": false
+  },
+  {
+   "clip": "zancada/bien/100747b_zancada_frontal_bien_s11_bien.mp4",
+   "real": "bien",
+   "prediccion": "mal",
+   "ok": false
+  },
+  {
+   "clip": "zancada/bien/100747b_zancada_frontal_bien_s13_bien.mp4",
+   "real": "bien",
+   "prediccion": "mal",
+   "ok": false
+  },
+  {
+   "clip": "zancada/bien/100747c_zancada_frontal_bien_s02_bien.mp4",
+   "real": "bien",
+   "prediccion": "bien",
+   "ok": true
+  },
+  {
+   "clip": "zancada/bien/100747c_zancada_frontal_bien_s04_bien.mp4",
+   "real": "bien",
+   "prediccion": "mal",
+   "ok": false
+  },
+  {
+   "clip": "zancada/bien/100747c_zancada_frontal_bien_s06_bien.mp4",
+   "real": "bien",
+   "prediccion": "bien",
+   "ok": true
+  },
+  {
+   "clip": "zancada/bien/100747c_zancada_frontal_bien_s08_bien.mp4",
+   "real": "bien",
+   "prediccion": "bien",
+   "ok": true
+  },
+  {
+   "clip": "zancada/bien/100747c_zancada_frontal_bien_s10_bien.mp4",
+   "real": "bien",
+   "prediccion": "bien",
+   "ok": true
+  },
+  {
+   "clip": "zancada/bien/100747c_zancada_frontal_bien_s12_bien.mp4",
+   "real": "bien",
+   "prediccion": "bien",
+   "ok": true
+  },
+  {
+   "clip": "zancada/bien/100747c_zancada_frontal_bien_s14_bien.mp4",
+   "real": "bien",
+   "prediccion": "bien",
+   "ok": true
+  },
+  {
+   "clip": "zancada/bien/100747c_zancada_frontal_bien_s16_bien.mp4",
+   "real": "bien",
+   "prediccion": "bien",
+   "ok": true
+  },
+  {
+   "clip": "zancada/mal/100750c_zancada_frontal_mal_s02_mal.mp4",
+   "real": "mal",
+   "prediccion": "bien",
+   "ok": false
+  },
+  {
+   "clip": "zancada/mal/100750c_zancada_frontal_mal_s04_mal.mp4",
+   "real": "mal",
+   "prediccion": "bien",
+   "ok": false
+  },
+  {
+   "clip": "zancada/mal/100750c_zancada_frontal_mal_s06_mal.mp4",
+   "real": "mal",
+   "prediccion": "bien",
+   "ok": false
+  },
+  {
+   "clip": "zancada/mal/100750c_zancada_frontal_mal_s08_mal.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "zancada/mal/100750c_zancada_frontal_mal_s10_mal.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "zancada/mal/100750c_zancada_frontal_mal_s12_mal.mp4",
+   "real": "mal",
+   "prediccion": "bien",
+   "ok": false
+  },
+  {
+   "clip": "zancada/mal/100750d_zancada_oblicua_mal_s02_mal.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "zancada/mal/100750d_zancada_oblicua_mal_s04_mal.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "zancada/mal/100750d_zancada_oblicua_mal_s06_mal.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "zancada/mal/100750d_zancada_oblicua_mal_s08_mal.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "zancada/mal/100750d_zancada_oblicua_mal_s10_mal.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "zancada/mal/100750d_zancada_oblicua_mal_s12_mal.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "zancada/mal/100751_zancada_oblicua_mal_s02_mal.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "zancada/mal/100751_zancada_oblicua_mal_s04_mal.mp4",
+   "real": "mal",
+   "prediccion": "bien",
+   "ok": false
+  },
+  {
+   "clip": "zancada/mal/100751_zancada_oblicua_mal_s06_mal.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "zancada/mal/100751_zancada_oblicua_mal_s08_mal.mp4",
+   "real": "mal",
+   "prediccion": "bien",
+   "ok": false
+  },
+  {
+   "clip": "zancada/mal/100751_zancada_oblicua_mal_s10_mal.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "zancada/mal/100751_zancada_oblicua_mal_s12_mal.mp4",
+   "real": "mal",
+   "prediccion": "bien",
+   "ok": false
+  },
+  {
+   "clip": "zancada/mal/100751b_zancada_lateral_mal_s02_mal.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "zancada/mal/100751b_zancada_lateral_mal_s04_mal.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "zancada/mal/100751b_zancada_lateral_mal_s06_mal.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "zancada/mal/100751b_zancada_lateral_mal_s08_mal.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "zancada/mal/100751b_zancada_lateral_mal_s10_mal.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "zancada/mal/100751b_zancada_lateral_mal_s12_mal.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "zancada/mal/100751c_zancada_lateral_mal_s02_mal.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "zancada/mal/100751c_zancada_lateral_mal_s04_mal.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "zancada/mal/100751c_zancada_lateral_mal_s06_mal.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "zancada/mal/100751c_zancada_lateral_mal_s08_mal.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "zancada/mal/100751d_zancada_frontal_mal_s02_mal.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "zancada/mal/100751d_zancada_frontal_mal_s04_mal.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "zancada/mal/100751d_zancada_frontal_mal_s06_mal.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "zancada/mal/100751d_zancada_frontal_mal_s08_mal.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "zancada/mal/100751d_zancada_frontal_mal_s10_mal.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "zancada/mal/100751d_zancada_frontal_mal_s12_mal.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "zancada/mal/100752_zancada_lateral_mal_s02_mal.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "zancada/mal/100752_zancada_lateral_mal_s04_mal.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "zancada/mal/100752_zancada_lateral_mal_s06_mal.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "zancada/mal/100752_zancada_lateral_mal_s08_mal.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "zancada/mal/100752_zancada_lateral_mal_s10_mal.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "zancada/mal/100752_zancada_lateral_mal_s12_mal.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "zancada/bien/100747b_zancada_frontal_bien_s11_bien_2.mp4",
+   "real": "bien",
+   "prediccion": "mal",
+   "ok": false
+  },
+  {
+   "clip": "zancada/bien/100747b_zancada_frontal_bien_s13_bien_2.mp4",
+   "real": "bien",
+   "prediccion": "mal",
+   "ok": false
+  },
+  {
+   "clip": "zancada/bien/100747c_zancada_frontal_bien_s02_bien_2.mp4",
+   "real": "bien",
+   "prediccion": "bien",
+   "ok": true
+  },
+  {
+   "clip": "zancada/bien/100747c_zancada_frontal_bien_s04_bien_2.mp4",
+   "real": "bien",
+   "prediccion": "bien",
+   "ok": true
+  },
+  {
+   "clip": "zancada/bien/100747c_zancada_frontal_bien_s06_bien_2.mp4",
+   "real": "bien",
+   "prediccion": "bien",
+   "ok": true
+  },
+  {
+   "clip": "zancada/bien/100747c_zancada_frontal_bien_s08_bien_2.mp4",
+   "real": "bien",
+   "prediccion": "bien",
+   "ok": true
+  },
+  {
+   "clip": "zancada/bien/100747c_zancada_frontal_bien_s10_bien_2.mp4",
+   "real": "bien",
+   "prediccion": "bien",
+   "ok": true
+  },
+  {
+   "clip": "zancada/bien/100747c_zancada_frontal_bien_s12_bien_2.mp4",
+   "real": "bien",
+   "prediccion": "bien",
+   "ok": true
+  },
+  {
+   "clip": "zancada/bien/100747c_zancada_frontal_bien_s14_bien_2.mp4",
+   "real": "bien",
+   "prediccion": "mal",
+   "ok": false
+  },
+  {
+   "clip": "zancada/bien/100747c_zancada_frontal_bien_s16_bien_2.mp4",
+   "real": "bien",
+   "prediccion": "mal",
+   "ok": false
+  },
+  {
+   "clip": "zancada/bien/160636_zancada_s04_bien_2.mp4",
+   "real": "bien",
+   "prediccion": "mal",
+   "ok": false
+  },
+  {
+   "clip": "zancada/bien/160636_zancada_s06_bien_2.mp4",
+   "real": "bien",
+   "prediccion": "mal",
+   "ok": false
+  },
+  {
+   "clip": "zancada/bien/100747b_zancada_frontal_bien_s01_bien_2.mp4",
+   "real": "bien",
+   "prediccion": "mal",
+   "ok": false
+  },
+  {
+   "clip": "zancada/bien/100747b_zancada_frontal_bien_s03_bien_2.mp4",
+   "real": "bien",
+   "prediccion": "mal",
+   "ok": false
+  },
+  {
+   "clip": "zancada/bien/100747b_zancada_frontal_bien_s05_bien_2.mp4",
+   "real": "bien",
+   "prediccion": "mal",
+   "ok": false
+  },
+  {
+   "clip": "zancada/bien/100747b_zancada_frontal_bien_s07_bien_2.mp4",
+   "real": "bien",
+   "prediccion": "mal",
+   "ok": false
+  },
+  {
+   "clip": "zancada/bien/100747b_zancada_frontal_bien_s09_bien_2.mp4",
+   "real": "bien",
+   "prediccion": "mal",
+   "ok": false
+  },
+  {
+   "clip": "zancada/mal/100750c_zancada_frontal_mal_s02_mal_2.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "zancada/mal/100750c_zancada_frontal_mal_s04_mal_2.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "zancada/mal/100750c_zancada_frontal_mal_s06_mal_2.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "zancada/mal/100750c_zancada_frontal_mal_s08_mal_2.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "zancada/mal/100750c_zancada_frontal_mal_s10_mal_2.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "zancada/mal/100750c_zancada_frontal_mal_s12_mal_2.mp4",
+   "real": "mal",
+   "prediccion": "bien",
+   "ok": false
+  },
+  {
+   "clip": "zancada/mal/100750d_zancada_oblicua_mal_s02_mal_2.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "zancada/mal/100750d_zancada_oblicua_mal_s04_mal_2.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "zancada/mal/100750d_zancada_oblicua_mal_s06_mal_2.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "zancada/mal/100750d_zancada_oblicua_mal_s08_mal_2.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "zancada/mal/100750d_zancada_oblicua_mal_s10_mal_2.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "zancada/mal/100750d_zancada_oblicua_mal_s12_mal_2.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "zancada/mal/100751_zancada_oblicua_mal_s02_mal_2.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "zancada/mal/100751_zancada_oblicua_mal_s04_mal_2.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "zancada/mal/100751_zancada_oblicua_mal_s06_mal_2.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "zancada/mal/100751_zancada_oblicua_mal_s08_mal_2.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "zancada/mal/100751_zancada_oblicua_mal_s10_mal_2.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "zancada/mal/100751_zancada_oblicua_mal_s12_mal_2.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "zancada/mal/100751b_zancada_lateral_mal_s02_mal_2.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "zancada/mal/100751b_zancada_lateral_mal_s04_mal_2.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "zancada/mal/100751b_zancada_lateral_mal_s06_mal_2.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "zancada/mal/100751b_zancada_lateral_mal_s08_mal_2.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "zancada/mal/100751b_zancada_lateral_mal_s10_mal_2.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "zancada/mal/100751b_zancada_lateral_mal_s12_mal_2.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "zancada/mal/100751c_zancada_lateral_mal_s02_mal_2.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "zancada/mal/100751c_zancada_lateral_mal_s04_mal_2.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "zancada/mal/100751c_zancada_lateral_mal_s06_mal_2.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "zancada/mal/100751c_zancada_lateral_mal_s08_mal_2.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "zancada/mal/100751d_zancada_frontal_mal_s02_mal_2.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "zancada/mal/100751d_zancada_frontal_mal_s04_mal_2.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "zancada/mal/100751d_zancada_frontal_mal_s06_mal_2.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "zancada/mal/100751d_zancada_frontal_mal_s08_mal_2.mp4",
+   "real": "mal",
+   "prediccion": "bien",
+   "ok": false
+  },
+  {
+   "clip": "zancada/mal/100751d_zancada_frontal_mal_s10_mal_2.mp4",
+   "real": "mal",
+   "prediccion": "bien",
+   "ok": false
+  },
+  {
+   "clip": "zancada/mal/100751d_zancada_frontal_mal_s12_mal_2.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "zancada/mal/100752_zancada_lateral_mal_s02_mal_2.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "zancada/mal/100752_zancada_lateral_mal_s04_mal_2.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "zancada/mal/100752_zancada_lateral_mal_s06_mal_2.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "zancada/mal/100752_zancada_lateral_mal_s08_mal_2.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "zancada/mal/100752_zancada_lateral_mal_s10_mal_2.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "zancada/mal/100752_zancada_lateral_mal_s12_mal_2.mp4",
+   "real": "mal",
+   "prediccion": "mal",
+   "ok": true
+  },
+  {
+   "clip": "zancada/bien/100747b_zancada_frontal_bien_s11_bien_3.mp4",
+   "real": "bien",
+   "prediccion": "mal",
+   "ok": false
+  },
+  {
+   "clip": "zancada/bien/100747b_zancada_frontal_bien_s13_bien_3.mp4",
+   "real": "bien",
+   "prediccion": "mal",
+   "ok": false
+  },
+  {
+   "clip": "zancada/bien/100747c_zancada_frontal_bien_s02_bien_3.mp4",
+   "real": "bien",
+   "prediccion": "bien",
+   "ok": true
+  },
+  {
+   "clip": "zancada/bien/100747c_zancada_frontal_bien_s04_bien_3.mp4",
+   "real": "bien",
+   "prediccion": "bien",
+   "ok": true
+  },
+  {
+   "clip": "zancada/bien/100747c_zancada_frontal_bien_s06_bien_3.mp4",
+   "real": "bien",
+   "prediccion": "bien",
+   "ok": true
+  },
+  {
+   "clip": "zancada/bien/100747c_zancada_frontal_bien_s08_bien_3.mp4",
+   "real": "bien",
+   "prediccion": "bien",
+   "ok": true
+  },
+  {
+   "clip": "zancada/bien/100747c_zancada_frontal_bien_s10_bien_3.mp4",
+   "real": "bien",
+   "prediccion": "bien",
+   "ok": true
+  },
+  {
+   "clip": "zancada/bien/100747c_zancada_frontal_bien_s12_bien_3.mp4",
+   "real": "bien",
+   "prediccion": "bien",
+   "ok": true
+  },
+  {
+   "clip": "zancada/bien/100747c_zancada_frontal_bien_s14_bien_3.mp4",
+   "real": "bien",
+   "prediccion": "mal",
+   "ok": false
+  },
+  {
+   "clip": "zancada/bien/100747c_zancada_frontal_bien_s16_bien_3.mp4",
+   "real": "bien",
+   "prediccion": "mal",
+   "ok": false
+  },
+  {
+   "clip": "zancada/bien/160636_zancada_s04_bien_3.mp4",
+   "real": "bien",
+   "prediccion": "mal",
+   "ok": false
+  },
+  {
+   "clip": "zancada/bien/160636_zancada_s06_bien_3.mp4",
+   "real": "bien",
+   "prediccion": "mal",
+   "ok": false
+  },
+  {
+   "clip": "zancada/bien/100747b_zancada_frontal_bien_s01_bien_3.mp4",
+   "real": "bien",
+   "prediccion": "mal",
+   "ok": false
+  },
+  {
+   "clip": "zancada/bien/100747b_zancada_frontal_bien_s03_bien_3.mp4",
+   "real": "bien",
+   "prediccion": "mal",
+   "ok": false
+  },
+  {
+   "clip": "zancada/bien/100747b_zancada_frontal_bien_s05_bien_3.mp4",
+   "real": "bien",
+   "prediccion": "mal",
+   "ok": false
+  },
+  {
+   "clip": "zancada/bien/100747b_zancada_frontal_bien_s07_bien_3.mp4",
+   "real": "bien",
+   "prediccion": "mal",
+   "ok": false
+  },
+  {
+   "clip": "zancada/bien/100747b_zancada_frontal_bien_s09_bien_3.mp4",
+   "real": "bien",
+   "prediccion": "mal",
+   "ok": false
+  }
+ ],
+ "modelos": [
+  {
+   "nombre": "random_forest",
+   "accuracy": 0.6336,
+   "f1_macro": 0.5681,
+   "tiempo_seg": 1.17,
+   "iteraciones": {
+    "tope": 350,
+    "min": 350,
+    "media": 350.0,
+    "max": 350,
+    "freno": false
+   }
+  },
+  {
+   "nombre": "extra_trees",
+   "accuracy": 0.6947,
+   "f1_macro": 0.617,
+   "tiempo_seg": 0.79,
+   "iteraciones": {
+    "tope": 350,
+    "min": 350,
+    "media": 350.0,
+    "max": 350,
+    "freno": false
+   }
+  },
+  {
+   "nombre": "gradient_boosting",
+   "accuracy": 0.6794,
+   "f1_macro": 0.6221,
+   "tiempo_seg": 2.06,
+   "iteraciones": {
+    "tope": 200,
+    "min": 84,
+    "media": 94.0,
+    "max": 100,
+    "freno": true
+   }
+  },
+  {
+   "nombre": "hist_gradient_boosting",
+   "accuracy": 0.6641,
+   "f1_macro": 0.6145,
+   "tiempo_seg": 1.61,
+   "iteraciones": {
+    "tope": 150,
+    "min": 17,
+    "media": 50.3,
+    "max": 115,
+    "freno": true
+   }
+  },
+  {
+   "nombre": "adaboost",
+   "accuracy": 0.5496,
+   "f1_macro": 0.3547,
+   "tiempo_seg": 3.52,
+   "iteraciones": {
+    "tope": 200,
+    "min": 200,
+    "media": 200.0,
+    "max": 200,
+    "freno": false
+   }
+  },
+  {
+   "nombre": "logistic",
+   "accuracy": 0.5878,
+   "f1_macro": 0.4295,
+   "tiempo_seg": 0.04,
+   "iteraciones": {
+    "tope": 2000,
+    "min": 29,
+    "media": 34.7,
+    "max": 42,
+    "freno": true
+   }
+  },
+  {
+   "nombre": "sgd_logistico",
+   "accuracy": 0.5649,
+   "f1_macro": 0.5201,
+   "tiempo_seg": 0.03,
+   "iteraciones": {
+    "tope": 1000,
+    "min": 6,
+    "media": 6.7,
+    "max": 7,
+    "freno": true
+   }
+  },
+  {
+   "nombre": "ridge",
+   "accuracy": 0.5878,
+   "f1_macro": 0.4021,
+   "tiempo_seg": 0.01
+  },
+  {
+   "nombre": "lda",
+   "accuracy": 0.5725,
+   "f1_macro": 0.3947,
+   "tiempo_seg": 1.91
+  },
+  {
+   "nombre": "svm",
+   "accuracy": 0.5878,
+   "f1_macro": 0.4021,
+   "tiempo_seg": 0.04
+  },
+  {
+   "nombre": "knn",
+   "accuracy": 0.6794,
+   "f1_macro": 0.6166,
+   "tiempo_seg": 0.25
+  },
+  {
+   "nombre": "decision_tree",
+   "accuracy": 0.6565,
+   "f1_macro": 0.6128,
+   "tiempo_seg": 0.04
+  },
+  {
+   "nombre": "mlp",
+   "accuracy": 0.5649,
+   "f1_macro": 0.5249,
+   "tiempo_seg": 0.09,
+   "iteraciones": {
+    "tope": 2000,
+    "min": 12,
+    "media": 13.7,
+    "max": 15,
+    "freno": true
+   }
+  },
+  {
+   "nombre": "naive_bayes",
+   "accuracy": 0.5344,
+   "f1_macro": 0.439,
+   "tiempo_seg": 0.01
+  }
+ ],
+ "tipo": 11,
+ "exercise": "zancada",
+ "config": {
+  "modo": "rectangulo",
+  "n_frames_fijo": 30,
+  "punto_centro": null,
+  "punto_escala_a": null,
+  "punto_escala_b": null,
+  "puntos_caja": null,
+  "lienzo": 100,
+  "escala": {
+   "angle": 180,
+   "proporcion": 100,
+   "distance_ratio": 4
+  }
+ },
+ "features": "xyzap",
+ "excluidos_manual": [],
+ "desincronizados": [],
+ "kpoints_usados": [
+  "LEFT_SHOULDER",
+  "RIGHT_SHOULDER",
+  "LEFT_ELBOW",
+  "RIGHT_ELBOW",
+  "LEFT_WRIST",
+  "RIGHT_WRIST",
+  "LEFT_HIP",
+  "RIGHT_HIP",
+  "LEFT_KNEE",
+  "RIGHT_KNEE",
+  "LEFT_ANKLE",
+  "RIGHT_ANKLE"
+ ],
+ "ejes": "xyz",
+ "angulos": [
+  [
+   "codo_izq",
+   "C12>C14>C16",
+   "angle"
+  ],
+  [
+   "codo_der",
+   "C13>C15>C17",
+   "angle"
+  ],
+  [
+   "hombro_izq",
+   "C24>C12>C14",
+   "angle"
+  ],
+  [
+   "hombro_der",
+   "C25>C13>C15",
+   "angle"
+  ],
+  [
+   "cadera_izq",
+   "C12>C24>C26",
+   "angle"
+  ],
+  [
+   "cadera_der",
+   "C13>C25>C27",
+   "angle"
+  ],
+  [
+   "rodilla_izq",
+   "C24>C26>C28",
+   "angle"
+  ],
+  [
+   "rodilla_der",
+   "C25>C27>C29",
+   "angle"
+  ]
+ ],
+ "matriz_modelos": {
+  "random_forest": {
+   "epocas": 350,
+   "max_iter": null,
+   "parar": null,
+   "paciencia": null,
+   "tol": null
+  },
+  "extra_trees": {
+   "epocas": 350,
+   "max_iter": null,
+   "parar": null,
+   "paciencia": null,
+   "tol": null
+  },
+  "gradient_boosting": {
+   "epocas": 200,
+   "max_iter": null,
+   "parar": true,
+   "paciencia": 10,
+   "tol": 0.0001
+  },
+  "hist_gradient_boosting": {
+   "epocas": null,
+   "max_iter": 150,
+   "parar": true,
+   "paciencia": 10,
+   "tol": 1e-07
+  },
+  "adaboost": {
+   "epocas": 200,
+   "max_iter": null,
+   "parar": null,
+   "paciencia": null,
+   "tol": null
+  },
+  "logistic": {
+   "epocas": null,
+   "max_iter": 2000,
+   "parar": null,
+   "paciencia": null,
+   "tol": 0.0001
+  },
+  "sgd_logistico": {
+   "epocas": null,
+   "max_iter": 1000,
+   "parar": true,
+   "paciencia": 5,
+   "tol": 0.001
+  },
+  "ridge": {
+   "epocas": null,
+   "max_iter": null,
+   "parar": null,
+   "paciencia": null,
+   "tol": null
+  },
+  "lda": {
+   "epocas": null,
+   "max_iter": null,
+   "parar": null,
+   "paciencia": null,
+   "tol": null
+  },
+  "svm": {
+   "epocas": null,
+   "max_iter": null,
+   "parar": null,
+   "paciencia": null,
+   "tol": null
+  },
+  "knn": {
+   "epocas": null,
+   "max_iter": null,
+   "parar": null,
+   "paciencia": null,
+   "tol": null
+  },
+  "decision_tree": {
+   "epocas": null,
+   "max_iter": null,
+   "parar": null,
+   "paciencia": null,
+   "tol": null
+  },
+  "mlp": {
+   "epocas": null,
+   "max_iter": 2000,
+   "parar": true,
+   "paciencia": 10,
+   "tol": 0.0001
+  },
+  "naive_bayes": {
+   "epocas": null,
+   "max_iter": null,
+   "parar": null,
+   "paciencia": null,
+   "tol": null
+  }
+ },
+ "iteraciones_mejor": {
+  "tope": 200,
+  "usadas": 77
+ },
+ "f1_folds": [
+  0.8536,
+  0.3182,
+  0.4154
+ ],
+ "f1_std": 0.2329,
+ "n_features": 1320,
+ "conteo_clases": {
+  "bien": 51,
+  "mal": 80
+ },
+ "fuera": null,
+ "validacion": "StratifiedGroupKFold por grabacion y persona",
+ "estratos": "clase+persona",
+ "grabaciones": 10,
+ "fuente": "disco",
+ "respaldo_sql": {
+  "resumen": {
+   "archivos_nuevos": 0,
+   "archivos_actualizados": 0,
+   "archivos_sin_cambios": 132,
+   "frames": 0,
+   "frames_fix": 0,
+   "omitidos_sin_puntos": 0
+  },
+  "error": null
+ },
+ "personas": [
+  "sin_persona"
+ ],
+ "excluidos_persona": 0,
+ "composicion_folds": [
+  {
+   "fold": 1,
+   "prueba": {
+    "sin_persona": 48
+   },
+   "entreno": {
+    "sin_persona": 83
+   }
+  },
+  {
+   "fold": 2,
+   "prueba": {
+    "sin_persona": 45
+   },
+   "entreno": {
+    "sin_persona": 86
+   }
+  },
+  {
+   "fold": 3,
+   "prueba": {
+    "sin_persona": 38
+   },
+   "entreno": {
+    "sin_persona": 93
+   }
+  }
+ ],
+ "numero_viejo": 25,
+ "ejercicio_id": 1,
+ "dir": "1/run_008",
+ "origen_run": {
+  "numero": 25,
+  "ruta": "datos/entrenamientos/run_25",
+  "nota": "corrida anterior a las tablas numeradas: sin lista de clips"
+ }
+}

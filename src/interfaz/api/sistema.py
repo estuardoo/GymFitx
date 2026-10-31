@@ -43,14 +43,14 @@ class ServidorSql(BaseModel):
 
 @router.get("/api/system/sql")
 async def sql_servidor() -> dict:
-    """Servidor y base en uso (de datos/config.json si existe) + estado de la conexion."""
+    """Servidor y base en uso (de parameters/server.json si existe) + estado de la conexion."""
     estado = await asyncio.to_thread(sqlserver.estado)
     return {**estado, "archivo": str(CFG.CONFIG_PATH), "guardado": CFG.CONFIG_PATH.exists()}
 
 
 @router.post("/api/system/sql")
 async def sql_servidor_guardar(cfg: ServidorSql) -> dict:
-    """Guarda servidor/base en datos/config.json, lo aplica sin reiniciar y reconecta."""
+    """Guarda servidor/base en parameters/server.json, lo aplica sin reiniciar y reconecta."""
     try:
         CFG.guardar_servidor_sql(cfg.host, cfg.base)
     except ValueError as e:
@@ -83,22 +83,22 @@ def respaldo_sql_ahora() -> dict:
 
 
 class ListaDroidcam(BaseModel):
-    lista: list[str]
+    lista: list[str | dict]   # 'IP:puerto' o {nombre, ip}
 
 
 @router.get("/api/system/droidcam")
 def droidcam_lista() -> dict:
-    return {"lista": CFG.droidcams(), "archivo": str(CFG.CONFIG_PATH)}
+    return {"lista": CFG.droidcams_nombrados(), "archivo": str(CFG.CONFIG_PATH)}
 
 
 @router.post("/api/system/droidcam")
 def droidcam_guardar(cfg: ListaDroidcam) -> dict:
-    """Guarda la lista de DroidCam (IP:puerto) en datos/config.json; aparecen en amarillo en el selector de camaras."""
+    """Guarda la lista de DroidCam (nombre + IP:puerto) en parameters/config.json; aparecen en amarillo en el selector de camaras."""
     try:
-        lista = CFG.guardar_droidcams(cfg.lista)
+        CFG.guardar_droidcams(cfg.lista)
     except ValueError as e:
         raise HTTPException(400, str(e)) from None
-    return {"lista": lista, "archivo": str(CFG.CONFIG_PATH)}
+    return {"lista": CFG.droidcams_nombrados(), "archivo": str(CFG.CONFIG_PATH)}
 
 
 class CambiarVersionPython(BaseModel):
@@ -276,7 +276,7 @@ class Generar(BaseModel):
 @router.post("/api/docs/generar")
 def docs_generar(g: Generar) -> dict:
     """Corre las 5 etapas (seleccionar → formatear): deja los reportes en reportes/, el diccionario en docs/diccionario/ y
-    la tabla final en datos/final/. Sin ejercicio, los de params.yaml (ejercicios)."""
+    la tabla final en input/gold/. Sin ejercicio, los de parameters/config.json (ejercicios)."""
     resultado = {}
     for ej in [g.ejercicio] if g.ejercicio else params("ejercicios"):
         try:
